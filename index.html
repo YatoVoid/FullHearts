@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Full Hearts — Quality of Life Mods for Minecraft</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0b0813;
+    --panel:#120d1f;
+    --slot:#181230;
+    --tip-bg:#0d0917;
+    --edge:#050308;
+    --border-a:#6a33cf;
+    --border-b:#2c1166;
+    --grass:#74c043;
+    --grass-dk:#4a7a2a;
+    --gold:#fcfc54;
+    --aqua:#55ffff;
+    --pink:#ff7ff0;
+    --ink:#ece8f5;
+    --mute:#9a93ad;
+    --dirt:#6b4a2f;
+    --pixel:'Press Start 2P', monospace;
+    --body:'Inter', system-ui, sans-serif;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--void);
+    color:var(--ink);
+    font-family:var(--body);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    /* faint inventory-slot grid */
+    background-image:
+      linear-gradient(rgba(255,255,255,.012) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.012) 1px, transparent 1px);
+    background-size:34px 34px;
+  }
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px;}
+
+  /* ---------- NAV ---------- */
+  header.nav{
+    position:sticky;top:0;z-index:50;
+    background:rgba(11,8,19,.86);
+    backdrop-filter:blur(8px);
+    border-bottom:2px solid #1c1530;
+  }
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 24px;max-width:1180px;margin:0 auto;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand .heart{width:26px;height:26px;flex:none;}
+  .brand .name{font-family:var(--pixel);font-size:13px;color:var(--ink);letter-spacing:.5px;line-height:1.4;}
+  .brand .name b{color:var(--grass);}
+  nav.links{display:flex;gap:26px;}
+  nav.links a{
+    color:var(--mute);text-decoration:none;font-size:13px;font-weight:600;
+    transition:color .15s;
+  }
+  nav.links a:hover{color:var(--ink);}
+  .nav-cta{
+    font-family:var(--pixel);font-size:9px;color:var(--void);
+    background:var(--grass);
+    padding:11px 14px;text-decoration:none;
+    box-shadow:0 4px 0 var(--grass-dk);
+    transition:transform .08s, box-shadow .08s;
+  }
+  .nav-cta:active{transform:translateY(3px);box-shadow:0 1px 0 var(--grass-dk);}
+
+  /* ---------- HERO ---------- */
+  .hero{padding:74px 0 56px;text-align:center;position:relative;}
+  .eyebrow{
+    font-family:var(--pixel);font-size:10px;color:var(--grass);
+    letter-spacing:2px;margin-bottom:26px;
+  }
+  .hearts{display:flex;gap:7px;justify-content:center;margin-bottom:30px;flex-wrap:wrap;}
+  .hearts svg{width:30px;height:30px;animation:pop .5s ease both;}
+  @keyframes pop{from{transform:scale(0);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .hero h1{
+    font-family:var(--pixel);
+    font-size:clamp(22px,4.6vw,46px);
+    line-height:1.45;color:var(--ink);
+    max-width:880px;margin:0 auto 24px;
+    text-shadow:0 4px 0 #000;
+  }
+  .hero h1 .g{color:var(--grass);}
+  .hero p.lede{font-size:18px;color:var(--mute);max-width:560px;margin:0 auto 36px;}
+  .hero-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+  .btn-primary{
+    font-family:var(--pixel);font-size:11px;color:var(--void);
+    background:var(--grass);padding:16px 22px;text-decoration:none;
+    box-shadow:0 5px 0 var(--grass-dk);transition:transform .08s,box-shadow .08s;
+  }
+  .btn-primary:active{transform:translateY(4px);box-shadow:0 1px 0 var(--grass-dk);}
+  .btn-ghost{
+    font-family:var(--pixel);font-size:11px;color:var(--ink);
+    background:var(--slot);padding:16px 22px;text-decoration:none;
+    box-shadow:0 5px 0 #0c0820;transition:transform .08s,box-shadow .08s;
+  }
+  .btn-ghost:active{transform:translateY(4px);box-shadow:0 1px 0 #0c0820;}
+
+  /* XP-bar divider */
+  .xpbar{margin:54px auto 0;max-width:620px;height:14px;background:#1a1330;border:2px solid #050308;position:relative;}
+  .xpbar i{position:absolute;inset:0;width:78%;background:linear-gradient(var(--grass),var(--grass-dk));box-shadow:inset 0 -3px 0 rgba(0,0,0,.25);}
+  .xplabel{font-family:var(--pixel);font-size:8px;color:var(--gold);text-align:center;margin-top:12px;letter-spacing:1px;}
+
+  /* ---------- STATS ---------- */
+  .stats{display:flex;gap:30px;justify-content:center;flex-wrap:wrap;padding:60px 0;}
+  .stat{text-align:center;min-width:120px;}
+  .stat .num{font-family:var(--pixel);font-size:26px;color:var(--grass);text-shadow:0 3px 0 #000;}
+  .stat .lab{font-size:13px;color:var(--mute);margin-top:12px;letter-spacing:.4px;}
+
+  /* ---------- FILTER ---------- */
+  .section-head{text-align:center;margin-bottom:40px;}
+  .section-head .eyebrow{margin-bottom:16px;}
+  .section-head h2{font-family:var(--pixel);font-size:clamp(16px,3vw,24px);text-shadow:0 3px 0 #000;}
+  .filters{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:42px;}
+  .filters button{
+    font-family:var(--pixel);font-size:9px;
+    color:var(--mute);background:var(--slot);
+    border:2px solid #2a2046;padding:11px 13px;cursor:pointer;
+    box-shadow:0 3px 0 #0a0718;transition:transform .08s,box-shadow .08s,color .15s;
+  }
+  .filters button:hover{color:var(--ink);}
+  .filters button:active{transform:translateY(3px);box-shadow:0 0 0 #0a0718;}
+  .filters button.active{color:var(--void);background:var(--grass);border-color:var(--grass-dk);box-shadow:0 3px 0 var(--grass-dk);}
+
+  /* ---------- MOD GRID (tooltips) ---------- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:22px;padding-bottom:30px;}
+  .tip{
+    position:relative;
+    background:var(--tip-bg);
+    border:2px solid transparent;
+    border-image:linear-gradient(var(--border-a),var(--border-b)) 1;
+    box-shadow:0 0 0 2px var(--edge), 0 8px 22px rgba(0,0,0,.45);
+    padding:18px 18px 16px;
+    overflow:hidden;
+    transition:transform .12s ease;
+  }
+  .tip:hover{transform:translateY(-4px);}
+  /* enchant glint */
+  .tip::after{
+    content:"";position:absolute;top:0;left:-120%;width:60%;height:100%;
+    background:linear-gradient(110deg,transparent,rgba(170,90,255,.18),transparent);
+    transition:left .6s ease;pointer-events:none;
+  }
+  .tip:hover::after{left:130%;}
+  .tip .row1{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:4px;}
+  .tip .title{font-size:18px;font-weight:700;line-height:1.25;}
+  .tip.r-common  .title{color:var(--ink);}
+  .tip.r-uncommon .title{color:var(--gold);}
+  .tip.r-rare    .title{color:var(--aqua);}
+  .tip.r-epic    .title{color:var(--pink);}
+  .tip .loader{
+    font-family:var(--pixel);font-size:7px;flex:none;white-space:nowrap;
+    padding:6px 7px;border:1px solid #2a2046;color:var(--mute);
+    margin-top:3px;
+  }
+  .tip .rarity{font-size:12px;color:var(--mute);font-style:italic;margin-bottom:12px;}
+  .tip .desc{font-size:14.5px;color:#c5bfd6;margin-bottom:14px;}
+  .tip .fix{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--grass);font-weight:600;}
+  .tip .fix svg{width:14px;height:14px;flex:none;}
+
+  /* ---------- LOADER LEGEND ---------- */
+  .legend{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin:6px 0 70px;font-size:13px;color:var(--mute);}
+  .legend span{display:flex;align-items:center;gap:8px;}
+  .dot{width:12px;height:12px;display:inline-block;}
+  .dot.common{background:var(--ink);}
+  .dot.uncommon{background:var(--gold);}
+  .dot.rare{background:var(--aqua);}
+  .dot.epic{background:var(--pink);}
+
+  /* ---------- PRINCIPLES ---------- */
+  .principles{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:0 auto 42px;max-width:840px;}
+  .principles span{font-size:12.5px;color:var(--ink);background:var(--slot);border:2px solid #2a2046;padding:9px 13px;display:flex;align-items:center;gap:8px;line-height:1;box-shadow:0 3px 0 #0a0718;}
+  .principles span b{color:var(--grass);font-size:14px;}
+  .intro-lede{font-size:16px;color:var(--mute);max-width:620px;margin:0 auto 38px;text-align:center;}
+
+  /* ---------- FOOTER ---------- */
+  footer{border-top:2px solid #1c1530;padding:46px 0;text-align:center;background:var(--panel);}
+  footer .brand{justify-content:center;margin-bottom:18px;}
+  footer p{font-size:13px;color:var(--mute);max-width:520px;margin:0 auto 8px;}
+  footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
+
+  @media (max-width:640px){
+    nav.links{display:none;}
+    .hero{padding:48px 0 36px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto;}
+    .tip:hover::after{left:-120%;}
+  }
+</style>
+</head>
+<body>
+
+<!-- pixel heart symbol -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="heart" viewBox="0 0 9 9">
+    <path d="M1 0h2v1h1V0h2v1h1v1h1v3h-1v1h-1v1h-1v1H4v-1H3V6H2V5H1V4H0V1h1z" fill="#b3000c"/>
+    <path d="M1 1h2v1h1v1h1V2h1V1h2v1H7v1h1v1H7v1H6v1H5v1H4V6H3V5H2V4H1V2H0V1h1z" fill="#fb1f2c"/>
+    <path d="M1 1h1v1H1zM3 1h1v1H3z" fill="#ff8a90"/>
+  </symbol>
+</svg>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      <svg class="heart"><use href="#heart"/></svg>
+      <span class="name">FULL<b>HEARTS</b></span>
+    </div>
+    <nav class="links">
+      <a href="#mods">Quality of life</a>
+      <a href="#world">Explore more</a>
+      <a href="#start">Get started</a>
+    </nav>
+    <a class="nav-cta" href="#mods">Browse mods</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero wrap">
+    <div class="eyebrow">QUALITY OF LIFE · MINECRAFT JAVA</div>
+    <div class="hearts" id="heartRow" aria-hidden="true"></div>
+    <h1>Keep your hearts full.<br>Cut the <span class="g">tedious</span> out of survival.</h1>
+    <p class="lede">Hand-picked quality-of-life mods that smooth out the rough edges — plus a curated second list that makes the world bigger, stranger, and more alive. No grind, no clutter.</p>
+    <div class="hero-actions">
+      <a class="btn-primary" href="#mods">See the list</a>
+      <a class="btn-ghost" href="#start">How to install</a>
+    </div>
+    <div class="xpbar"><i></i></div>
+    <div class="xplabel">CURATED · UPDATED FOR 1.21</div>
+  </section>
+
+  <section class="stats wrap">
+    <div class="stat"><div class="num">54</div><div class="lab">Mods curated</div></div>
+    <div class="stat"><div class="num">14</div><div class="lab">Categories</div></div>
+    <div class="stat"><div class="num">0</div><div class="lab">Quest logs to manage</div></div>
+    <div class="stat"><div class="num">0</div><div class="lab">Forced PvP</div></div>
+  </section>
+
+  <section class="wrap" id="mods">
+    <div class="section-head">
+      <div class="eyebrow">THE LIST</div>
+      <h2>Pick your loadout</h2>
+    </div>
+
+    <div class="filters" id="filters">
+      <button class="active" data-cat="all">All</button>
+      <button data-cat="performance">Performance</button>
+      <button data-cat="interface">Interface</button>
+      <button data-cat="inventory">Inventory</button>
+      <button data-cat="map">Map</button>
+      <button data-cat="info">Info</button>
+      <button data-cat="world">World</button>
+    </div>
+
+    <div class="legend">
+      <span><i class="dot common"></i> Handy</span>
+      <span><i class="dot uncommon"></i> Recommended</span>
+      <span><i class="dot rare"></i> Popular</span>
+      <span><i class="dot epic"></i> Essential</span>
+    </div>
+
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="wrap" id="world" style="padding:84px 0 30px;border-top:2px solid #1c1530;">
+    <div class="section-head">
+      <div class="eyebrow">GO DEEPER</div>
+      <h2>Make it a world worth getting lost in</h2>
+    </div>
+    <p class="intro-lede">A bit magical, a bit mechanical, heavy on building and atmosphere. More to explore and more to fight — without quest logs, runaway grinding, or anything that turns survival into a spreadsheet.</p>
+
+    <div class="principles">
+      <span><b>&#10003;</b> No resource treadmill</span>
+      <span><b>&#10003;</b> Balanced, not pay-to-win</span>
+      <span><b>&#10003;</b> No forced PvP</span>
+      <span><b>&#10003;</b> Builds stay protected</span>
+      <span><b>&#10003;</b> No task-manager RPG</span>
+    </div>
+
+    <div class="filters" id="filters2">
+      <button class="active" data-cat="all">All</button>
+      <button data-cat="magic">Magic</button>
+      <button data-cat="tech">Tech</button>
+      <button data-cat="build">Build</button>
+      <button data-cat="worlds">Worlds</button>
+      <button data-cat="dimensions">Dimensions</button>
+      <button data-cat="combat">Combat</button>
+      <button data-cat="living">Living world</button>
+      <button data-cat="coop">Co-op</button>
+    </div>
+
+    <div class="legend">
+      <span><i class="dot common"></i> Handy</span>
+      <span><i class="dot uncommon"></i> Recommended</span>
+      <span><i class="dot rare"></i> Popular</span>
+      <span><i class="dot epic"></i> Essential</span>
+    </div>
+
+    <div class="grid" id="grid2"></div>
+  </section>
+
+  <section class="wrap" id="start" style="padding:70px 0 90px;">
+    <div class="section-head">
+      <div class="eyebrow">GET STARTED</div>
+      <h2>Three steps to smoother</h2>
+    </div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));">
+      <div class="tip r-uncommon"><div class="row1"><span class="title">1 · Install a loader</span></div><p class="desc">Grab Fabric (lightweight, great for performance mods) or Forge/NeoForge. Most mods here run on Fabric.</p><div class="fix"><svg viewBox="0 0 9 9"><use href="#heart"/></svg>Pick one and stick with it</div></div>
+      <div class="tip r-uncommon"><div class="row1"><span class="title">2 · Drop in mods</span></div><p class="desc">Download the .jar files and place them in your <code style="color:var(--gold)">/mods</code> folder. Match every mod to your game version.</p><div class="fix"><svg viewBox="0 0 9 9"><use href="#heart"/></svg>Check version compatibility</div></div>
+      <div class="tip r-uncommon"><div class="row1"><span class="title">3 · Add the library</span></div><p class="desc">Many Fabric mods need Fabric API. Forge mods may need a shared library — read each mod's page.</p><div class="fix"><svg viewBox="0 0 9 9"><use href="#heart"/></svg>Launch and enjoy</div></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="brand">
+    <svg class="heart"><use href="#heart"/></svg>
+    <span class="name">FULL<b>HEARTS</b></span>
+  </div>
+  <p>A fan-made directory of quality-of-life mods. Always download from official sources like Modrinth or CurseForge.</p>
+  <p class="note">Not affiliated with or endorsed by Mojang or Microsoft. Minecraft is a trademark of Mojang AB.</p>
+</footer>
+
+<script>
+  // Hero hearts
+  const hr = document.getElementById('heartRow');
+  for(let i=0;i<10;i++){
+    const s=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    s.setAttribute('viewBox','0 0 9 9');
+    s.style.animationDelay=(i*60)+'ms';
+    s.innerHTML='<use href="#heart"/>';
+    hr.appendChild(s);
+  }
+
+  // Mod data
+  const MODS=[
+    {n:"Sodium",cat:"performance",r:"epic",load:"Fabric",rar:"Essential rendering rewrite",d:"Rebuilds the rendering engine for massive FPS gains and far smoother frame times, with no visual downsides.",fix:"Doubles or triples your FPS"},
+    {n:"Lithium",cat:"performance",r:"rare",load:"Fabric",rar:"Game-logic optimizer",d:"Optimizes tick logic, mob AI, and physics so servers and singleworlds run lighter without changing behavior.",fix:"Less lag, same gameplay"},
+    {n:"FerriteCore",cat:"performance",r:"uncommon",load:"Both",rar:"Memory saver",d:"Cuts memory usage by storing block and chunk data more efficiently. Pure background savings.",fix:"Lower RAM footprint"},
+    {n:"Iris Shaders",cat:"performance",r:"rare",load:"Fabric",rar:"Shader support",d:"Runs shader packs while staying compatible with Sodium, so you get looks and performance together.",fix:"Shaders without the FPS hit"},
+    {n:"ImmediatelyFast",cat:"performance",r:"common",load:"Fabric",rar:"UI render boost",d:"Speeds up text and HUD rendering, helping in inventory-heavy modpacks and busy screens.",fix:"Snappier menus"},
+
+    {n:"Mod Menu",cat:"interface",r:"rare",load:"Fabric",rar:"Config hub",d:"Adds a clean in-game screen to see and configure every Fabric mod you have installed.",fix:"Settings in one place"},
+    {n:"Controlling",cat:"interface",r:"uncommon",load:"Both",rar:"Keybind search",d:"Search your keybinds, spot conflicts instantly, and clear them with a click. A relief in big packs.",fix:"No more keybind hunting"},
+    {n:"BetterF3",cat:"interface",r:"common",load:"Both",rar:"Debug overlay",d:"Replaces the cluttered F3 screen with a tidy, customizable, color-coded layout.",fix:"Readable debug info"},
+    {n:"Reese's Sodium Options",cat:"interface",r:"common",load:"Fabric",rar:"Video menu",d:"A friendlier video settings screen for Sodium with clearer toggles and live previews.",fix:"Easier graphics tuning"},
+
+    {n:"Mouse Tweaks",cat:"inventory",r:"rare",load:"Both",rar:"Inventory speed",d:"Drag to move stacks, right-click distribute, and shift-click sweep — inventory work in a fraction of the clicks.",fix:"Faster sorting & crafting"},
+    {n:"Inventory Profiles Next",cat:"inventory",r:"uncommon",load:"Fabric",rar:"Auto-sort & profiles",d:"One-key sorting, auto-refill, and saved hotbar profiles for different tasks.",fix:"Tidy inventory, always"},
+    {n:"Tool Belt",cat:"inventory",r:"common",load:"Forge",rar:"Quick-swap tools",d:"A wearable belt that holds tools you can swap to with a keypress, freeing hotbar slots.",fix:"More room on the hotbar"},
+
+    {n:"Xaero's Minimap",cat:"map",r:"epic",load:"Both",rar:"Essential minimap",d:"A corner minimap with waypoints, cave mode, and mob radar. The standard for never getting lost.",fix:"Always know where you are"},
+    {n:"Xaero's World Map",cat:"map",r:"rare",load:"Both",rar:"Full map",d:"A full explorable map that pairs with the minimap, recording terrain as you travel.",fix:"See everywhere you've been"},
+    {n:"JourneyMap",cat:"map",r:"rare",load:"Both",rar:"All-in-one mapping",d:"Minimap and fullscreen map with web view, waypoints, and detailed mob tracking.",fix:"Navigation, fully solved"},
+
+    {n:"Just Enough Items (JEI)",cat:"info",r:"epic",load:"Both",rar:"Essential recipe viewer",d:"Look up the recipe or usage of any item from your inventory. The backbone of modded play.",fix:"Never guess a recipe again"},
+    {n:"Roughly Enough Items (REI)",cat:"info",r:"rare",load:"Fabric",rar:"Recipe viewer",d:"A Fabric-first recipe and usage browser with cheat mode and tidy filtering.",fix:"Recipes at a glance"},
+    {n:"Jade",cat:"info",r:"rare",load:"Both",rar:"Block & entity info",d:"Shows what you're looking at — block name, mod, mob health, growth stage — in a clean tooltip.",fix:"Identify anything you see"},
+    {n:"AppleSkin",cat:"info",r:"uncommon",load:"Both",rar:"Hunger details",d:"Reveals exactly how much hunger and saturation food restores, plus held-food preview.",fix:"Eat smarter"},
+    {n:"Just Enough Resources",cat:"info",r:"common",load:"Both",rar:"World-gen info",d:"Adds JEI tabs for mob drops, ore distribution, biome data, and world-gen details.",fix:"Know where to dig"},
+
+    {n:"Carry On",cat:"world",r:"uncommon",load:"Both",rar:"Pick up & move",d:"Pick up chests with contents, machines, and even mobs, then place them down elsewhere.",fix:"Relocate without rebuilding"},
+    {n:"Clumps",cat:"world",r:"rare",load:"Both",rar:"XP de-lag",d:"Merges scattered XP orbs into single clumps, killing the lag from big farms and grinders.",fix:"Smooth XP farming"},
+    {n:"LambDynamicLights",cat:"world",r:"uncommon",load:"Fabric",rar:"Held-item light",d:"Torches, lava buckets, and glowing items light up the area while you hold them.",fix:"Light the way naturally"},
+    {n:"FallingTree",cat:"world",r:"common",load:"Both",rar:"Whole-tree chop",d:"Break one log and the connected tree falls, so harvesting wood takes one swing instead of ten.",fix:"Faster wood runs"}
+  ];
+
+  const check='<svg viewBox="0 0 9 9"><use href="#heart"/></svg>';
+  const grid=document.getElementById('grid');
+
+  function render(cat){
+    grid.innerHTML='';
+    MODS.filter(m=>cat==='all'||m.cat===cat).forEach(m=>{
+      const el=document.createElement('article');
+      el.className='tip r-'+m.r;
+      el.innerHTML=
+        '<div class="row1"><span class="title">'+m.n+'</span><span class="loader">'+m.load+'</span></div>'+
+        '<div class="rarity">'+m.rar+'</div>'+
+        '<p class="desc">'+m.d+'</p>'+
+        '<div class="fix">'+check+m.fix+'</div>';
+      grid.appendChild(el);
+    });
+  }
+  render('all');
+
+  document.getElementById('filters').addEventListener('click',e=>{
+    const b=e.target.closest('button');
+    if(!b)return;
+    document.querySelectorAll('#filters button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    render(b.dataset.cat);
+  });
+
+  // Explore-more mods (content / adventure)
+  const MODS2=[
+    {n:"Botania",cat:"magic",r:"epic",load:"Both",rar:"Flower-powered magic-tech",d:"Magic generated by living flowers and mana, with deep build-driven systems and careful balance. Almost no mining grind.",fix:"Rewards clever setups, not hoarding"},
+    {n:"Ars Nouveau",cat:"magic",r:"rare",load:"Both",rar:"Craft your own spells",d:"Combine glyphs to design custom spells and automate them. Open-ended and creative, with no endless research trees.",fix:"Make magic that is truly yours"},
+    {n:"Eidolon: Repraised",cat:"magic",r:"rare",load:"Forge",rar:"Atmospheric witchcraft",d:"Ritual-driven dark magic with a moody, immersive feel. Power comes from ceremony rather than stockpiling materials.",fix:"Spooky and ceremonial"},
+    {n:"Malum",cat:"magic",r:"uncommon",load:"Both",rar:"Soul and spirit magic",d:"Harvest spirits and weave them into gear and rituals. Distinctive systems that stay grounded instead of game-breaking.",fix:"Dark magic, kept fair"},
+
+    {n:"Create",cat:"tech",r:"epic",load:"Both",rar:"Mechanical contraptions",d:"Build rotating, moving machines: windmills, conveyors, even trains. It rewards clever engineering and showpieces, not grinding.",fix:"Engineering as a creative toy"},
+    {n:"Immersive Engineering",cat:"tech",r:"rare",load:"Both",rar:"Retro multiblock industry",d:"Hand-built multiblock machines with gorgeous early-industrial styling that give your base real mechanical presence.",fix:"Tech you build like architecture"},
+    {n:"Create: Steam 'n' Rails",cat:"tech",r:"uncommon",load:"Both",rar:"Trains and railways",d:"Extends Create with proper train networks and station tools, turning travel into a living transport system.",fix:"Connect your world by rail"},
+
+    {n:"Macaw's Furniture & Builds",cat:"build",r:"epic",load:"Both",rar:"Architecture and furniture sets",d:"A whole family of mods adding furniture, roofs, bridges, doors, windows and fences. Pure building range, no mechanics to learn.",fix:"Real interiors and rooflines"},
+    {n:"Chipped",cat:"build",r:"rare",load:"Both",rar:"Thousands of block variants",d:"Adds huge libraries of textured variants for vanilla blocks through a simple workbench. All palette, zero grind.",fix:"Endless building palettes"},
+    {n:"Supplementaries",cat:"build",r:"rare",load:"Both",rar:"Charming decor and gadgets",d:"Sconces, signs, urns, hourglasses and dozens of tasteful props that make spaces feel genuinely lived-in.",fix:"The details that sell a build"},
+    {n:"Handcrafted",cat:"build",r:"uncommon",load:"Both",rar:"Cozy furniture",d:"Chairs, tables, shelves, crockery and trim for warm, detailed interiors without any new systems to manage.",fix:"Furnish like you mean it"},
+    {n:"Building Gadgets",cat:"build",r:"uncommon",load:"Both",rar:"Build faster",d:"Place, copy and mirror large structures in seconds so ambitious builds skip the tedious block-by-block work.",fix:"Less placing, more designing"},
+
+    {n:"Terralith",cat:"worlds",r:"epic",load:"Both",rar:"Overworld biome overhaul",d:"Reworks generation into dramatic, believable landscapes using only vanilla blocks, so exploration suddenly means something.",fix:"Biomes that feel real"},
+    {n:"Tectonic",cat:"worlds",r:"rare",load:"Both",rar:"Sweeping terrain",d:"Taller mountains, deeper valleys and winding rivers. Pairs with Terralith for genuinely cinematic worlds.",fix:"Terrain worth the trek"},
+    {n:"YUNG's Better Structures",cat:"worlds",r:"rare",load:"Both",rar:"Smarter dungeons and strongholds",d:"Overhauls mineshafts, strongholds, dungeons and more into hand-crafted places that are actually worth exploring.",fix:"Structures with intent"},
+    {n:"When Dungeons Arise",cat:"worlds",r:"uncommon",load:"Both",rar:"Grand explorable builds",d:"Scatters large, atmospheric structures across the map: keeps, ships and towers to discover and clear out.",fix:"Landmarks to find and raid"},
+    {n:"Regions Unexplored",cat:"worlds",r:"uncommon",load:"Both",rar:"More natural biomes",d:"Adds grounded, vanilla-feeling biomes and trees that blend into the world instead of clashing with it.",fix:"Variety that fits"},
+
+    {n:"The Twilight Forest",cat:"dimensions",r:"epic",load:"Both",rar:"A whole adventure dimension",d:"A perpetual-dusk realm where progress is gated by bosses and discovery. A living world to conquer, with no quest log.",fix:"Where what you do matters"},
+    {n:"The Aether",cat:"dimensions",r:"rare",load:"Both",rar:"Islands in the sky",d:"A bright counterpart to the Nether: floating islands, dungeons and a full set of creatures and loot to master.",fix:"A sky realm to explore"},
+    {n:"The Undergarden",cat:"dimensions",r:"uncommon",load:"Both",rar:"A living underground",d:"A lush, eerie subterranean dimension full of unique biomes, critters and materials worth settling into.",fix:"Caves with a soul"},
+    {n:"BetterNether & BetterEnd",cat:"dimensions",r:"rare",load:"Fabric",rar:"Reimagined Nether and End",d:"Fills the Nether and End with biomes, plants and reasons to stay, instead of visiting just to grab one thing and leave.",fix:"Dimensions worth living in"},
+
+    {n:"L_Ender's Cataclysm",cat:"combat",r:"rare",load:"Both",rar:"Epic bosses and dungeons",d:"Serious, fair boss fights tucked inside themed dungeons. Real challenge and real rewards with no grindy stat-padding.",fix:"Finally, a tough fight"},
+    {n:"Mowzie's Mobs",cat:"combat",r:"rare",load:"Both",rar:"Hand-crafted creatures",d:"A small, polished set of mobs and bosses with rich animations and behaviors. Quality over spammy quantity.",fix:"Memorable encounters"},
+    {n:"Champions",cat:"combat",r:"uncommon",load:"Forge",rar:"Elite enemy variants",d:"Ordinary mobs occasionally spawn as champions with special affixes and better loot, keeping the world tense.",fix:"More danger, no griefing"},
+
+    {n:"Alex's Mobs",cat:"living",r:"rare",load:"Both",rar:"Over 100 ambient creatures",d:"Fills oceans, skies and biomes with distinctive animals, some friendly and some not, so the world feels populated.",fix:"Biomes that breathe"},
+    {n:"Naturalist",cat:"living",r:"uncommon",load:"Both",rar:"Believable wildlife",d:"Adds grounded animals with real behaviors, from fireflies to bears, that make nature feel observed rather than staged.",fix:"Quiet, living detail"},
+    {n:"Farmer's Delight",cat:"living",r:"rare",load:"Both",rar:"Cooking and farming, expanded",d:"A cozy cooking system with new crops, tools and meals. Plenty to make, with none of the resource-treadmill feel.",fix:"Cooking, not grinding"},
+    {n:"Serene Seasons",cat:"living",r:"uncommon",load:"Both",rar:"Real seasons",d:"Spring, summer, autumn and winter reshape the look of the world and what your crops can grow. Time itself feels alive.",fix:"A world that turns"},
+
+    {n:"Open Parties and Claims",cat:"coop",r:"epic",load:"Both",rar:"Protect builds, party up",d:"Claim your land so creepers, mobs and friends cannot wreck it, and form parties, all without enabling forced PvP.",fix:"Builds stay yours"},
+    {n:"FTB Chunks & Teams",cat:"coop",r:"rare",load:"Both",rar:"Chunk claims for groups",d:"Team-friendly chunk claiming with a built-in map, keeping shared bases safe from griefing and stray explosions.",fix:"Safe co-op territory"}
+  ];
+
+  const grid2=document.getElementById('grid2');
+  function render2(cat){
+    grid2.innerHTML='';
+    MODS2.filter(m=>cat==='all'||m.cat===cat).forEach(m=>{
+      const el=document.createElement('article');
+      el.className='tip r-'+m.r;
+      el.innerHTML=
+        '<div class="row1"><span class="title">'+m.n+'</span><span class="loader">'+m.load+'</span></div>'+
+        '<div class="rarity">'+m.rar+'</div>'+
+        '<p class="desc">'+m.d+'</p>'+
+        '<div class="fix">'+check+m.fix+'</div>';
+      grid2.appendChild(el);
+    });
+  }
+  render2('all');
+
+  document.getElementById('filters2').addEventListener('click',e=>{
+    const b=e.target.closest('button');
+    if(!b)return;
+    document.querySelectorAll('#filters2 button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    render2(b.dataset.cat);
+  });
+</script>
+</body>
+</html>
