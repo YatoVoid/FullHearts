@@ -1,0 +1,14 @@
+{
+  "id": "FAKEVERSIONID",
+  "project_id": "AANobbMI",
+  "name": "Sodium 0.6.0",
+  "version_number": "mc1.21.1-0.6.0",
+  "game_versions": ["1.21.1"],
+  "loaders": ["fabric"],
+  "date_published": "2024-09-01T00:00:00Z",
+  "dependencies": [
+    { "version_id": null, "project_id": "P7dR8mSH", "file_name": null, "dependency_type": "required" },
+    { "version_id": null, "project_id": "YL57xq9U", "file_name": null, "dependency_type": "optional" }
+  ],
+  "files": [{ "url": "https://cdn.modrinth.com/data/AANobbMI/versions/x/sodium.jar", "primary": true }]
+}
