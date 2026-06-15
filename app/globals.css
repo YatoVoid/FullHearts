@@ -68,13 +68,22 @@ nav.links a:hover{color:var(--ink);}
 
 /* ---------- HERO ---------- */
 .hero{padding:74px 0 56px;text-align:center;position:relative;}
+/* soft grass-lit glow behind the hero, adds depth without clutter */
+.hero-glow{
+  position:absolute;top:-40px;left:50%;transform:translateX(-50%);
+  width:680px;max-width:90vw;height:320px;pointer-events:none;z-index:-1;
+  background:radial-gradient(60% 60% at 50% 40%, rgba(116,192,67,.16), transparent 70%);
+  filter:blur(8px);
+}
 .eyebrow{
   font-family:var(--pixel);font-size:10px;color:var(--grass);
   letter-spacing:2px;margin-bottom:26px;
 }
 .hearts{display:flex;gap:7px;justify-content:center;margin-bottom:30px;flex-wrap:wrap;}
-.hearts svg{width:30px;height:30px;animation:pop .5s ease both;}
+.hearts span{width:30px;height:30px;display:inline-flex;animation:pop .5s ease both, bob 3.2s ease-in-out infinite;}
+.hearts span svg{width:100%;height:100%;}
 @keyframes pop{from{transform:scale(0);opacity:0;}to{transform:scale(1);opacity:1;}}
+@keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
 .hero h1{
   font-family:var(--pixel);
   font-size:clamp(22px,4.6vw,46px);
@@ -99,8 +108,11 @@ nav.links a:hover{color:var(--ink);}
 .btn-ghost:active{transform:translateY(4px);box-shadow:0 1px 0 #0c0820;}
 
 /* XP-bar divider */
-.xpbar{margin:54px auto 0;max-width:620px;height:14px;background:#1a1330;border:2px solid #050308;position:relative;}
+.xpbar{margin:54px auto 0;max-width:620px;height:14px;background:#1a1330;border:2px solid #050308;position:relative;overflow:hidden;}
 .xpbar i{position:absolute;inset:0;width:78%;background:linear-gradient(var(--grass),var(--grass-dk));box-shadow:inset 0 -3px 0 rgba(0,0,0,.25);}
+/* fill the XP bar on load for a satisfying "level-up" reveal */
+.xpfill{animation:xpfill 1.4s cubic-bezier(.2,.8,.2,1) .3s both;}
+@keyframes xpfill{from{width:0;}to{width:78%;}}
 .xplabel{font-family:var(--pixel);font-size:8px;color:var(--gold);text-align:center;margin-top:12px;letter-spacing:1px;}
 
 /* ---------- STATS ---------- */
