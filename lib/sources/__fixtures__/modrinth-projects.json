@@ -1,0 +1,14 @@
+[
+  {
+    "id": "AANobbMI",
+    "slug": "sodium",
+    "title": "Sodium",
+    "description": "The fastest and most compatible rendering optimization mod for Minecraft.",
+    "categories": ["optimization"],
+    "downloads": 50000000,
+    "icon_url": "https://cdn.modrinth.com/data/AANobbMI/icon.png",
+    "game_versions": ["1.20.1", "1.21", "1.21.1"],
+    "loaders": ["fabric", "quilt", "neoforge"],
+    "versions": ["FAKEVERSIONID"]
+  }
+]
