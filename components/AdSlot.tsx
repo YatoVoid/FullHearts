@@ -2,23 +2,23 @@
 
 import { useEffect } from "react";
 
-// In-content, clearly-labeled ad. Renders NOTHING until NEXT_PUBLIC_ADSENSE_CLIENT
-// is set, so the experience is never interrupted before ads are live. When set,
-// it draws a single responsive AdSense unit in the normal document flow.
-const CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
+// In-content, clearly-labeled ad. Renders a manual unit only once BOTH a client
+// id and a slot id exist, so no empty boxes appear before ad units are created
+// in AdSense. (Auto ads still run from the script in layout.tsx meanwhile.)
+const CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT || "ca-pub-8767210732134186";
 
 export default function AdSlot({ slot }: { slot?: string }) {
   useEffect(() => {
-    if (!CLIENT) return;
+    if (!CLIENT || !slot) return;
     try {
       // @ts-expect-error adsbygoogle is injected by the AdSense script
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch {
       // AdSense not loaded yet / blocked — ignore.
     }
-  }, []);
+  }, [slot]);
 
-  if (!CLIENT) return null;
+  if (!CLIENT || !slot) return null;
 
   return (
     <div className="ad-slot">

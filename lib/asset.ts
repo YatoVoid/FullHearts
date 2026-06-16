@@ -1,8 +1,7 @@
-// On GitHub Pages project sites the app is served from /<repo>, so raw
-// references to files in /public must be prefixed. Set NEXT_PUBLIC_BASE_PATH=""
-// (empty) when moving to a root/custom domain. Unset defaults to "/FullHearts".
+// Served at the root of the custom domain (fullhearts.app), so no prefix. For a
+// GitHub Pages *project* site (no domain) set NEXT_PUBLIC_BASE_PATH="/FullHearts".
 const raw = process.env.NEXT_PUBLIC_BASE_PATH;
-export const BASE_PATH = raw === undefined ? "/FullHearts" : raw;
+export const BASE_PATH = raw === undefined ? "" : raw;
 
 /** Prefix a /public asset path with the deployment base path. */
 export const asset = (path: string): string => `${BASE_PATH}${path}`;

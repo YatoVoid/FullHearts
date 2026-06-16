@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import type { Mod } from "@/lib/sources/types";
 import type { QuizAnswers } from "@/lib/curation/questions";
-import { recommend, type RankedMod } from "@/lib/recommend/index";
+import type { Profile } from "@/lib/recommend/profile";
+import { recommend, recommendWithProfile, type RankedMod, type Recommendation } from "@/lib/recommend/index";
 import { pickLucky } from "@/lib/recommend/lucky";
+import { PROFILE_STORAGE_KEY } from "@/lib/recommend/intent";
 import { ensureCollection, addMod } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
 import { loadPool, isDegraded } from "@/lib/catalog/clientPool";
@@ -38,6 +41,15 @@ function loadAnswers(): QuizAnswers | null {
   }
 }
 
+function loadProfile(): Profile | null {
+  try {
+    const raw = sessionStorage.getItem(PROFILE_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as Profile) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function Results() {
   const [status, setStatus] = useState<Status>("loading");
   const [results, setResults] = useState<RankedMod[]>([]);
@@ -64,24 +76,30 @@ export default function Results() {
   function openAll() {
     for (const { mod } of results) {
       const url = mod.links.modrinth || mod.links.curseforge;
-      if (url) window.open(url, "_blank", "noopener");
+      if (url && /^https?:\/\//.test(url)) window.open(url, "_blank", "noopener");
     }
   }
 
   const [luckyLabel, setLuckyLabel] = useState("");
 
   useEffect(() => {
-    const isLucky = new URLSearchParams(window.location.search).get("lucky");
-    let answers: QuizAnswers | null;
-    if (isLucky) {
+    const params = new URLSearchParams(window.location.search);
+    // Pick the source of the recommendation: lucky theme, a parsed playstyle
+    // description, or the saved quiz answers.
+    let compute: ((mods: Mod[]) => Recommendation) | null = null;
+    if (params.get("lucky")) {
       const { theme, answers: luckyAnswers } = pickLucky();
-      answers = luckyAnswers;
       setLuckyLabel(theme.label);
+      compute = (mods) => recommend(luckyAnswers, mods);
+    } else if (params.get("mode") === "describe") {
+      const profile = loadProfile();
+      if (profile) compute = (mods) => recommendWithProfile(profile, mods);
     } else {
-      answers = loadAnswers();
+      const answers = loadAnswers();
+      if (answers && Object.keys(answers).length > 0) compute = (mods) => recommend(answers, mods);
     }
 
-    if (!answers || Object.keys(answers).length === 0) {
+    if (!compute) {
       setStatus("no-answers");
       return;
     }
@@ -91,7 +109,7 @@ export default function Results() {
       try {
         const mods = await loadPool();
         if (cancelled) return;
-        const rec = recommend(answers, mods);
+        const rec = compute(mods);
         setResults(rec.results);
         setSummary(rec.profileSummary);
         setDegraded(isDegraded(mods));

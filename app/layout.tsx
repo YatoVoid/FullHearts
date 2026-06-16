@@ -3,10 +3,8 @@ import { Inter, Press_Start_2P } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
-// GitHub Pages project URL by default. Override NEXT_PUBLIC_SITE_URL (and set
-// NEXT_PUBLIC_BASE_PATH="") if you later move to a custom domain.
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://yatovoid.github.io/FullHearts";
-const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://fullhearts.app";
+const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT || "ca-pub-8767210732134186";
 const GOOGLE_VERIFICATION = process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION;
 
 const inter = Inter({

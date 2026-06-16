@@ -88,7 +88,7 @@ export default function Collections() {
 
   function openAll(c: Collection) {
     for (const id of c.modIds) {
-      if (links[id]) window.open(links[id], "_blank", "noopener");
+      if (links[id] && /^https?:\/\//.test(links[id])) window.open(links[id], "_blank", "noopener");
     }
   }
 

@@ -19,6 +19,14 @@ export default function Footer() {
         <span className="name">FULL<b>HEARTS</b></span>
       </div>
       <p>A fan-made mod recommender. Always download from official sources like Modrinth or CurseForge.</p>
+      <a
+        className="bmc"
+        href="https://buymeacoffee.com/walilambere"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        ☕ Buy me a coffee
+      </a>
       <p className="note">
         Mod data from <a href="https://modrinth.com" target="_blank" rel="noopener noreferrer">Modrinth</a>.
         {" · "}<Link href="/privacy">Privacy</Link>

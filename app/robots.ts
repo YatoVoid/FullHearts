@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://yatovoid.github.io/FullHearts";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://fullhearts.app";
 
 export const dynamic = "force-static";
 

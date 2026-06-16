@@ -2,6 +2,7 @@ import Link from "next/link";
 import Footer from "@/components/Footer";
 import { QUESTIONS } from "@/lib/curation/questions";
 import { HEART_SRC } from "@/lib/asset";
+import DescribeBox from "@/components/DescribeBox";
 
 const HEART = (
   <img
@@ -62,6 +63,14 @@ export default function Home() {
           </div>
           <div className="xpbar"><i className="xpfill" /></div>
           <div className="xplabel">NO ACCOUNT · SAVED IN YOUR BROWSER</div>
+        </section>
+
+        <section className="wrap describe-section">
+          <div className="section-head">
+            <div className="eyebrow">OR JUST TELL ME</div>
+            <h2>Describe your dream game</h2>
+          </div>
+          <DescribeBox />
         </section>
 
         <section className="stats wrap">

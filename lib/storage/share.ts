@@ -27,13 +27,21 @@ export function encodeCollection(payload: SharePayload): string {
   return toBase64Url(JSON.stringify({ n: payload.name, m: payload.modIds }));
 }
 
+// Bounds so a hostile share link can't bloat storage or the UI. (Names/ids are
+// rendered as text — React escapes them — so this is DoS hardening, not XSS.)
+const MAX_NAME = 80;
+const MAX_MODS = 250;
+const MAX_ID = 128;
+
 /** Decode a share string back into a payload, or null if it's malformed. */
 export function decodeCollection(encoded: string): SharePayload | null {
   try {
     const obj = JSON.parse(fromBase64Url(encoded));
     if (!obj || typeof obj.n !== "string" || !Array.isArray(obj.m)) return null;
-    const modIds = obj.m.filter((x: unknown): x is string => typeof x === "string");
-    return { name: obj.n, modIds };
+    const modIds = obj.m
+      .filter((x: unknown): x is string => typeof x === "string" && x.length <= MAX_ID)
+      .slice(0, MAX_MODS);
+    return { name: obj.n.slice(0, MAX_NAME), modIds };
   } catch {
     return null;
   }

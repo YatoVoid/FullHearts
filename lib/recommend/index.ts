@@ -34,9 +34,7 @@ export function summarize(profile: Profile): string {
  * each carrying its generated reason. Required dependencies are surfaced
  * per-mod via `mod.dependencies` (shown, not auto-resolved, per spec).
  */
-export function recommend(answers: QuizAnswers, mods: Mod[]): Recommendation {
-  const profile = buildProfile(answers);
-
+export function recommendWithProfile(profile: Profile, mods: Mod[]): Recommendation {
   const results = mods
     .filter((m) => passesHardFilters(m, profile))
     .map((m) => ({ mod: m, score: score(m, profile) }))
@@ -46,4 +44,8 @@ export function recommend(answers: QuizAnswers, mods: Mod[]): Recommendation {
     .map(({ mod, score: s }) => ({ mod, score: s, reason: reason(mod, profile) }));
 
   return { results, profile, profileSummary: summarize(profile) };
+}
+
+export function recommend(answers: QuizAnswers, mods: Mod[]): Recommendation {
+  return recommendWithProfile(buildProfile(answers), mods);
 }

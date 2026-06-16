@@ -1,9 +1,9 @@
 /** @type {import('next').NextConfig} */
 
-// GitHub Pages project site: served from /<repo>. Set NEXT_PUBLIC_BASE_PATH=""
-// when you move to a root/custom domain. Unset defaults to "/FullHearts".
+// Served at the root of the custom domain (fullhearts.app). For a GitHub Pages
+// *project* site (no domain) set NEXT_PUBLIC_BASE_PATH="/FullHearts".
 const raw = process.env.NEXT_PUBLIC_BASE_PATH;
-const basePath = raw === undefined ? "/FullHearts" : raw;
+const basePath = raw === undefined ? "" : raw;
 
 const nextConfig = {
   // Static HTML export so the whole site can be served by GitHub Pages (no

@@ -27,3 +27,6 @@ Thumbs.db
 
 # Test / coverage
 coverage/
+
+# TypeScript incremental build cache
+tsconfig.tsbuildinfo
