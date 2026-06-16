@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
+import { HEART_SRC } from "@/lib/asset";
 
 export const metadata: Metadata = {
   title: "Privacy — Full Hearts",
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 
 const HEART = (
   <img
-    src="/heart.png"
+    src={HEART_SRC}
     alt=""
     aria-hidden="true"
     style={{ width: "100%", height: "100%", display: "block", imageRendering: "pixelated" }}

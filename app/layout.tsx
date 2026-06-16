@@ -3,8 +3,11 @@ import { Inter, Press_Start_2P } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://fullhearts.pro";
+// GitHub Pages project URL by default. Override NEXT_PUBLIC_SITE_URL (and set
+// NEXT_PUBLIC_BASE_PATH="") if you later move to a custom domain.
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://yatovoid.github.io/FullHearts";
 const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
+const GOOGLE_VERIFICATION = process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION;
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,14 +26,18 @@ export const metadata: Metadata = {
   title: "Full Hearts — Find your perfect Minecraft mods",
   description:
     "Answer a few questions and get a personalized, compatible set of Minecraft mods — with a clear reason for every pick. No account needed.",
+  alternates: { canonical: "/" },
+  robots: { index: true, follow: true },
   openGraph: {
     title: "Full Hearts — Find your perfect Minecraft mods",
     description:
       "Answer a few questions and get a personalized, compatible set of Minecraft mods — with a reason for every pick.",
+    url: "/",
     type: "website",
     siteName: "Full Hearts"
   },
-  twitter: { card: "summary_large_image" }
+  twitter: { card: "summary_large_image" },
+  ...(GOOGLE_VERIFICATION ? { verification: { google: GOOGLE_VERIFICATION } } : {})
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

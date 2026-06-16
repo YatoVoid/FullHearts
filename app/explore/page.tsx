@@ -7,6 +7,7 @@ import { TAGS, TAG_LABELS, type Tag } from "@/lib/curation/tags";
 import { ensureCollection, addMod } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
 import { loadPool } from "@/lib/catalog/clientPool";
+import { HEART_SRC } from "@/lib/asset";
 import Footer from "@/components/Footer";
 import AdSlot from "@/components/AdSlot";
 
@@ -17,7 +18,7 @@ const RARITY = ["r-epic", "r-rare", "r-uncommon", "r-common"];
 
 const HEART = (
   <img
-    src="/heart.png"
+    src={HEART_SRC}
     alt=""
     aria-hidden="true"
     style={{ width: "100%", height: "100%", display: "block", imageRendering: "pixelated" }}

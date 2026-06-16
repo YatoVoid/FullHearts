@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { QUESTIONS, type QuizAnswers } from "@/lib/curation/questions";
+import { HEART_SRC } from "@/lib/asset";
 
 const ANSWERS_KEY = "fullhearts:answers";
 const PROGRESS_KEY = "fullhearts:progress";
@@ -15,7 +16,7 @@ interface SavedProgress {
 
 const HEART = (
   <img
-    src="/heart.png"
+    src={HEART_SRC}
     alt=""
     aria-hidden="true"
     style={{ width: "100%", height: "100%", display: "block", imageRendering: "pixelated" }}

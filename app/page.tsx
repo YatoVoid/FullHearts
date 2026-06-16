@@ -1,19 +1,35 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import { QUESTIONS } from "@/lib/curation/questions";
+import { HEART_SRC } from "@/lib/asset";
 
 const HEART = (
   <img
-    src="/heart.png"
+    src={HEART_SRC}
     alt=""
     aria-hidden="true"
     style={{ width: "100%", height: "100%", display: "block", imageRendering: "pixelated" }}
   />
 );
 
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "Full Hearts",
+  applicationCategory: "GameApplication",
+  operatingSystem: "Web",
+  description:
+    "Answer a few questions and get a personalized, compatible set of Minecraft mods — with a reason for every pick.",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" }
+};
+
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+      />
       <header className="nav">
         <div className="nav-inner">
           <div className="brand">

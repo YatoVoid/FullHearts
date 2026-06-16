@@ -8,6 +8,7 @@ import { pickLucky } from "@/lib/recommend/lucky";
 import { ensureCollection, addMod } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
 import { loadPool, isDegraded } from "@/lib/catalog/clientPool";
+import { HEART_SRC } from "@/lib/asset";
 import Footer from "@/components/Footer";
 import ServerCta from "@/components/ServerCta";
 import AdSlot from "@/components/AdSlot";
@@ -19,7 +20,7 @@ const RARITY = ["r-epic", "r-rare", "r-uncommon"];
 
 const HEART = (
   <img
-    src="/heart.png"
+    src={HEART_SRC}
     alt=""
     aria-hidden="true"
     style={{ width: "100%", height: "100%", display: "block", imageRendering: "pixelated" }}

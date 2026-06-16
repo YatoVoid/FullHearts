@@ -16,10 +16,11 @@ import { encodeCollection, decodeCollection } from "@/lib/storage/share";
 import { toJSON, toText } from "@/lib/storage/export";
 import { hasLocalStorage } from "@/lib/storage/safe";
 import { markVisited } from "@/lib/storage/user";
+import { HEART_SRC } from "@/lib/asset";
 
 const HEART = (
   <img
-    src="/heart.png"
+    src={HEART_SRC}
     alt=""
     aria-hidden="true"
     style={{ width: "100%", height: "100%", display: "block", imageRendering: "pixelated" }}
