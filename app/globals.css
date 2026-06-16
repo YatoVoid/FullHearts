@@ -224,6 +224,32 @@ nav.links a:hover{color:var(--ink);}
 .tip-links a.alt{background:var(--slot);color:var(--ink);box-shadow:0 3px 0 #0a0718;}
 .tip-links a:active{transform:translateY(3px);}
 .degraded-note{text-align:center;color:var(--mute);font-size:13px;margin-bottom:24px;}
+.add-btn{
+  font-family:var(--pixel);font-size:8px;color:var(--void);background:var(--gold);
+  border:none;padding:9px 11px;cursor:pointer;box-shadow:0 3px 0 #b3b33a;
+  transition:transform .08s,box-shadow .08s;
+}
+.add-btn:active{transform:translateY(3px);box-shadow:0 0 0 #b3b33a;}
+.add-btn.added{background:var(--slot);color:var(--grass);box-shadow:0 3px 0 #0a0718;cursor:default;}
+.results-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px;}
+
+/* ---------- COLLECTIONS ---------- */
+.collections{max-width:900px;margin:0 auto;padding:40px 24px 90px;}
+.col-card{background:var(--tip-bg);border:2px solid #2a2046;box-shadow:0 0 0 2px var(--edge),0 8px 22px rgba(0,0,0,.45);padding:20px;margin-bottom:22px;}
+.col-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px;}
+.col-head h3{font-size:20px;font-weight:700;color:var(--gold);}
+.col-meta{font-size:12.5px;color:var(--mute);margin-bottom:14px;}
+.col-mods{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.col-mods li{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--slot);border:1px solid #2a2046;padding:10px 12px;font-size:14.5px;}
+.col-empty-mods{font-size:13px;color:var(--mute);margin-bottom:16px;font-style:italic;}
+.col-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.chip-btn{font-family:var(--pixel);font-size:8px;color:var(--ink);background:var(--slot);border:2px solid #2a2046;padding:9px 11px;cursor:pointer;box-shadow:0 3px 0 #0a0718;transition:transform .08s,box-shadow .08s,color .15s;}
+.chip-btn:hover{color:var(--grass);}
+.chip-btn:active{transform:translateY(3px);box-shadow:0 0 0 #0a0718;}
+.chip-btn.danger:hover{color:var(--pink);}
+.x-btn{background:none;border:none;color:var(--mute);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px;}
+.x-btn:hover{color:var(--pink);}
+.copied-note{color:var(--grass);font-size:12px;margin-top:10px;min-height:16px;}
 
 /* ---------- FOOTER ---------- */
 footer{border-top:2px solid #1c1530;padding:46px 0;text-align:center;background:var(--panel);}

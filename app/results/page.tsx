@@ -5,6 +5,10 @@ import Link from "next/link";
 import type { Mod } from "@/lib/sources/types";
 import type { QuizAnswers } from "@/lib/curation/questions";
 import { recommend, type RankedMod } from "@/lib/recommend/index";
+import { ensureCollection, addMod } from "@/lib/storage/collections";
+import { setLastCollectionId } from "@/lib/storage/user";
+
+const DEFAULT_COLLECTION = "My loadout";
 
 const ANSWERS_KEY = "fullhearts:answers";
 const RARITY = ["r-epic", "r-rare", "r-uncommon"];
@@ -33,6 +37,21 @@ export default function Results() {
   const [results, setResults] = useState<RankedMod[]>([]);
   const [summary, setSummary] = useState("");
   const [degraded, setDegraded] = useState(false);
+  const [added, setAdded] = useState<Set<string>>(new Set());
+
+  function addToCollection(modId: string) {
+    const collection = ensureCollection(DEFAULT_COLLECTION);
+    addMod(collection.id, modId);
+    setLastCollectionId(collection.id);
+    setAdded((prev) => new Set(prev).add(modId));
+  }
+
+  function addAll() {
+    const collection = ensureCollection(DEFAULT_COLLECTION);
+    for (const { mod } of results) addMod(collection.id, mod.id);
+    setLastCollectionId(collection.id);
+    setAdded(new Set(results.map((r) => r.mod.id)));
+  }
 
   useEffect(() => {
     const answers = loadAnswers();
@@ -79,6 +98,12 @@ export default function Results() {
         <div className="results-head">
           <div className="eyebrow">YOUR LOADOUT</div>
           {status === "ready" && <div className="summary">{summary}</div>}
+          {status === "ready" && (
+            <div className="results-actions">
+              <button type="button" className="btn-primary" onClick={addAll}>Save all to collection</button>
+              <Link className="btn-ghost" href="/collections">View collections</Link>
+            </div>
+          )}
         </div>
 
         {status === "loading" && <p className="results-state">Building your loadout…</p>}
@@ -127,6 +152,14 @@ export default function Results() {
                       </p>
                     )}
                     <div className="tip-links">
+                      <button
+                        type="button"
+                        className={`add-btn${added.has(mod.id) ? " added" : ""}`}
+                        onClick={() => addToCollection(mod.id)}
+                        disabled={added.has(mod.id)}
+                      >
+                        {added.has(mod.id) ? "Added ✓" : "+ Add"}
+                      </button>
                       {mod.links.modrinth && (
                         <a href={mod.links.modrinth} target="_blank" rel="noopener noreferrer">Modrinth</a>
                       )}
