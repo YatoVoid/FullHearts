@@ -1,7 +1,9 @@
-// Server-host referral CTA. Set NEXT_PUBLIC_HOST_REF to your affiliate link
-// (BisectHosting / Apex / Shockbyte, etc.). Falls back to a plain link so the
-// CTA still works before the program is set up.
-const HOST_REF = process.env.NEXT_PUBLIC_HOST_REF || "https://www.bisecthosting.com/";
+// Server-host referral CTA. Defaults to our Shockbyte referral ($4/sale);
+// override with NEXT_PUBLIC_HOST_REF to swap providers (e.g. BisectHosting
+// https://www.bisecthosting.com/clients/aff.php?aff=7330) without a code change.
+const HOST_REF =
+  process.env.NEXT_PUBLIC_HOST_REF ||
+  "https://panel.shockbyte.com/refer/883382c0cadf9f25e5aab31b74cc6463";
 
 /** Non-intrusive, contextual prompt to rent a server for multiplayer modpacks. */
 export default function ServerCta() {

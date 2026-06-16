@@ -3,7 +3,7 @@ import { Inter, Press_Start_2P } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://fullhearts.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://fullhearts.pro";
 const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
 
 const inter = Inter({
