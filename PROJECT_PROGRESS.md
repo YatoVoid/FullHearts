@@ -2,6 +2,11 @@
 
 A running log of milestones. Newest at top.
 
+## 2026-06-16 — Plan 4 complete: Live dependency display (post-MVP)
+- Modrinth adapter now fetches latest-version dependencies and resolves their project ids to display names (3 batched calls, fully graceful).
+- `/api/mods` surfaces real `dependencies`; results "Requires:" line populates (e.g. "Fabric API"). Verified live: 10/20 seed mods show resolved required deps.
+- Tests: 42 passing (added pickLatestVersionId + resolveDependencyNames). Build green.
+
 ## 2026-06-16 — Plan 3 complete: Collections, Export/Share & Polish (MVP slice done)
 - Storage layer (`lib/storage/`): safe localStorage w/ in-memory fallback, collections CRUD, URL-encoded share, JSON/text export, returning-user state — unit-tested.
 - Results: "+ Add" per card + "Save all to collection"; Collections nav link on landing.
