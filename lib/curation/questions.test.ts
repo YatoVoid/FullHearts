@@ -34,4 +34,20 @@ describe("quiz questions", () => {
     expect(flat.some((o) => o.maxMods != null)).toBe(true);
     expect(flat.some((o) => o.lowEnd != null)).toBe(true);
   });
+
+  it("offers a loadout size up to ~60", () => {
+    const maxes = QUESTIONS.flatMap((q) => q.options)
+      .map((o) => o.maxMods)
+      .filter((m): m is number => m != null);
+    expect(Math.max(...maxes)).toBe(60);
+  });
+
+  it("covers the new discovery tags in the quiz", () => {
+    const usedTags = new Set(
+      QUESTIONS.flatMap((q) => q.options).flatMap((o) => Object.keys(o.tags ?? {}))
+    );
+    for (const t of ["structures", "biome", "mobs", "food", "qol"]) {
+      expect(usedTags.has(t), `quiz never asks about ${t}`).toBe(true);
+    }
+  });
 });

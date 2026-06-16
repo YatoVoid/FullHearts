@@ -1,4 +1,5 @@
-import type { CuratedMod, Dependency, Enrichment, Loader, ModSource } from "@/lib/sources/types";
+import type { CuratedMod, Dependency, Enrichment, Loader, Mod, ModSource } from "@/lib/sources/types";
+import { tagsFromCategories, dominantTag, reasonForTag } from "@/lib/catalog/categoryMap";
 
 const API = "https://api.modrinth.com/v2";
 const KNOWN_LOADERS: Loader[] = ["fabric", "forge", "neoforge", "quilt"];
@@ -126,6 +127,82 @@ async function fetchDependencies(projects: MrProject[]): Promise<Map<string, Dep
     if (deps && deps.length > 0) out.set(slug, resolveDependencyNames(deps, nameById));
   }
   return out;
+}
+
+/** A raw Modrinth search hit (trimmed to the fields we use). */
+export interface MrSearchHit {
+  slug: string;
+  title: string;
+  description: string;
+  categories: string[]; // NOTE: Modrinth mixes loaders into this list
+  versions: string[];   // game versions
+  downloads?: number;
+  icon_url?: string;
+}
+
+/** Normalize a search hit into a fully-formed, auto-tagged Mod. */
+export function normalizeSearchHit(hit: MrSearchHit): Mod {
+  const loaders = hit.categories.filter((c): c is Loader =>
+    (KNOWN_LOADERS as string[]).includes(c)
+  );
+  const curatedTags = tagsFromCategories(hit.categories);
+  return {
+    id: hit.slug,
+    name: hit.title,
+    summary: hit.description,
+    curatedTags,
+    reasonTemplate: reasonForTag(dominantTag(curatedTags)),
+    modrinthSlug: hit.slug,
+    loaders,
+    gameVersions: hit.versions ?? [],
+    dependencies: [],
+    links: { modrinth: `https://modrinth.com/mod/${hit.slug}` },
+    downloads: hit.downloads,
+    iconUrl: hit.icon_url
+  };
+}
+
+interface MrSearchResponse {
+  hits: MrSearchHit[];
+}
+
+/** Categories we facet on to ensure Explore sections fill out. */
+const SEARCH_FACETS = [
+  null, // broad, most-downloaded
+  "optimization", "worldgen", "magic", "technology",
+  "adventure", "mobs", "food", "utility", "decoration"
+];
+
+async function searchOne(category: string | null, limit: number): Promise<MrSearchHit[]> {
+  const facets = category
+    ? `[["project_type:mod"],["categories:${category}"]]`
+    : `[["project_type:mod"]]`;
+  const path = `/search?limit=${limit}&index=downloads&facets=${encodeURIComponent(facets)}`;
+  try {
+    const res = await mrFetch<MrSearchResponse>(path);
+    return res.hits ?? [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Build a large, deduped pool of auto-tagged mods from Modrinth search.
+ * Runs facet searches in parallel; drops mods with no mappable tags (e.g.
+ * pure libraries). Returns [] on total failure so callers fall back to curated.
+ */
+export async function searchMods(limit = 60): Promise<Mod[]> {
+  const batches = await Promise.all(SEARCH_FACETS.map((c) => searchOne(c, limit)));
+  const bySlug = new Map<string, Mod>();
+  for (const hits of batches) {
+    for (const hit of hits) {
+      if (bySlug.has(hit.slug)) continue;
+      const mod = normalizeSearchHit(hit);
+      if (Object.keys(mod.curatedTags).length === 0) continue; // skip untaggable
+      bySlug.set(hit.slug, mod);
+    }
+  }
+  return Array.from(bySlug.values());
 }
 
 export const modrinthSource: ModSource = {

@@ -18,11 +18,12 @@ import { hasLocalStorage } from "@/lib/storage/safe";
 import { markVisited } from "@/lib/storage/user";
 
 const HEART = (
-  <svg viewBox="0 0 9 9" aria-hidden="true">
-    <path d="M1 0h2v1h1V0h2v1h1v1h1v3h-1v1h-1v1h-1v1H4v-1H3V6H2V5H1V4H0V1h1z" fill="#b3000c" />
-    <path d="M1 1h2v1h1v1h1V2h1V1h2v1H7v1h1v1H7v1H6v1H5v1H4V6H3V5H2V4H1V2H0V1h1z" fill="#fb1f2c" />
-    <path d="M1 1h1v1H1zM3 1h1v1H3z" fill="#ff8a90" />
-  </svg>
+  <img
+    src="/heart.png"
+    alt=""
+    aria-hidden="true"
+    style={{ width: "100%", height: "100%", display: "block", imageRendering: "pixelated" }}
+  />
 );
 
 function download(filename: string, content: string, type: string) {

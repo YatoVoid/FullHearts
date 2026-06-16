@@ -67,6 +67,29 @@ export const QUESTIONS: Question[] = [
     ]
   },
   {
+    id: "world",
+    kind: "multi",
+    prompt: "What should the world itself have more of?",
+    help: "Pick any that appeal — or skip.",
+    options: [
+      { id: "structures", label: "New structures & dungeons", tags: { structures: 1, exploration: 0.5 } },
+      { id: "biomes", label: "Richer biomes & terrain", tags: { biome: 1, exploration: 0.4 } },
+      { id: "creatures", label: "More creatures & mobs", tags: { mobs: 1, combat: 0.3 } },
+      { id: "world-skip", label: "No strong preference", tags: {} }
+    ]
+  },
+  {
+    id: "extras",
+    kind: "multi",
+    prompt: "Any nice-to-haves you'd like?",
+    help: "Pick any that appeal — or skip.",
+    options: [
+      { id: "food", label: "Cozy food & farming", tags: { food: 1, "low-grind": 0.4 } },
+      { id: "qol", label: "Quality-of-life tweaks (recipes, tooltips, info)", tags: { qol: 1, interface: 0.6 } },
+      { id: "extras-skip", label: "No strong preference", tags: {} }
+    ]
+  },
+  {
     id: "company",
     kind: "single",
     prompt: "Who do you play with?",
@@ -102,9 +125,10 @@ export const QUESTIONS: Question[] = [
     kind: "single",
     prompt: "How big a loadout do you want?",
     options: [
-      { id: "small", label: "Just the essentials (~5)", maxMods: 5 },
-      { id: "medium", label: "A solid set (~8)", maxMods: 8 },
-      { id: "large", label: "Load me up (~12)", maxMods: 12 }
+      { id: "small", label: "Just the essentials (~10)", maxMods: 10 },
+      { id: "medium", label: "A solid set (~25)", maxMods: 25 },
+      { id: "large", label: "A big haul (~40)", maxMods: 40 },
+      { id: "huge", label: "Load me all the way up (~60)", maxMods: 60 }
     ]
   },
   {

@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Mod } from "@/lib/sources/types";
 import type { QuizAnswers } from "@/lib/curation/questions";
 import { recommend, type RankedMod } from "@/lib/recommend/index";
+import { pickLucky } from "@/lib/recommend/lucky";
 import { ensureCollection, addMod } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
 
@@ -14,11 +15,12 @@ const ANSWERS_KEY = "fullhearts:answers";
 const RARITY = ["r-epic", "r-rare", "r-uncommon"];
 
 const HEART = (
-  <svg viewBox="0 0 9 9" aria-hidden="true">
-    <path d="M1 0h2v1h1V0h2v1h1v1h1v3h-1v1h-1v1h-1v1H4v-1H3V6H2V5H1V4H0V1h1z" fill="#b3000c" />
-    <path d="M1 1h2v1h1v1h1V2h1V1h2v1H7v1h1v1H7v1H6v1H5v1H4V6H3V5H2V4H1V2H0V1h1z" fill="#fb1f2c" />
-    <path d="M1 1h1v1H1zM3 1h1v1H3z" fill="#ff8a90" />
-  </svg>
+  <img
+    src="/heart.png"
+    alt=""
+    aria-hidden="true"
+    style={{ width: "100%", height: "100%", display: "block", imageRendering: "pixelated" }}
+  />
 );
 
 type Status = "loading" | "ready" | "empty" | "no-answers" | "error";
@@ -53,8 +55,19 @@ export default function Results() {
     setAdded(new Set(results.map((r) => r.mod.id)));
   }
 
+  const [luckyLabel, setLuckyLabel] = useState("");
+
   useEffect(() => {
-    const answers = loadAnswers();
+    const isLucky = new URLSearchParams(window.location.search).get("lucky");
+    let answers: QuizAnswers | null;
+    if (isLucky) {
+      const { theme, answers: luckyAnswers } = pickLucky();
+      answers = luckyAnswers;
+      setLuckyLabel(theme.label);
+    } else {
+      answers = loadAnswers();
+    }
+
     if (!answers || Object.keys(answers).length === 0) {
       setStatus("no-answers");
       return;
@@ -96,7 +109,7 @@ export default function Results() {
 
       <main className="results">
         <div className="results-head">
-          <div className="eyebrow">YOUR LOADOUT</div>
+          <div className="eyebrow">{luckyLabel ? `🎲 FEELING LUCKY · ${luckyLabel.toUpperCase()}` : "YOUR LOADOUT"}</div>
           {status === "ready" && <div className="summary">{summary}</div>}
           {status === "ready" && (
             <div className="results-actions">

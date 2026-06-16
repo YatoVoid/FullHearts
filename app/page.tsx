@@ -1,11 +1,12 @@
 import Link from "next/link";
 
 const HEART = (
-  <svg viewBox="0 0 9 9" aria-hidden="true">
-    <path d="M1 0h2v1h1V0h2v1h1v1h1v3h-1v1h-1v1h-1v1H4v-1H3V6H2V5H1V4H0V1h1z" fill="#b3000c" />
-    <path d="M1 1h2v1h1v1h1V2h1V1h2v1H7v1h1v1H7v1H6v1H5v1H4V6H3V5H2V4H1V2H0V1h1z" fill="#fb1f2c" />
-    <path d="M1 1h1v1H1zM3 1h1v1H3z" fill="#ff8a90" />
-  </svg>
+  <img
+    src="/heart.png"
+    alt=""
+    aria-hidden="true"
+    style={{ width: "100%", height: "100%", display: "block", imageRendering: "pixelated" }}
+  />
 );
 
 export default function Home() {
@@ -18,7 +19,7 @@ export default function Home() {
             <span className="name">FULL<b>HEARTS</b></span>
           </div>
           <nav className="links">
-            <a href="#how">How it works</a>
+            <Link href="/explore">Explore</Link>
             <Link href="/collections">Collections</Link>
           </nav>
           <Link className="nav-cta" href="/quiz">Start the quiz</Link>
@@ -38,7 +39,8 @@ export default function Home() {
           <p className="lede">Answer a few quick questions about how you like to play. We&apos;ll build you a compatible mod loadout — and tell you exactly why each one made the cut.</p>
           <div className="hero-actions">
             <Link className="btn-primary" href="/quiz">Build my loadout</Link>
-            <a className="btn-ghost" href="#how">How it works</a>
+            <Link className="btn-ghost" href="/explore">Browse mods</Link>
+            <Link className="btn-ghost" href="/results?lucky=1">🎲 Feeling lucky</Link>
           </div>
           <div className="xpbar"><i className="xpfill" /></div>
           <div className="xplabel">NO ACCOUNT · SAVED IN YOUR BROWSER</div>

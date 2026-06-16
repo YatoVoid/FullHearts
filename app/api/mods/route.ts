@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { CATALOG } from "@/lib/curation/catalog";
-import { enrichCatalog } from "@/lib/sources/index";
+import { buildPool } from "@/lib/catalog/pool";
 
 // Cache the enriched response at the edge for an hour; refresh in the background.
 export const revalidate = 3600;
 
 export async function GET() {
   try {
-    const mods = await enrichCatalog(CATALOG);
+    const mods = await buildPool();
     return NextResponse.json({ mods, count: mods.length });
   } catch {
     // Last-resort fallback: serve curated data with empty live fields.
