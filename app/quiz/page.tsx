@@ -1,11 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { QUESTIONS, type QuizAnswers } from "@/lib/curation/questions";
 
 const ANSWERS_KEY = "fullhearts:answers";
+const PROGRESS_KEY = "fullhearts:progress";
+
+interface SavedProgress {
+  step: number;
+  answers: QuizAnswers;
+}
 
 const HEART = (
   <img
@@ -20,6 +26,52 @@ export default function Quiz() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswers>({});
+  const [resume, setResume] = useState<SavedProgress | null>(null);
+  const hydrated = useRef(false);
+
+  // On mount, surface any in-progress quiz as a resume offer (don't auto-apply).
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(PROGRESS_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw) as SavedProgress;
+        if (saved && (saved.step > 0 || Object.keys(saved.answers ?? {}).length > 0)) {
+          setResume(saved);
+        }
+      }
+    } catch {
+      // sessionStorage unavailable — just start fresh.
+    }
+    hydrated.current = true;
+  }, []);
+
+  // Persist progress after hydration so a reload/return can resume.
+  useEffect(() => {
+    if (!hydrated.current) return;
+    try {
+      sessionStorage.setItem(PROGRESS_KEY, JSON.stringify({ step, answers }));
+    } catch {
+      // ignore — resume is best-effort.
+    }
+  }, [step, answers]);
+
+  const applyResume = useCallback(() => {
+    if (!resume) return;
+    setStep(resume.step);
+    setAnswers(resume.answers);
+    setResume(null);
+  }, [resume]);
+
+  const startOver = useCallback(() => {
+    setResume(null);
+    setStep(0);
+    setAnswers({});
+    try {
+      sessionStorage.removeItem(PROGRESS_KEY);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const question = QUESTIONS[step];
   const total = QUESTIONS.length;
@@ -47,6 +99,7 @@ export default function Quiz() {
     (final: QuizAnswers) => {
       try {
         sessionStorage.setItem(ANSWERS_KEY, JSON.stringify(final));
+        sessionStorage.removeItem(PROGRESS_KEY); // quiz is complete; nothing to resume
       } catch {
         // sessionStorage may be unavailable (private mode); results page falls back.
       }
@@ -68,6 +121,7 @@ export default function Quiz() {
   // Keyboard: number keys pick options, Enter advances, Backspace goes back.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
+      if (resume) return; // resume offer is up — let the user choose first
       if (e.key === "Enter") {
         next();
       } else if (e.key === "Backspace") {
@@ -82,7 +136,7 @@ export default function Quiz() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [next, back, toggle, question]);
+  }, [next, back, toggle, question, resume]);
 
   return (
     <>
@@ -97,6 +151,19 @@ export default function Quiz() {
       </header>
 
       <main className="quiz">
+        {resume && (
+          <div className="resume-banner" role="alert">
+            <div>
+              <strong>Pick up where you left off?</strong>
+              <span> You were on question {resume.step + 1} of {total}.</span>
+            </div>
+            <div className="resume-actions">
+              <button type="button" className="btn-primary" onClick={applyResume}>Resume</button>
+              <button type="button" className="btn-ghost" onClick={startOver}>Start over</button>
+            </div>
+          </div>
+        )}
+
         <div className="quiz-progress" aria-hidden="true"><i style={{ width: `${progress}%` }} /></div>
         <div className="quiz-step">QUESTION {step + 1} / {total}</div>
 

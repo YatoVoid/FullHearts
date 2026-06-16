@@ -43,7 +43,9 @@ export const QUESTIONS: Question[] = [
       { id: "automate", label: "Automating & engineering", tags: { automation: 1, tech: 0.8 } },
       { id: "fight", label: "Fighting tough enemies", tags: { combat: 1 } },
       { id: "magic", label: "Casting magic", tags: { magic: 1, rpg: 0.4 } },
-      { id: "story", label: "RPG & progression", tags: { rpg: 1 } }
+      { id: "story", label: "RPG & progression", tags: { rpg: 1 } },
+      { id: "farm", label: "Farming & cooking", tags: { food: 1, "low-grind": 0.5 } },
+      { id: "tinker", label: "Tinkering with quality-of-life tweaks", tags: { qol: 1, interface: 0.5 } }
     ]
   },
   {
@@ -51,9 +53,10 @@ export const QUESTIONS: Question[] = [
     kind: "single",
     prompt: "What matters most for how the game feels?",
     options: [
-      { id: "fps", label: "Smooth, high FPS", tags: { performance: 1, "low-end": 0.5 } },
-      { id: "pretty", label: "Beautiful visuals", tags: { visual: 1 } },
-      { id: "info", label: "Helpful on-screen info", tags: { interface: 1 } }
+      { id: "fps", label: "Smooth, high FPS above all", tags: { performance: 1, "low-end": 0.5 } },
+      { id: "pretty", label: "Beautiful visuals & lighting", tags: { visual: 1 } },
+      { id: "info", label: "Helpful on-screen info", tags: { interface: 1 } },
+      { id: "vanilla", label: "Keep it close to vanilla", tags: { qol: 0.5, "low-grind": 0.4 } }
     ]
   },
   {
@@ -63,7 +66,8 @@ export const QUESTIONS: Question[] = [
     options: [
       { id: "cozy", label: "Cozy and low-grind", tags: { "low-grind": 1, building: 0.3 } },
       { id: "balanced", label: "A balanced mix", tags: { exploration: 0.3, automation: 0.3 } },
-      { id: "challenge", label: "Hard and demanding", tags: { combat: 0.6, rpg: 0.4 } }
+      { id: "challenge", label: "Hard and demanding", tags: { combat: 0.6, rpg: 0.4 } },
+      { id: "grind", label: "Long-haul progression & grind", tags: { rpg: 0.6, automation: 0.5, tech: 0.4 } }
     ]
   },
   {
@@ -75,7 +79,21 @@ export const QUESTIONS: Question[] = [
       { id: "structures", label: "New structures & dungeons", tags: { structures: 1, exploration: 0.5 } },
       { id: "biomes", label: "Richer biomes & terrain", tags: { biome: 1, exploration: 0.4 } },
       { id: "creatures", label: "More creatures & mobs", tags: { mobs: 1, combat: 0.3 } },
+      { id: "bosses", label: "Bosses & big challenges", tags: { combat: 0.8, rpg: 0.5, structures: 0.4 } },
       { id: "world-skip", label: "No strong preference", tags: {} }
+    ]
+  },
+  {
+    id: "gear",
+    kind: "multi",
+    prompt: "How do you want to grow stronger?",
+    help: "Pick any that appeal — or skip.",
+    options: [
+      { id: "weapons", label: "New weapons & armor", tags: { combat: 1, rpg: 0.4 } },
+      { id: "skills", label: "Skills, classes & leveling", tags: { rpg: 1 } },
+      { id: "machines", label: "Machines & power systems", tags: { tech: 1, automation: 0.7 } },
+      { id: "spells", label: "Spellbooks & arcane gear", tags: { magic: 1, rpg: 0.3 } },
+      { id: "gear-skip", label: "No strong preference", tags: {} }
     ]
   },
   {
@@ -86,6 +104,8 @@ export const QUESTIONS: Question[] = [
     options: [
       { id: "food", label: "Cozy food & farming", tags: { food: 1, "low-grind": 0.4 } },
       { id: "qol", label: "Quality-of-life tweaks (recipes, tooltips, info)", tags: { qol: 1, interface: 0.6 } },
+      { id: "storage", label: "Better storage & inventory", tags: { qol: 1 } },
+      { id: "maps", label: "Maps & waypoints", tags: { interface: 1, exploration: 0.4 } },
       { id: "extras-skip", label: "No strong preference", tags: {} }
     ]
   },
@@ -95,7 +115,8 @@ export const QUESTIONS: Question[] = [
     prompt: "Who do you play with?",
     options: [
       { id: "solo", label: "Mostly solo", tags: {} },
-      { id: "friends", label: "With friends", tags: { coop: 1 } }
+      { id: "friends", label: "With friends", tags: { coop: 1 } },
+      { id: "server", label: "On a public/community server", tags: { coop: 1, interface: 0.3 } }
     ]
   },
   {

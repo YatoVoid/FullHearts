@@ -42,4 +42,14 @@ describe("mergePool", () => {
     const pool = mergePool([mod("a", "dup"), mod("b", "dup")], []);
     expect(pool).toHaveLength(1);
   });
+
+  it("drops a dynamic mod whose id collides with a curated id (different slug)", () => {
+    // Real case: curated Create has id "create"/slug "create-fabric"; Modrinth's
+    // own "create" project searches in as id "create"/slug "create".
+    const curated = [mod("create", "create-fabric")];
+    const dynamic = [mod("create", "create")];
+    const pool = mergePool(dynamic, curated);
+    expect(pool.filter((m) => m.id === "create")).toHaveLength(1);
+    expect(pool[0].modrinthSlug).toBe("create-fabric");
+  });
 });

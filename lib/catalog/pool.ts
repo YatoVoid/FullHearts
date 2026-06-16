@@ -10,19 +10,24 @@ import { searchMods } from "@/lib/sources/modrinth";
  * Dynamic-only and curated-only mods are both included; result is deduped.
  */
 export function mergePool(dynamic: Mod[], curated: Mod[]): Mod[] {
-  const curatedSlugs = new Set(
-    curated.map((m) => m.modrinthSlug).filter((s): s is string => Boolean(s))
-  );
-
-  // Curated first (they are the "hero" entries), then dynamic mods whose slug
-  // isn't already represented by a curated overlay.
+  // Curated first (they are the "hero" entries), then dynamic mods that don't
+  // collide with a curated entry by slug OR by id. The id guard matters because
+  // a curated mod's internal id can equal a *different* mod's slug (e.g. curated
+  // "create"/slug "create-fabric" vs Modrinth's "create" project) — deduping by
+  // slug alone would leak two mods sharing an id and break React keys downstream.
   const merged: Mod[] = [...curated];
-  const seenSlugs = new Set(curatedSlugs);
+  const seenSlugs = new Set<string>();
+  const seenIds = new Set<string>();
+  for (const m of curated) {
+    if (m.modrinthSlug) seenSlugs.add(m.modrinthSlug);
+    seenIds.add(m.id);
+  }
 
   for (const mod of dynamic) {
     const slug = mod.modrinthSlug ?? mod.id;
-    if (seenSlugs.has(slug)) continue;
+    if (seenSlugs.has(slug) || seenIds.has(mod.id)) continue;
     seenSlugs.add(slug);
+    seenIds.add(mod.id);
     merged.push(mod);
   }
   return merged;
