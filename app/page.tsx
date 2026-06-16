@@ -17,6 +17,10 @@ export default function Home() {
             <span className="heart" style={{ width: 26, height: 26, display: "inline-flex" }}>{HEART}</span>
             <span className="name">FULL<b>HEARTS</b></span>
           </div>
+          <nav className="links">
+            <a href="#how">How it works</a>
+            <Link href="/collections">Collections</Link>
+          </nav>
           <Link className="nav-cta" href="/quiz">Start the quiz</Link>
         </div>
       </header>

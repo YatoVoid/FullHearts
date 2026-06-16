@@ -2,6 +2,15 @@
 
 A running log of milestones. Newest at top.
 
+## 2026-06-16 — Plan 3 complete: Collections, Export/Share & Polish (MVP slice done)
+- Storage layer (`lib/storage/`): safe localStorage w/ in-memory fallback, collections CRUD, URL-encoded share, JSON/text export, returning-user state — unit-tested.
+- Results: "+ Add" per card + "Save all to collection"; Collections nav link on landing.
+- Collections page (`app/collections/page.tsx`): list, rename, duplicate, delete, remove mod, export JSON download, copy text, copy/import share link via URL hash.
+- Tests: 40 passing (added storage suites). Build green; all routes (/, /quiz, /results, /collections, /api/mods) smoke-tested 200.
+- **MVP "Core journey + collections" slice complete**: quiz → ranked reasons → collections → export/share.
+
+Next: post-MVP — wire per-version dependency display, catalog scale-up, richer CurseForge, deploy.
+
 ## 2026-06-15 — Plan 2 complete: Engine, Quiz & Results
 - Pure rule-based recommendation engine (`lib/recommend/`: profile, score, reason, index) — fully unit-tested.
 - Data-driven quiz (`lib/curation/questions.ts` + `app/quiz/page.tsx`): one question per screen, XP progress, Back, keyboard.
@@ -27,4 +36,4 @@ Next: Plan 2 — Engine, Quiz & Results.
 ## Status
 - [x] Plan 1 — Foundation & Data Layer
 - [x] Plan 2 — Engine, Quiz & Results
-- [ ] Plan 3 — Collections, Export/Share & Polish
+- [x] Plan 3 — Collections, Export/Share & Polish
