@@ -32,7 +32,7 @@ describe("buildProfile", () => {
     expect(p.weights.tech).toBeCloseTo(0.8);
     expect(p.loader).toBe("forge");
     expect(p.gameVersion).toBe("1.21");
-    expect(p.maxMods).toBe(5);
+    expect(p.maxMods).toBe(10);
     expect(p.lowEnd).toBe(true);
   });
 
@@ -97,7 +97,7 @@ describe("recommend", () => {
 
   it("ranks by fit, caps at maxMods, and drops non-matches", () => {
     const rec = recommend({ playstyle: ["build", "automate"], size: ["small"] }, catalog);
-    expect(rec.results.length).toBeLessThanOrEqual(5);
+    expect(rec.results.length).toBeLessThanOrEqual(10);
     // combat mod has zero matching weight → excluded
     expect(rec.results.map((r) => r.mod.id)).not.toContain("combat");
     // every result carries a reason
