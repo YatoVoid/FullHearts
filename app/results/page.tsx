@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import type { Mod } from "@/lib/sources/types";
 import type { QuizAnswers } from "@/lib/curation/questions";
 import { recommend, type RankedMod } from "@/lib/recommend/index";
 import { pickLucky } from "@/lib/recommend/lucky";
 import { ensureCollection, addMod } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
+import { loadPool, isDegraded } from "@/lib/catalog/clientPool";
 import Footer from "@/components/Footer";
 import ServerCta from "@/components/ServerCta";
 import AdSlot from "@/components/AdSlot";
@@ -58,6 +58,15 @@ export default function Results() {
     setAdded(new Set(results.map((r) => r.mod.id)));
   }
 
+  // Open every mod's page in a new tab. Browsers may ask to allow multiple
+  // popups the first time — that's expected for a deliberate "open all".
+  function openAll() {
+    for (const { mod } of results) {
+      const url = mod.links.modrinth || mod.links.curseforge;
+      if (url) window.open(url, "_blank", "noopener");
+    }
+  }
+
   const [luckyLabel, setLuckyLabel] = useState("");
 
   useEffect(() => {
@@ -79,14 +88,12 @@ export default function Results() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/mods");
-        if (!res.ok) throw new Error(`/api/mods ${res.status}`);
-        const data = (await res.json()) as { mods: Mod[]; degraded?: boolean };
+        const mods = await loadPool();
         if (cancelled) return;
-        const rec = recommend(answers, data.mods);
+        const rec = recommend(answers, mods);
         setResults(rec.results);
         setSummary(rec.profileSummary);
-        setDegraded(Boolean(data.degraded));
+        setDegraded(isDegraded(mods));
         setStatus(rec.results.length > 0 ? "ready" : "empty");
       } catch {
         if (!cancelled) setStatus("error");
@@ -117,6 +124,7 @@ export default function Results() {
           {status === "ready" && (
             <div className="results-actions">
               <button type="button" className="btn-primary" onClick={addAll}>Save all to collection</button>
+              <button type="button" className="btn-ghost" onClick={openAll}>Open all mod pages ({results.length})</button>
               <Link className="btn-ghost" href="/collections">View collections</Link>
             </div>
           )}

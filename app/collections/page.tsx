@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import type { Mod } from "@/lib/sources/types";
+import { loadPool } from "@/lib/catalog/clientPool";
 import {
   listCollections,
   createCollection,
@@ -39,6 +39,7 @@ function download(filename: string, content: string, type: string) {
 export default function Collections() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [names, setNames] = useState<Record<string, string>>({});
+  const [links, setLinks] = useState<Record<string, string>>({});
   const [degraded, setDegraded] = useState(false);
   const [note, setNote] = useState("");
 
@@ -62,16 +63,19 @@ export default function Collections() {
     refresh();
   }, [refresh]);
 
-  // Resolve mod ids to display names from the live catalog.
+  // Resolve mod ids to display names + links from the live catalog.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/mods");
-        if (!res.ok) return;
-        const data = (await res.json()) as { mods: Mod[] };
+        const mods = await loadPool();
         if (cancelled) return;
-        setNames(Object.fromEntries(data.mods.map((m) => [m.id, m.name])));
+        setNames(Object.fromEntries(mods.map((m) => [m.id, m.name])));
+        setLinks(Object.fromEntries(
+          mods
+            .map((m) => [m.id, m.links.modrinth || m.links.curseforge] as const)
+            .filter((e): e is [string, string] => Boolean(e[1]))
+        ));
       } catch {
         // names fall back to ids
       }
@@ -80,6 +84,12 @@ export default function Collections() {
       cancelled = true;
     };
   }, []);
+
+  function openAll(c: Collection) {
+    for (const id of c.modIds) {
+      if (links[id]) window.open(links[id], "_blank", "noopener");
+    }
+  }
 
   const flash = (msg: string) => {
     setNote(msg);
@@ -176,6 +186,9 @@ export default function Collections() {
               )}
 
               <div className="col-actions">
+                {c.modIds.length > 0 && (
+                  <button type="button" className="chip-btn" onClick={() => openAll(c)}>Open all mod pages</button>
+                )}
                 <button type="button" className="chip-btn" onClick={() => download(`${c.name}.json`, toJSON(c), "application/json")}>Export JSON</button>
                 <button type="button" className="chip-btn" onClick={() => copy(toText(c, names), "Copied text list to clipboard.")}>Copy text</button>
                 <button type="button" className="chip-btn" onClick={() => copy(shareUrl(c), "Copied share link to clipboard.")}>Copy share link</button>

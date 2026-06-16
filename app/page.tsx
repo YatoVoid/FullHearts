@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import { QUESTIONS } from "@/lib/curation/questions";
 
 const HEART = (
   <img
@@ -48,7 +49,7 @@ export default function Home() {
         </section>
 
         <section className="stats wrap">
-          <div className="stat"><div className="num">9</div><div className="lab">Quick questions</div></div>
+          <div className="stat"><div className="num">{QUESTIONS.length}</div><div className="lab">Quick questions</div></div>
           <div className="stat"><div className="num">0</div><div className="lab">Accounts required</div></div>
           <div className="stat"><div className="num">100%</div><div className="lab">Reasons explained</div></div>
         </section>

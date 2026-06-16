@@ -6,6 +6,7 @@ import type { Mod } from "@/lib/sources/types";
 import { TAGS, TAG_LABELS, type Tag } from "@/lib/curation/tags";
 import { ensureCollection, addMod } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
+import { loadPool } from "@/lib/catalog/clientPool";
 import Footer from "@/components/Footer";
 import AdSlot from "@/components/AdSlot";
 
@@ -53,11 +54,9 @@ export default function Explore() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/mods");
-        if (!res.ok) throw new Error(String(res.status));
-        const data = (await res.json()) as { mods: Mod[] };
+        const data = await loadPool();
         if (cancelled) return;
-        setMods(data.mods);
+        setMods(data);
         setStatus("ready");
       } catch {
         if (!cancelled) setStatus("error");
