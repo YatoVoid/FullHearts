@@ -12,6 +12,7 @@ interface MrProject {
   loaders: string[];
   downloads?: number;
   icon_url?: string;
+  versions?: string[]; // version ids, ordered oldest -> newest
 }
 
 interface MrDependency {
@@ -20,6 +21,7 @@ interface MrDependency {
 }
 
 interface MrVersion {
+  id: string;
   project_id: string;
   dependencies: MrDependency[];
 }
@@ -43,9 +45,23 @@ export function normalizeDependencies(v: MrVersion): Dependency[] {
     .filter((d) => d.project_id && (d.dependency_type === "required" || d.dependency_type === "optional"))
     .map((d) => ({
       id: d.project_id as string,
-      name: d.project_id as string, // resolved to a title in Plan 2
+      name: d.project_id as string, // resolved to a title by resolveDependencyNames
       required: d.dependency_type === "required"
     }));
+}
+
+/** The latest version id for a project, or undefined if it has none. */
+export function pickLatestVersionId(p: MrProject): string | undefined {
+  const versions = p.versions;
+  return versions && versions.length > 0 ? versions[versions.length - 1] : undefined;
+}
+
+/** Replace each dependency's `name` with a resolved title when available. */
+export function resolveDependencyNames(
+  deps: Dependency[],
+  nameById: Record<string, string>
+): Dependency[] {
+  return deps.map((d) => ({ ...d, name: nameById[d.id] ?? d.name }));
 }
 
 async function mrFetch<T>(path: string): Promise<T> {
@@ -57,6 +73,61 @@ async function mrFetch<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
+function idsParam(ids: string[]): string {
+  return encodeURIComponent(JSON.stringify(ids));
+}
+
+/**
+ * Fetch required/optional dependencies for the given projects, resolved to
+ * display names. Best-effort: returns an empty map on any failure so core
+ * enrichment is never blocked. Keyed by the project's Modrinth slug.
+ */
+async function fetchDependencies(projects: MrProject[]): Promise<Map<string, Dependency[]>> {
+  const out = new Map<string, Dependency[]>();
+
+  // slug -> latest version id
+  const versionIdBySlug = new Map<string, string>();
+  for (const p of projects) {
+    const vid = pickLatestVersionId(p);
+    if (vid) versionIdBySlug.set(p.slug, vid);
+  }
+  const versionIds = Array.from(versionIdBySlug.values());
+  if (versionIds.length === 0) return out;
+
+  let versions: MrVersion[];
+  try {
+    versions = await mrFetch<MrVersion[]>(`/versions?ids=${idsParam(versionIds)}`);
+  } catch {
+    return out;
+  }
+
+  // version id -> deps (project ids)
+  const depsByVersionId = new Map<string, Dependency[]>();
+  const allDepIds = new Set<string>();
+  for (const v of versions) {
+    const deps = normalizeDependencies(v);
+    depsByVersionId.set(v.id, deps);
+    for (const d of deps) allDepIds.add(d.id);
+  }
+
+  // resolve dependency project ids -> titles
+  let nameById: Record<string, string> = {};
+  if (allDepIds.size > 0) {
+    try {
+      const depProjects = await mrFetch<MrProject[]>(`/projects?ids=${idsParam(Array.from(allDepIds))}`);
+      nameById = Object.fromEntries(depProjects.map((p) => [p.id, p.title]));
+    } catch {
+      // leave names as ids
+    }
+  }
+
+  for (const [slug, vid] of versionIdBySlug) {
+    const deps = depsByVersionId.get(vid);
+    if (deps && deps.length > 0) out.set(slug, resolveDependencyNames(deps, nameById));
+  }
+  return out;
+}
+
 export const modrinthSource: ModSource = {
   name: "modrinth",
   async enrich(mods: CuratedMod[]): Promise<Map<string, Enrichment>> {
@@ -65,18 +136,22 @@ export const modrinthSource: ModSource = {
     if (withSlug.length === 0) return out;
 
     // Batch metadata: /v2/projects?ids=["slug1","slug2"] (slugs are accepted as ids)
-    const ids = JSON.stringify(withSlug.map((m) => m.modrinthSlug));
     let projects: MrProject[] = [];
     try {
-      projects = await mrFetch<MrProject[]>(`/projects?ids=${encodeURIComponent(ids)}`);
+      projects = await mrFetch<MrProject[]>(`/projects?ids=${idsParam(withSlug.map((m) => m.modrinthSlug as string))}`);
     } catch {
       return out; // graceful: caller falls back to curated-only
     }
 
+    const depsBySlug = await fetchDependencies(projects);
+
     const bySlug = new Map(projects.map((p) => [p.slug, p]));
     for (const m of withSlug) {
       const p = bySlug.get(m.modrinthSlug as string);
-      if (p) out.set(m.id, normalizeProject(p));
+      if (!p) continue;
+      const enrichment = normalizeProject(p);
+      enrichment.dependencies = depsBySlug.get(p.slug) ?? [];
+      out.set(m.id, enrichment);
     }
     return out;
   }
