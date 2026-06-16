@@ -157,7 +157,8 @@ nav.links a:hover{color:var(--ink);}
 }
 .tip:hover::after{left:130%;}
 .tip .row1{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:4px;}
-.tip .title{font-size:18px;font-weight:700;line-height:1.25;}
+.tip .title{font-size:18px;font-weight:700;line-height:1.25;flex:1;min-width:0;}
+.tip-icon{width:34px;height:34px;flex:none;border-radius:6px;image-rendering:auto;background:#0a0718;object-fit:cover;}
 .tip.r-common  .title{color:var(--ink);}
 .tip.r-uncommon .title{color:var(--gold);}
 .tip.r-rare    .title{color:var(--aqua);}
@@ -272,9 +273,29 @@ footer .brand{justify-content:center;margin-bottom:18px;}
 footer p{font-size:13px;color:var(--mute);max-width:520px;margin:0 auto 8px;}
 footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
 
+/* ---------- SERVER REFERRAL CTA ---------- */
+.server-cta{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;margin:36px 0 8px;padding:20px 22px;background:linear-gradient(var(--slot),#15102a);border:2px solid var(--grass);box-shadow:0 4px 0 #0a0718;}
+.server-cta-body{max-width:60ch;}
+.server-cta-body strong{display:block;font-family:var(--pixel);font-size:11px;color:var(--grass);margin-bottom:8px;}
+.server-cta-body span{font-size:14px;color:#c5bfd6;}
+.server-cta-actions{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.server-cta-disc{font-size:10.5px;color:#5f5874;}
+
+/* ---------- AD SLOT (in-flow, labeled) ---------- */
+.ad-slot{margin:34px auto 6px;max-width:970px;text-align:center;}
+.ad-label{display:block;font-size:10px;letter-spacing:1px;color:#5f5874;text-transform:uppercase;margin-bottom:6px;}
+
+/* ---------- PROSE (privacy etc.) ---------- */
+.prose{max-width:680px;margin:0 auto;padding:56px 24px 80px;}
+.prose h1{font-family:var(--pixel);font-size:clamp(16px,3vw,22px);margin-bottom:22px;text-shadow:0 3px 0 #000;}
+.prose h2{font-size:17px;color:var(--gold);margin:28px 0 8px;}
+.prose p{font-size:15px;color:#c5bfd6;line-height:1.6;margin-bottom:12px;}
+.prose a{color:var(--grass);}
+
 @media (max-width:640px){
   nav.links{display:none;}
   .hero{padding:48px 0 36px;}
+  .server-cta-actions{align-items:stretch;width:100%;}
 }
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important;scroll-behavior:auto;}

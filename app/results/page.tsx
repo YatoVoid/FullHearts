@@ -8,6 +8,9 @@ import { recommend, type RankedMod } from "@/lib/recommend/index";
 import { pickLucky } from "@/lib/recommend/lucky";
 import { ensureCollection, addMod } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
+import Footer from "@/components/Footer";
+import ServerCta from "@/components/ServerCta";
+import AdSlot from "@/components/AdSlot";
 
 const DEFAULT_COLLECTION = "My loadout";
 
@@ -151,6 +154,7 @@ export default function Results() {
                 return (
                   <article className={`tip ${rarity}`} key={mod.id}>
                     <div className="row1">
+                      {mod.iconUrl && <img className="tip-icon" src={mod.iconUrl} alt="" loading="lazy" />}
                       <span className="title">{mod.name}</span>
                     </div>
                     <div className="badges">
@@ -184,9 +188,13 @@ export default function Results() {
                 );
               })}
             </div>
+            <ServerCta />
+            <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_RESULTS} />
           </>
         )}
       </main>
+
+      <Footer />
     </>
   );
 }

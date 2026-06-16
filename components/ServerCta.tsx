@@ -1,0 +1,23 @@
+// Server-host referral CTA. Set NEXT_PUBLIC_HOST_REF to your affiliate link
+// (BisectHosting / Apex / Shockbyte, etc.). Falls back to a plain link so the
+// CTA still works before the program is set up.
+const HOST_REF = process.env.NEXT_PUBLIC_HOST_REF || "https://www.bisecthosting.com/";
+
+/** Non-intrusive, contextual prompt to rent a server for multiplayer modpacks. */
+export default function ServerCta() {
+  return (
+    <aside className="server-cta">
+      <div className="server-cta-body">
+        <strong>Playing with friends?</strong>
+        <span>Run your modpack on an always-on server — set up in minutes, no port-forwarding.</span>
+      </div>
+      <div className="server-cta-actions">
+        {/* rel="sponsored" per Google guidance for paid/affiliate links */}
+        <a className="btn-primary" href={HOST_REF} target="_blank" rel="noopener noreferrer sponsored">
+          Get a server
+        </a>
+        <span className="server-cta-disc">Affiliate link — supports Full Hearts at no cost to you.</span>
+      </div>
+    </aside>
+  );
+}

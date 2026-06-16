@@ -6,6 +6,8 @@ import type { Mod } from "@/lib/sources/types";
 import { TAGS, TAG_LABELS, type Tag } from "@/lib/curation/tags";
 import { ensureCollection, addMod } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
+import Footer from "@/components/Footer";
+import AdSlot from "@/components/AdSlot";
 
 const DEFAULT_COLLECTION = "My loadout";
 const MIN_SECTION = 4;     // a tag needs this many mods to get a section
@@ -119,7 +121,10 @@ export default function Explore() {
                 <div className="grid">
                   {section.mods.map((mod, i) => (
                     <article className={`tip ${RARITY[i % RARITY.length]}`} key={mod.id}>
-                      <div className="row1"><span className="title">{mod.name}</span></div>
+                      <div className="row1">
+                        {mod.iconUrl && <img className="tip-icon" src={mod.iconUrl} alt="" loading="lazy" />}
+                        <span className="title">{mod.name}</span>
+                      </div>
                       <div className="badges">
                         {mod.loaders.slice(0, 3).map((l) => <span className="badge" key={l}>{l.toUpperCase()}</span>)}
                       </div>
@@ -142,9 +147,12 @@ export default function Explore() {
                 </div>
               </section>
             ))}
+            <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_EXPLORE} />
           </>
         )}
       </main>
+
+      <Footer />
     </>
   );
 }

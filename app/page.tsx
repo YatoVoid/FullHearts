@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Footer from "@/components/Footer";
 
 const HEART = (
   <img
@@ -77,14 +78,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer>
-        <div className="brand" style={{ justifyContent: "center", marginBottom: 18 }}>
-          <span className="heart" style={{ width: 26, height: 26, display: "inline-flex" }}>{HEART}</span>
-          <span className="name">FULL<b>HEARTS</b></span>
-        </div>
-        <p>A fan-made mod recommender. Always download from official sources like Modrinth or CurseForge.</p>
-        <p className="note">Not affiliated with or endorsed by Mojang or Microsoft. Minecraft is a trademark of Mojang AB.</p>
-      </footer>
+      <Footer />
     </>
   );
 }
