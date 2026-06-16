@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Mod } from "@/lib/sources/types";
 import type { QuizAnswers } from "@/lib/curation/questions";
 import { recommend, type RankedMod } from "@/lib/recommend/index";
+import { pickLucky } from "@/lib/recommend/lucky";
 import { ensureCollection, addMod } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
 
@@ -53,8 +54,19 @@ export default function Results() {
     setAdded(new Set(results.map((r) => r.mod.id)));
   }
 
+  const [luckyLabel, setLuckyLabel] = useState("");
+
   useEffect(() => {
-    const answers = loadAnswers();
+    const isLucky = new URLSearchParams(window.location.search).get("lucky");
+    let answers: QuizAnswers | null;
+    if (isLucky) {
+      const { theme, answers: luckyAnswers } = pickLucky();
+      answers = luckyAnswers;
+      setLuckyLabel(theme.label);
+    } else {
+      answers = loadAnswers();
+    }
+
     if (!answers || Object.keys(answers).length === 0) {
       setStatus("no-answers");
       return;
@@ -96,7 +108,7 @@ export default function Results() {
 
       <main className="results">
         <div className="results-head">
-          <div className="eyebrow">YOUR LOADOUT</div>
+          <div className="eyebrow">{luckyLabel ? `🎲 FEELING LUCKY · ${luckyLabel.toUpperCase()}` : "YOUR LOADOUT"}</div>
           {status === "ready" && <div className="summary">{summary}</div>}
           {status === "ready" && (
             <div className="results-actions">

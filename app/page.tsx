@@ -18,7 +18,7 @@ export default function Home() {
             <span className="name">FULL<b>HEARTS</b></span>
           </div>
           <nav className="links">
-            <a href="#how">How it works</a>
+            <Link href="/explore">Explore</Link>
             <Link href="/collections">Collections</Link>
           </nav>
           <Link className="nav-cta" href="/quiz">Start the quiz</Link>
@@ -38,7 +38,8 @@ export default function Home() {
           <p className="lede">Answer a few quick questions about how you like to play. We&apos;ll build you a compatible mod loadout — and tell you exactly why each one made the cut.</p>
           <div className="hero-actions">
             <Link className="btn-primary" href="/quiz">Build my loadout</Link>
-            <a className="btn-ghost" href="#how">How it works</a>
+            <Link className="btn-ghost" href="/explore">Browse mods</Link>
+            <Link className="btn-ghost" href="/results?lucky=1">🎲 Feeling lucky</Link>
           </div>
           <div className="xpbar"><i className="xpfill" /></div>
           <div className="xplabel">NO ACCOUNT · SAVED IN YOUR BROWSER</div>
