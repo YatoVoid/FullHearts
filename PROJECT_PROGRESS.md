@@ -2,6 +2,14 @@
 
 A running log of milestones. Newest at top.
 
+## 2026-06-16 — Plan 5 complete: Discovery & Scale
+- Dynamic catalog: `/api/mods` now serves a large Modrinth-sourced pool (~390 mods, cached 1h), auto-tagged from Modrinth categories, with the curated 20 as an explainable overlay. Graceful fallback to curated-only.
+- New tags: structures, biome, mobs, food, qol (+ display labels). Quiz expanded (world-content & extras questions); loadout cap raised to ~60 (10/25/40/60).
+- Explore page (`/explore`): dynamically groups the pool into a section per tag (sorted by size), with jump-nav and add-to-collection.
+- "I'm Feeling Lucky": coherent random themes run through the engine → sensible loadout (`/results?lucky=1`); buttons on landing + explore.
+- Heart icon swapped from inline SVG to a proper Minecraft heart PNG across all pages.
+- Tests: 59 passing (added tags, categoryMap, search, pool, lucky). Build green; all 6 routes smoke-tested 200.
+
 ## 2026-06-16 — Plan 4 complete: Live dependency display (post-MVP)
 - Modrinth adapter now fetches latest-version dependencies and resolves their project ids to display names (3 batched calls, fully graceful).
 - `/api/mods` surfaces real `dependencies`; results "Requires:" line populates (e.g. "Fabric API"). Verified live: 10/20 seed mods show resolved required deps.
