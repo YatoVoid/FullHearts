@@ -3,10 +3,12 @@ import {
   normalizeProject,
   normalizeDependencies,
   pickLatestVersionId,
-  resolveDependencyNames
+  resolveDependencyNames,
+  normalizeSearchHit
 } from "@/lib/sources/modrinth";
 import projectsFixture from "@/lib/sources/__fixtures__/modrinth-projects.json";
 import versionFixture from "@/lib/sources/__fixtures__/modrinth-version.json";
+import searchFixture from "@/lib/sources/__fixtures__/modrinth-search.json";
 
 describe("modrinth normalization", () => {
   it("normalizes a project into Enrichment fields", () => {
@@ -44,5 +46,29 @@ describe("modrinth normalization", () => {
     const unresolved = resolved.find((d) => d.id === "YL57xq9U");
     expect(fabricApi?.name).toBe("Fabric API");
     expect(unresolved?.name).toBe("YL57xq9U"); // no mapping → keeps id
+  });
+});
+
+describe("search hit normalization", () => {
+  it("auto-tags a magic mod and splits loaders out of categories", () => {
+    const mod = normalizeSearchHit(searchFixture.hits[0]); // ars-nouveau
+    expect(mod.id).toBe("ars-nouveau");
+    expect(mod.curatedTags.magic).toBe(1);
+    expect(mod.loaders).toEqual(["fabric", "forge"]); // not "magic"
+    expect(mod.gameVersions).toContain("1.21");
+    expect(mod.links.modrinth).toBe("https://modrinth.com/mod/ars-nouveau");
+    expect(mod.reasonTemplate).toContain("magic");
+    expect(mod.dependencies).toEqual([]);
+  });
+
+  it("auto-tags a worldgen mod into biome/structures", () => {
+    const mod = normalizeSearchHit(searchFixture.hits[2]); // tectonic
+    expect(mod.curatedTags.biome).toBeGreaterThan(0);
+    expect(mod.curatedTags.structures).toBeGreaterThan(0);
+  });
+
+  it("a pure library hit yields no tags (so the pool can drop it)", () => {
+    const mod = normalizeSearchHit(searchFixture.hits[1]); // fabric-api
+    expect(Object.keys(mod.curatedTags).length).toBe(0);
   });
 });

@@ -1,0 +1,31 @@
+{
+  "hits": [
+    {
+      "slug": "ars-nouveau",
+      "title": "Ars Nouveau",
+      "description": "Build your own spells and automate them with magic.",
+      "categories": ["magic", "fabric", "forge"],
+      "versions": ["1.20.1", "1.21"],
+      "downloads": 12000000,
+      "icon_url": "https://cdn.modrinth.com/data/ARS/icon.png"
+    },
+    {
+      "slug": "fabric-api",
+      "title": "Fabric API",
+      "description": "Core library for Fabric mods.",
+      "categories": ["library", "fabric"],
+      "versions": ["1.21.1"],
+      "downloads": 90000000,
+      "icon_url": "https://cdn.modrinth.com/data/FAPI/icon.png"
+    },
+    {
+      "slug": "tectonic",
+      "title": "Tectonic",
+      "description": "Overhauls world generation with dramatic terrain.",
+      "categories": ["worldgen", "fabric", "quilt"],
+      "versions": ["1.21.1"],
+      "downloads": 3000000,
+      "icon_url": "https://cdn.modrinth.com/data/TECT/icon.png"
+    }
+  ]
+}
