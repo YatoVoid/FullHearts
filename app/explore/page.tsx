@@ -205,7 +205,7 @@ export default function Explore() {
                 </div>
               </section>
             ))}
-            <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_EXPLORE} />
+            <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_EXPLORE || "4157773400"} />
           </>
         )}
       </main>

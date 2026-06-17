@@ -225,7 +225,7 @@ export default function Results() {
               })}
             </div>
             <ServerCta />
-            <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_RESULTS} />
+            <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_RESULTS || "9713352410"} />
           </>
         )}
       </main>
