@@ -44,6 +44,71 @@ export function tagsFromCategories(categories: string[]): Partial<Record<Tag, nu
   return out;
 }
 
+/**
+ * High-precision keywords for deriving tags from a mod's NAME + DESCRIPTION,
+ * to enrich the coarse category tags. Kept distinct (4+ chars, low ambiguity)
+ * so passive scanning of free text doesn't produce junk tags.
+ */
+const TEXT_TAG_KEYWORDS: Partial<Record<Tag, string[]>> = {
+  performance: ["fps", "optimiz", "optimis", "frame rate", "framerate", "lag"],
+  visual: ["shader", "texture pack", "lighting", "ambient occlusion", "realistic"],
+  interface: ["minimap", "waypoint", "tooltip", "hud", "on-screen"],
+  building: ["furniture", "decorat", "building blocks", "construct"],
+  exploration: ["explor", "adventure", "discover"],
+  automation: ["automat", "conveyor", "assembler", "logistic", "pipes"],
+  tech: ["machine", "energy", "generator", "industrial", "reactor", "electric"],
+  magic: ["spell", "magic", "arcane", "wizard", "ritual", "sorcer", "enchant"],
+  combat: ["weapon", "boss fight", "bosses", "combat", "swords", "firearm"],
+  rpg: ["quest", "skill tree", "leveling", "level up", "classes", "rpg"],
+  coop: ["multiplayer", "server-side", "co-op"],
+  "low-grind": ["cozy", "casual", "relaxing", "wholesome"],
+  "low-end": ["low-end", "potato pc", "older hardware"],
+  structures: ["structure", "dungeon", "villages", "ruins", "towers", "temples"],
+  biome: ["biome", "terrain", "worldgen", "world generation"],
+  mobs: ["creatures", "monsters", "new mobs", "animals"],
+  food: ["cooking", "crops", "farming", "recipes", "cuisine", "meals"],
+  qol: ["quality of life", "inventory", "storage", "convenien", "backpack"]
+};
+
+/** Categories that mark a mod as non-content; skip text derivation for these. */
+const SKIP_TEXT_FOR = EXCLUDED_CATEGORIES;
+
+/** Derive supplementary tags from a mod's free text (name + description). */
+export function tagsFromText(text: string): Partial<Record<Tag, number>> {
+  const haystack = ` ${text.toLowerCase()} `;
+  const out: Partial<Record<Tag, number>> = {};
+  for (const [tag, words] of Object.entries(TEXT_TAG_KEYWORDS) as [Tag, string[]][]) {
+    let hits = 0;
+    for (const w of words) if (haystack.includes(w)) hits++;
+    // 1 hit -> 0.5 (meets the 0.5 section/match bar), more hits raise confidence.
+    if (hits > 0) out[tag] = Math.min(0.5 + 0.15 * (hits - 1), 0.85);
+  }
+  return out;
+}
+
+/** Merge two tag maps, keeping the strongest affinity per tag. */
+export function mergeTagMaps(
+  a: Partial<Record<Tag, number>>,
+  b: Partial<Record<Tag, number>>
+): Partial<Record<Tag, number>> {
+  const out: Partial<Record<Tag, number>> = { ...a };
+  for (const [tag, weight] of Object.entries(b) as [Tag, number][]) {
+    out[tag] = Math.max(out[tag] ?? 0, weight);
+  }
+  return out;
+}
+
+/**
+ * Tags for a search hit: Modrinth categories PLUS keywords mined from the
+ * name + description. Library/cursed mods get categories only (no text mining)
+ * so utility libraries don't sprout content tags.
+ */
+export function tagsForHit(categories: string[], text: string): Partial<Record<Tag, number>> {
+  const catTags = tagsFromCategories(categories);
+  if (categories.some((c) => SKIP_TEXT_FOR.has(c))) return catTags;
+  return mergeTagMaps(catTags, tagsFromText(text));
+}
+
 /** The highest-affinity tag, used to pick a reason phrase. */
 export function dominantTag(tags: Partial<Record<Tag, number>>): Tag | undefined {
   let best: Tag | undefined;

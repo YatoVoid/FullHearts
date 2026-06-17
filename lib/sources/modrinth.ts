@@ -1,5 +1,5 @@
 import type { CuratedMod, Dependency, Enrichment, Loader, Mod, ModSource } from "@/lib/sources/types";
-import { tagsFromCategories, dominantTag, reasonForTag } from "@/lib/catalog/categoryMap";
+import { tagsForHit, dominantTag, reasonForTag } from "@/lib/catalog/categoryMap";
 
 const API = "https://api.modrinth.com/v2";
 const KNOWN_LOADERS: Loader[] = ["fabric", "forge", "neoforge", "quilt"];
@@ -145,7 +145,7 @@ export function normalizeSearchHit(hit: MrSearchHit): Mod {
   const loaders = hit.categories.filter((c): c is Loader =>
     (KNOWN_LOADERS as string[]).includes(c)
   );
-  const curatedTags = tagsFromCategories(hit.categories);
+  const curatedTags = tagsForHit(hit.categories, `${hit.title} ${hit.description}`);
   return {
     id: hit.slug,
     name: hit.title,
