@@ -50,6 +50,7 @@ export default function Explore() {
   const [mods, setMods] = useState<Mod[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [added, setAdded] = useState<Set<string>>(new Set());
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -68,12 +69,46 @@ export default function Explore() {
 
   const sections = useMemo(() => buildSections(mods), [mods]);
 
+  const term = query.trim().toLowerCase();
+  const matches = useMemo(() => {
+    if (!term) return null;
+    return mods
+      .filter((m) => m.name.toLowerCase().includes(term) || (m.summary ?? "").toLowerCase().includes(term))
+      .sort((a, b) => (b.downloads ?? 0) - (a.downloads ?? 0));
+  }, [term, mods]);
+
   function add(modId: string) {
     const collection = ensureCollection(DEFAULT_COLLECTION);
     addMod(collection.id, modId);
     setLastCollectionId(collection.id);
     setAdded((prev) => new Set(prev).add(modId));
   }
+
+  const card = (mod: Mod, i: number) => (
+    <article className={`tip ${RARITY[i % RARITY.length]}`} key={mod.id}>
+      <div className="row1">
+        {mod.iconUrl && <img className="tip-icon" src={mod.iconUrl} alt="" loading="lazy" />}
+        <span className="title">{mod.name}</span>
+      </div>
+      <div className="badges">
+        {mod.loaders.slice(0, 3).map((l) => <span className="badge" key={l}>{l.toUpperCase()}</span>)}
+      </div>
+      <p className="desc">{mod.summary}</p>
+      <div className="tip-links">
+        <button
+          type="button"
+          className={`add-btn${added.has(mod.id) ? " added" : ""}`}
+          onClick={() => add(mod.id)}
+          disabled={added.has(mod.id)}
+        >
+          {added.has(mod.id) ? "Added ✓" : "+ Add"}
+        </button>
+        {mod.links.modrinth && (
+          <a href={mod.links.modrinth} target="_blank" rel="noopener noreferrer">Modrinth</a>
+        )}
+      </div>
+    </article>
+  );
 
   return (
     <>
@@ -101,10 +136,40 @@ export default function Explore() {
           <Link className="btn-primary" href="/results?lucky=1">🎲 I&apos;m feeling lucky</Link>
         </div>
 
+        {status === "ready" && (
+          <div className="explore-search">
+            <input
+              type="search"
+              className="explore-search-input"
+              placeholder="Search mods by name or description…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              aria-label="Search mods"
+            />
+            {query && (
+              <button type="button" className="explore-search-clear" onClick={() => setQuery("")} aria-label="Clear search">×</button>
+            )}
+          </div>
+        )}
+
         {status === "loading" && <p className="results-state">Loading the library…</p>}
         {status === "error" && <p className="results-state">Couldn&apos;t load the library. Please refresh.</p>}
 
-        {status === "ready" && (
+        {status === "ready" && matches && (
+          <>
+            <div className="row-head">
+              <h2>Search results</h2>
+              <span className="count">{matches.length} match{matches.length === 1 ? "" : "es"}</span>
+            </div>
+            {matches.length === 0 ? (
+              <p className="results-state">No mods match “{query}”. Try a different word.</p>
+            ) : (
+              <div className="grid">{matches.map((mod, i) => card(mod, i))}</div>
+            )}
+          </>
+        )}
+
+        {status === "ready" && !matches && (
           <>
             <nav className="tag-nav" aria-label="Jump to a category">
               {sections.map((s) => (
@@ -119,31 +184,7 @@ export default function Explore() {
                   <span className="count">{section.total} mods</span>
                 </div>
                 <div className="grid">
-                  {section.mods.map((mod, i) => (
-                    <article className={`tip ${RARITY[i % RARITY.length]}`} key={mod.id}>
-                      <div className="row1">
-                        {mod.iconUrl && <img className="tip-icon" src={mod.iconUrl} alt="" loading="lazy" />}
-                        <span className="title">{mod.name}</span>
-                      </div>
-                      <div className="badges">
-                        {mod.loaders.slice(0, 3).map((l) => <span className="badge" key={l}>{l.toUpperCase()}</span>)}
-                      </div>
-                      <p className="desc">{mod.summary}</p>
-                      <div className="tip-links">
-                        <button
-                          type="button"
-                          className={`add-btn${added.has(mod.id) ? " added" : ""}`}
-                          onClick={() => add(mod.id)}
-                          disabled={added.has(mod.id)}
-                        >
-                          {added.has(mod.id) ? "Added ✓" : "+ Add"}
-                        </button>
-                        {mod.links.modrinth && (
-                          <a href={mod.links.modrinth} target="_blank" rel="noopener noreferrer">Modrinth</a>
-                        )}
-                      </div>
-                    </article>
-                  ))}
+                  {section.mods.map((mod, i) => card(mod, i))}
                 </div>
               </section>
             ))}

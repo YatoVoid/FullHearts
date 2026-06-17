@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { converse, PROFILE_STORAGE_KEY, type ConversationTurn } from "@/lib/recommend/intent";
+import { converse, QUERY_STORAGE_KEY, type ConversationTurn } from "@/lib/recommend/intent";
 
 // Natural-language entry point. Feels like a smart assistant but is 100% local:
 // converse() classifies the message and parseIntent() builds a real Profile that
@@ -33,25 +33,28 @@ export default function DescribeBox() {
   }, [text]);
 
   function generate() {
-    const result = turn?.intent ?? converse(text).intent;
-    if (!result) {
-      setTurn(converse(text)); // nudge the user with a "tell me more" reply
+    const current = turn ?? converse(text);
+    if (!current.canGenerate) {
+      setTurn(current); // nudge the user with a "tell me more" reply
       return;
     }
     try {
-      sessionStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(result.profile));
+      // Store the raw text; /results parses + lexically searches it so it can
+      // match mod descriptions, not just tags.
+      sessionStorage.setItem(QUERY_STORAGE_KEY, text.trim());
     } catch {
       // sessionStorage unavailable — results page falls back to the quiz.
     }
     router.push("/results?mode=describe");
   }
 
-  const canGenerate = Boolean(turn?.intent);
+  const canGenerate = Boolean(turn?.canGenerate);
 
   return (
     <div className="describe">
       <label className="describe-label" htmlFor="describe-input">
         Describe your ideal Minecraft gameplay
+        <span className="beta-badge">AI · BETA</span>
       </label>
       <textarea
         id="describe-input"
@@ -69,6 +72,7 @@ export default function DescribeBox() {
       <button type="button" className="btn-primary" onClick={generate} disabled={!canGenerate}>
         Generate my mod setup
       </button>
+      <p className="describe-note">The assistant is in beta and still learning — results improve as the mod library grows.</p>
     </div>
   );
 }

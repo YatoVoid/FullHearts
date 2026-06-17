@@ -44,8 +44,12 @@ describe("converse", () => {
     expect(turn.intent?.matched).toContain("magic");
   });
 
+  it("treats a lone unknown word as a free-text search", () => {
+    expect(converse("dragons").kind).toBe("search");
+  });
+
   it("asks for more when nothing is detectable", () => {
-    expect(converse("asdfghjkl").kind).toBe("unclear");
+    expect(converse("the of and for").kind).toBe("unclear");
   });
 
   it("is stable: same input yields the same reply", () => {

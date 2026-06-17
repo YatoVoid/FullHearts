@@ -294,6 +294,31 @@ footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
 .describe-typing i:nth-child(3){animation-delay:.4s;}
 @keyframes blink{0%,100%{opacity:.2;}50%{opacity:1;}}
 
+.beta-badge{display:inline-block;margin-left:10px;font-size:8px;letter-spacing:.5px;color:var(--void);background:var(--aqua);padding:3px 6px;vertical-align:middle;}
+.describe-note{margin-top:12px;font-size:11.5px;color:#5f5874;}
+
+/* ---------- EXPLORE SEARCH ---------- */
+.explore-search{position:relative;max-width:560px;margin:0 auto 30px;}
+.explore-search-input{width:100%;background:var(--slot);border:2px solid #2a2046;color:var(--ink);font-size:15px;padding:13px 40px 13px 16px;box-shadow:inset 0 2px 0 #0a0718;}
+.explore-search-input:focus{outline:none;border-color:var(--grass);}
+.explore-search-input::placeholder{color:#6f6789;}
+.explore-search-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:28px;height:28px;background:none;border:none;color:var(--mute);font-size:22px;cursor:pointer;line-height:1;}
+.explore-search-clear:hover{color:var(--ink);}
+
+/* ---------- INSTALL GUIDE ---------- */
+.install{max-width:760px;margin:0 auto;padding:48px 24px 80px;}
+.steps{list-style:none;counter-reset:none;display:flex;flex-direction:column;gap:22px;margin:34px 0 30px;}
+.step{background:var(--slot);border:2px solid #2a2046;box-shadow:0 4px 0 #0a0718;padding:20px 22px;}
+.step-body{display:flex;gap:16px;align-items:flex-start;}
+.step-num{flex:none;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-family:var(--pixel);font-size:12px;color:var(--void);background:var(--grass);box-shadow:0 3px 0 var(--grass-dk);}
+.step h3{font-size:17px;color:var(--gold);margin-bottom:6px;}
+.step p{font-size:14.5px;color:#c5bfd6;line-height:1.55;}
+.step p a{color:var(--grass);}
+.step code{background:#0a0718;padding:1px 6px;font-size:13px;color:var(--aqua);}
+.step-img{display:block;width:100%;margin-top:16px;border:2px solid #0a0718;border-radius:4px;}
+.install-cta{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:30px 0 16px;}
+.install-note{text-align:center;font-size:12px;color:#5f5874;max-width:560px;margin:0 auto;}
+
 /* ---------- BUY ME A COFFEE ---------- */
 .bmc{display:inline-block;margin-top:16px;font-family:var(--pixel);font-size:8px;color:var(--void);background:var(--gold);padding:11px 16px;text-decoration:none;box-shadow:0 3px 0 #9a7a1e;}
 .bmc:active{transform:translateY(3px);box-shadow:0 0 0 #9a7a1e;}

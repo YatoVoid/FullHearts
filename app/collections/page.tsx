@@ -144,6 +144,10 @@ export default function Collections() {
           <h2>Saved loadouts</h2>
         </div>
 
+        <div className="lucky-bar">
+          <Link className="btn-ghost" href="/install">📦 How to install a whole loadout at once →</Link>
+        </div>
+
         {degraded && (
           <p className="degraded-note">Private browsing: collections are kept only for this session.</p>
         )}

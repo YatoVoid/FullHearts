@@ -4,10 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Mod } from "@/lib/sources/types";
 import type { QuizAnswers } from "@/lib/curation/questions";
-import type { Profile } from "@/lib/recommend/profile";
-import { recommend, recommendWithProfile, type RankedMod, type Recommendation } from "@/lib/recommend/index";
+import { recommend, recommendFromQuery, type RankedMod, type Recommendation } from "@/lib/recommend/index";
 import { pickLucky } from "@/lib/recommend/lucky";
-import { PROFILE_STORAGE_KEY } from "@/lib/recommend/intent";
+import { QUERY_STORAGE_KEY } from "@/lib/recommend/intent";
 import { ensureCollection, addMod } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
 import { loadPool, isDegraded } from "@/lib/catalog/clientPool";
@@ -41,10 +40,9 @@ function loadAnswers(): QuizAnswers | null {
   }
 }
 
-function loadProfile(): Profile | null {
+function loadQuery(): string | null {
   try {
-    const raw = sessionStorage.getItem(PROFILE_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Profile) : null;
+    return sessionStorage.getItem(QUERY_STORAGE_KEY);
   } catch {
     return null;
   }
@@ -81,6 +79,7 @@ export default function Results() {
   }
 
   const [luckyLabel, setLuckyLabel] = useState("");
+  const [describeQuery, setDescribeQuery] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -92,8 +91,11 @@ export default function Results() {
       setLuckyLabel(theme.label);
       compute = (mods) => recommend(luckyAnswers, mods);
     } else if (params.get("mode") === "describe") {
-      const profile = loadProfile();
-      if (profile) compute = (mods) => recommendWithProfile(profile, mods);
+      const query = loadQuery();
+      if (query) {
+        setDescribeQuery(query);
+        compute = (mods) => recommendFromQuery(query, mods);
+      }
     } else {
       const answers = loadAnswers();
       if (answers && Object.keys(answers).length > 0) compute = (mods) => recommend(answers, mods);
@@ -138,12 +140,19 @@ export default function Results() {
 
       <main className="results">
         <div className="results-head">
-          <div className="eyebrow">{luckyLabel ? `🎲 FEELING LUCKY · ${luckyLabel.toUpperCase()}` : "YOUR LOADOUT"}</div>
+          <div className="eyebrow">
+            {luckyLabel
+              ? `🎲 FEELING LUCKY · ${luckyLabel.toUpperCase()}`
+              : describeQuery
+              ? `🔎 “${describeQuery.toUpperCase()}” · AI BETA`
+              : "YOUR LOADOUT"}
+          </div>
           {status === "ready" && <div className="summary">{summary}</div>}
           {status === "ready" && (
             <div className="results-actions">
               <button type="button" className="btn-primary" onClick={addAll}>Save all to collection</button>
               <button type="button" className="btn-ghost" onClick={openAll}>Open all mod pages ({results.length})</button>
+              <Link className="btn-ghost" href="/install">📦 Install all at once</Link>
               <Link className="btn-ghost" href="/collections">View collections</Link>
             </div>
           )}

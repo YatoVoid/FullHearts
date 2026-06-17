@@ -1,6 +1,7 @@
 import type { Tag } from "@/lib/curation/tags";
 import type { Loader } from "@/lib/sources/types";
 import { PROFILE_DEFAULTS, type Profile } from "@/lib/recommend/profile";
+import { tokenize } from "@/lib/recommend/query";
 
 /**
  * A deterministic "feels like AI" playstyle parser. No model, no API, no key —
@@ -18,7 +19,7 @@ const TAG_KEYWORDS: Record<Tag, string[]> = {
   building: ["build", "decorat", "furniture", "construct", "create base", "creative"],
   exploration: ["explor", "adventure", "travel", "discover", "journey", "roam", "wander"],
   automation: ["automat", "factory", "logistic", "conveyor", "assembly"],
-  tech: ["tech", "machine", "engineer", "industr", "redstone", "power", "energy", "mechani"],
+  tech: ["tech", "machine", "engineer", "industr", "redstone", "power", "energy", "electric", "solar", "nuclear", "reactor", "generator", "mechani"],
   magic: ["magic", "spell", "wizard", "arcane", "mana", "enchant", "sorcer", "mystic"],
   combat: ["combat", "fight", "weapon", "boss", "battle", "pvp", "war", "sword", "slay", "kill"],
   rpg: ["rpg", "quest", "level up", "leveling", "skill tree", "class", "progress", "story", "loot", "dungeon crawl"],
@@ -103,7 +104,7 @@ export function parseIntent(raw: string): ParsedIntent {
 
 // ----- Conversational layer (canned, varied — "feels smart") -----
 
-export type ReplyKind = "greeting" | "question" | "intent" | "unclear";
+export type ReplyKind = "greeting" | "question" | "intent" | "search" | "unclear";
 
 const GREETINGS = [
   "Hey! 👋 Tell me how you like to play and I'll build you a loadout — try \"cozy builder who hates grinding\".",
@@ -147,7 +148,7 @@ const TAG_PHRASES: Record<Tag, string> = {
   qol: "quality-of-life upgrades"
 };
 
-function pick(arr: string[], seed: string): string {
+function pick<T>(arr: T[], seed: string): T {
   // Stable per input so the same message doesn't flicker between replies.
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
@@ -166,9 +167,17 @@ function describeMatched(matched: Tag[], lowEnd: boolean): string {
 export interface ConversationTurn {
   kind: ReplyKind;
   reply: string;
-  /** Present only when we extracted a usable playstyle. */
+  /** Present only when we extracted a usable playstyle (tag-based). */
   intent?: ParsedIntent;
+  /** True when there's something to search for (tags OR free-text terms). */
+  canGenerate?: boolean;
 }
+
+const SEARCH_OPENERS = [
+  (q: string) => `On it — scanning mod names & descriptions for “${q}”. 🔎`,
+  (q: string) => `Searching the catalog for “${q}”… I read descriptions too, not just tags.`,
+  (q: string) => `Hunting down “${q}” across the mod library. Hit the button below.`
+];
 
 const GREETING_RE = /^\s*(hi|hii+|hey+|hello+|yo+|sup|hiya|howdy|good (morning|afternoon|evening)|greetings|heya)\b/i;
 const QUESTION_RE = /^\s*(what|how|who|why|which|when|where|can you|do you|are you|is this|will you|does)\b|\?\s*$/i;
@@ -180,25 +189,39 @@ const QUESTION_RE = /^\s*(what|how|who|why|which|when|where|can you|do you|are y
 export function converse(raw: string): ConversationTurn {
   const trimmed = raw.trim();
   const intent = parseIntent(trimmed);
-  const hasIntent = intent.matched.length > 0 || intent.profile.lowEnd;
+  const terms = tokenize(trimmed);
+  const hasTags = intent.matched.length > 0 || intent.profile.lowEnd;
 
-  if (hasIntent) {
+  // A greeting with no real concept attached.
+  if (!hasTags && terms.length === 0 && GREETING_RE.test(trimmed) && trimmed.length < 40) {
+    return { kind: "greeting", reply: pick(GREETINGS, trimmed) };
+  }
+
+  // Strong tag intent — confident playstyle reply.
+  if (hasTags) {
     const clause = describeMatched(intent.matched, intent.profile.lowEnd);
     const openers = [
       `Got it — sounds like you're into ${clause}. I'll lean your loadout that way. 👇`,
       `Nice. ${clause.charAt(0).toUpperCase() + clause.slice(1)} it is — hit the button and I'll assemble it.`,
       `Love it. I'm reading ${clause}. Ready when you are.`
     ];
-    return { kind: "intent", reply: pick(openers, trimmed), intent };
+    return { kind: "intent", reply: pick(openers, trimmed), intent, canGenerate: true };
   }
 
-  if (GREETING_RE.test(trimmed) && trimmed.length < 40) {
-    return { kind: "greeting", reply: pick(GREETINGS, trimmed) };
-  }
-  if (QUESTION_RE.test(trimmed)) {
+  // A plain question with no concept to search.
+  if (terms.length === 0 && QUESTION_RE.test(trimmed)) {
     return { kind: "question", reply: pick(QUESTION_REPLIES, trimmed) };
   }
+
+  // Free-text search: no tag matched, but there are real words to look up in
+  // mod names/descriptions (e.g. "solar panels", "guns", "dragons").
+  if (terms.length > 0) {
+    const q = terms.slice(0, 4).join(" ");
+    return { kind: "search", reply: pick(SEARCH_OPENERS, trimmed)(q), intent, canGenerate: true };
+  }
+
   return { kind: "unclear", reply: pick(UNCLEAR_REPLIES, trimmed) };
 }
 
 export const PROFILE_STORAGE_KEY = "fullhearts:profile";
+export const QUERY_STORAGE_KEY = "fullhearts:query";
