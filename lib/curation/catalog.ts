@@ -165,5 +165,13 @@ export const CATALOG: CuratedMod[] = [
     curatedTags: { performance: 0.7, "low-end": 0.7, interface: 0.4 },
     reasonTemplate: "you wanted more performance control",
     modrinthSlug: "sodium-extra"
+  },
+  {
+  id: "crispy",
+  name: "Crispy!",
+  summary: "Remakes Minecraft cookies with dozens of new crunchy cookie types.",
+  curatedTags: { food: 1, visual: 0.4 },
+  reasonTemplate: "you wanted a crispy cookie expansion",
+  modrinthSlug: "crispy!"
   }
 ];
