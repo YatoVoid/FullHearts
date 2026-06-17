@@ -72,7 +72,7 @@ export default function DescribeBox() {
       <button type="button" className="btn-primary" onClick={generate} disabled={!canGenerate}>
         Generate my mod setup
       </button>
-      <p className="describe-note">The assistant is in beta and still learning — results improve as the mod library grows.</p>
+      <p className="describe-note">The assistant is in beta and still learning. Results improve as the mod library grows.</p>
     </div>
   );
 }

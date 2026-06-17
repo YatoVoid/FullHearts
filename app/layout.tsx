@@ -21,15 +21,19 @@ const pressStart = Press_Start_2P({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Full Hearts — Find your perfect Minecraft mods",
+  title: "Full Hearts: a curated, hand-tested Minecraft mod collection",
   description:
-    "Answer a few questions and get a personalized, compatible set of Minecraft mods — with a clear reason for every pick. No account needed.",
+    "A hand-tested Minecraft mod collection you can't go wrong with. Answer a few quick questions and get a personalized, compatible loadout with a clear reason for every pick. No account needed.",
+  keywords: [
+    "Minecraft mods", "best Minecraft mods", "curated Minecraft mods", "Minecraft modpack",
+    "Fabric mods", "Forge mods", "mod recommender", "Minecraft Java mods", "tested mods"
+  ],
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
   openGraph: {
-    title: "Full Hearts — Find your perfect Minecraft mods",
+    title: "Full Hearts: a curated, hand-tested Minecraft mod collection",
     description:
-      "Answer a few questions and get a personalized, compatible set of Minecraft mods — with a reason for every pick.",
+      "Hand-tested Minecraft mods you can't go wrong with. Get a personalized, compatible loadout with a reason for every pick.",
     url: "/",
     type: "website",
     siteName: "Full Hearts"

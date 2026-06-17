@@ -49,7 +49,7 @@ export const CATALOG: CuratedMod[] = [
   {
     id: "jade",
     name: "Jade",
-    summary: "Shows what you're looking at — block name, mod, mob health — in a tooltip.",
+    summary: "Shows what you're looking at (block name, mod, mob health) in a tooltip.",
     curatedTags: { interface: 0.8, exploration: 0.3 },
     reasonTemplate: "you wanted clearer in-game info",
     modrinthSlug: "jade"
@@ -81,7 +81,7 @@ export const CATALOG: CuratedMod[] = [
   {
     id: "create",
     name: "Create",
-    summary: "Build rotating, moving machines — windmills, conveyors, even trains.",
+    summary: "Build rotating, moving machines like windmills, conveyors, even trains.",
     curatedTags: { tech: 1, automation: 1, building: 0.5, "low-grind": 0.6 },
     reasonTemplate: "you wanted mechanical automation",
     modrinthSlug: "create-fabric"
@@ -129,7 +129,7 @@ export const CATALOG: CuratedMod[] = [
   {
     id: "macaws-furniture",
     name: "Macaw's Furniture",
-    summary: "Furniture, roofs, bridges, doors, and windows — pure building range.",
+    summary: "Furniture, roofs, bridges, doors, and windows for pure building range.",
     curatedTags: { building: 1 },
     reasonTemplate: "you love building and decorating",
     modrinthSlug: "macaws-furniture"

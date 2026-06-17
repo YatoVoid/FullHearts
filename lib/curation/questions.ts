@@ -74,7 +74,7 @@ export const QUESTIONS: Question[] = [
     id: "world",
     kind: "multi",
     prompt: "What should the world itself have more of?",
-    help: "Pick any that appeal — or skip.",
+    help: "Pick any that appeal, or skip.",
     options: [
       { id: "structures", label: "New structures & dungeons", tags: { structures: 1, exploration: 0.5 } },
       { id: "biomes", label: "Richer biomes & terrain", tags: { biome: 1, exploration: 0.4 } },
@@ -87,7 +87,7 @@ export const QUESTIONS: Question[] = [
     id: "gear",
     kind: "multi",
     prompt: "How do you want to grow stronger?",
-    help: "Pick any that appeal — or skip.",
+    help: "Pick any that appeal, or skip.",
     options: [
       { id: "weapons", label: "New weapons & armor", tags: { combat: 1, rpg: 0.4 } },
       { id: "skills", label: "Skills, classes & leveling", tags: { rpg: 1 } },
@@ -100,7 +100,7 @@ export const QUESTIONS: Question[] = [
     id: "extras",
     kind: "multi",
     prompt: "Any nice-to-haves you'd like?",
-    help: "Pick any that appeal — or skip.",
+    help: "Pick any that appeal, or skip.",
     options: [
       { id: "food", label: "Cozy food & farming", tags: { food: 1, "low-grind": 0.4 } },
       { id: "qol", label: "Quality-of-life tweaks (recipes, tooltips, info)", tags: { qol: 1, interface: 0.6 } },
@@ -157,9 +157,9 @@ export const QUESTIONS: Question[] = [
     kind: "single",
     prompt: "How's your computer?",
     options: [
-      { id: "lowend", label: "Older / low-end — keep it light", lowEnd: true, tags: { performance: 0.6, "low-end": 1 } },
+      { id: "lowend", label: "Older or low-end, keep it light", lowEnd: true, tags: { performance: 0.6, "low-end": 1 } },
       { id: "fine", label: "Runs Minecraft just fine", lowEnd: false },
-      { id: "beefy", label: "Powerful — bring the eye candy", lowEnd: false, tags: { visual: 0.4 } }
+      { id: "beefy", label: "Powerful, bring the eye candy", lowEnd: false, tags: { visual: 0.4 } }
     ]
   }
 ];

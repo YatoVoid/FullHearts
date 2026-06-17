@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import { HEART_SRC, asset } from "@/lib/asset";
 
 export const metadata: Metadata = {
-  title: "Install your whole loadout at once — Full Hearts",
+  title: "Install your whole loadout at once | Full Hearts",
   description:
     "Turn your Full Hearts loadout into a Modrinth collection and auto-download every mod in one go, no clicking through each page."
 };
@@ -52,7 +52,7 @@ const STEPS: Step[] = [
     body: (
       <>
         Back on your <Link href="/collections">collection</Link> (or results) page, hit{" "}
-        <strong>“Open all mod pages”</strong> — every mod opens in its own tab. On each Modrinth tab, click{" "}
+        <strong>“Open all mod pages”</strong>. Every mod opens in its own tab. On each Modrinth tab, click{" "}
         <strong>+</strong> and add it to the collection you just made.
       </>
     )

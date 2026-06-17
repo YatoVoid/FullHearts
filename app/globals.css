@@ -21,6 +21,8 @@
 
 *{box-sizing:border-box;margin:0;padding:0;}
 
+img{max-width:100%;}
+
 html{scroll-behavior:smooth;}
 
 body{
@@ -334,10 +336,39 @@ footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
 .prose p{font-size:15px;color:#c5bfd6;line-height:1.6;margin-bottom:12px;}
 .prose a{color:var(--grass);}
 
-@media (max-width:640px){
-  nav.links{display:none;}
+/* ---------- NO-RESULTS / REQUEST ---------- */
+.no-results{text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;padding:30px 0;}
+.request-note{font-size:12px;color:#5f5874;max-width:380px;}
+
+/* ---------- RESPONSIVE ---------- */
+/* Tablet & small laptop: let the nav wrap instead of crowding. */
+@media (max-width:760px){
+  .nav-inner{flex-wrap:wrap;gap:12px 16px;padding:14px 18px;}
+  nav.links{order:3;width:100%;justify-content:center;gap:22px;}
   .hero{padding:48px 0 36px;}
+  .stats{gap:18px;padding:42px 0;}
+  .stat{min-width:90px;}
+  .stat .num{font-size:22px;}
   .server-cta-actions{align-items:stretch;width:100%;}
+}
+/* Phones: single-column grids, full-width tap targets, tighter gutters. */
+@media (max-width:560px){
+  .wrap,.results,.explore,.collections,.install,.prose{padding-left:16px;padding-right:16px;}
+  .quiz{padding-left:16px;padding-right:16px;}
+  .nav-inner{padding:14px 16px;}
+  .grid{grid-template-columns:1fr;gap:16px;}
+  .hero h1{line-height:1.4;}
+  .hero p.lede{font-size:16px;}
+  .hero-actions{gap:10px;width:100%;}
+  .hero-actions .btn-primary,.hero-actions .btn-ghost{width:100%;text-align:center;}
+  .btn-primary,.btn-ghost{font-size:10px;padding:14px 16px;}
+  .results-actions{width:100%;}
+  .results-actions .btn-primary,.results-actions .btn-ghost{width:100%;text-align:center;}
+  .server-cta{padding:16px;}
+  .step-body{gap:12px;}
+  .step{padding:16px;}
+  .stat .num{font-size:20px;}
+  .stat .lab{font-size:12px;}
 }
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important;scroll-behavior:auto;}

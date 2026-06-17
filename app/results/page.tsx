@@ -181,7 +181,7 @@ export default function Results() {
         {status === "ready" && (
           <>
             {degraded && (
-              <p className="degraded-note">Showing curated info — live data is temporarily unavailable.</p>
+              <p className="degraded-note">Showing curated info. Live data is temporarily unavailable.</p>
             )}
             <div className="grid">
               {results.map(({ mod, reason }, i) => {

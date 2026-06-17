@@ -102,7 +102,7 @@ export default function Collections() {
       await navigator.clipboard.writeText(text);
       flash(msg);
     } catch {
-      flash("Copy failed — your browser blocked clipboard access.");
+      flash("Copy failed. Your browser blocked clipboard access.");
     }
   }
 

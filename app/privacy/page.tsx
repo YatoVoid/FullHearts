@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import { HEART_SRC } from "@/lib/asset";
 
 export const metadata: Metadata = {
-  title: "Privacy — Full Hearts",
+  title: "Privacy | Full Hearts",
   description: "How Full Hearts handles data: no accounts, local-only storage, and the third parties we rely on."
 };
 

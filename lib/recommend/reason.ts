@@ -19,5 +19,5 @@ export function reason(mod: Mod, profile: Profile): string {
   const base = `We picked ${mod.name} because ${mod.reasonTemplate}`;
   const tags = topContributingTags(mod, profile);
   if (tags.length === 0) return `${base}.`;
-  return `${base} — a strong match for your ${tags.join(" + ")} picks.`;
+  return `${base}, a strong match for your ${tags.join(" and ")} picks.`;
 }

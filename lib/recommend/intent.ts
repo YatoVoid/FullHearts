@@ -107,21 +107,21 @@ export function parseIntent(raw: string): ParsedIntent {
 export type ReplyKind = "greeting" | "question" | "intent" | "search" | "unclear";
 
 const GREETINGS = [
-  "Hey! 👋 Tell me how you like to play and I'll build you a loadout — try \"cozy builder who hates grinding\".",
+  "Hey! 👋 Tell me how you like to play and I'll build you a loadout. Try \"cozy builder who hates grinding\".",
   "Hi there! Describe your dream Minecraft run and I'll pick the mods. Builder? Explorer? Hardcore fighter?",
   "Hello! I'm your mod matchmaker. Say a few words about your ideal game and watch the magic.",
-  "Hey hey! What's your vibe — tech and machines, magic and spells, or chill and cozy?"
+  "Hey hey! What's your vibe? Tech and machines, magic and spells, or chill and cozy?"
 ];
 
 const QUESTION_REPLIES = [
-  "Good question! I'm not a chatbot — I'm a mod matchmaker. Describe your ideal Minecraft game and I'll hand-pick mods that fit.",
-  "Here's how it works: tell me how you like to play (in plain words) and I'll turn that into a tailored mod loadout. Give it a try!",
-  "I match your playstyle to real mods — no made-up names, only mods that actually exist. Just describe your perfect run.",
-  "Ask away, but my superpower is loadouts: say something like \"magic and exploration, runs on a weak laptop\" and I'll sort you out."
+  "Good question! I'm not a chatbot, I'm a mod matchmaker. Describe your ideal Minecraft game and I'll hand-pick mods that fit.",
+  "Here's how it works: tell me how you like to play, in plain words, and I'll turn that into a tailored mod loadout. Give it a try!",
+  "I match your playstyle to real mods. No made-up names, only mods that actually exist. Just describe your perfect run.",
+  "Ask away, but my superpower is loadouts. Say something like \"magic and exploration, runs on a weak laptop\" and I'll sort you out."
 ];
 
 const UNCLEAR_REPLIES = [
-  "Tell me a bit more — what do you love doing in Minecraft? Building, exploring, fighting, automating, magic…?",
+  "Tell me a bit more. What do you love doing in Minecraft? Building, exploring, fighting, automating, magic?",
   "I didn't catch a playstyle there. Try a few keywords: \"cozy farming\", \"tech automation\", \"hardcore combat\".",
   "Give me something to work with! Even \"pretty visuals but my PC is old\" is enough.",
   "Hmm, not sure what you're after yet. Describe your ideal game and I'll build the loadout."
@@ -174,9 +174,9 @@ export interface ConversationTurn {
 }
 
 const SEARCH_OPENERS = [
-  (q: string) => `On it — scanning mod names & descriptions for “${q}”. 🔎`,
-  (q: string) => `Searching the catalog for “${q}”… I read descriptions too, not just tags.`,
-  (q: string) => `Hunting down “${q}” across the mod library. Hit the button below.`
+  (q: string) => `On it. Scanning mod names and descriptions for "${q}". 🔎`,
+  (q: string) => `Searching the catalog for "${q}". I read descriptions too, not just tags.`,
+  (q: string) => `Hunting down "${q}" across the mod library. Hit the button below.`
 ];
 
 const GREETING_RE = /^\s*(hi|hii+|hey+|hello+|yo+|sup|hiya|howdy|good (morning|afternoon|evening)|greetings|heya)\b/i;
@@ -201,8 +201,8 @@ export function converse(raw: string): ConversationTurn {
   if (hasTags) {
     const clause = describeMatched(intent.matched, intent.profile.lowEnd);
     const openers = [
-      `Got it — sounds like you're into ${clause}. I'll lean your loadout that way. 👇`,
-      `Nice. ${clause.charAt(0).toUpperCase() + clause.slice(1)} it is — hit the button and I'll assemble it.`,
+      `Got it. Sounds like you're into ${clause}. I'll lean your loadout that way. 👇`,
+      `Nice. ${clause.charAt(0).toUpperCase() + clause.slice(1)} it is. Hit the button and I'll assemble it.`,
       `Love it. I'm reading ${clause}. Ready when you are.`
     ];
     return { kind: "intent", reply: pick(openers, trimmed), intent, canGenerate: true };

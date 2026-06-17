@@ -16,6 +16,17 @@ const MIN_SECTION = 4;     // a tag needs this many mods to get a section
 const PER_SECTION = 18;    // cap cards shown per section
 const RARITY = ["r-epic", "r-rare", "r-uncommon", "r-common"];
 
+// Requests go to the repo's issue tracker: a private-to-owner review queue, no
+// backend and no auto-publishing, so the "only tested mods" promise holds.
+function requestUrl(q: string): string {
+  const title = encodeURIComponent(`Mod request: ${q}`);
+  const body = encodeURIComponent(
+    `A visitor searched for "${q}" on fullhearts.app and found no match.\n\n` +
+      `If this is a high-quality, well-tested mod, consider reviewing and adding it to the catalog.`
+  );
+  return `https://github.com/YatoVoid/FullHearts/issues/new?title=${title}&body=${body}&labels=mod-request`;
+}
+
 const HEART = (
   <img
     src={HEART_SRC}
@@ -162,7 +173,13 @@ export default function Explore() {
               <span className="count">{matches.length} match{matches.length === 1 ? "" : "es"}</span>
             </div>
             {matches.length === 0 ? (
-              <p className="results-state">No mods match “{query}”. Try a different word.</p>
+              <div className="no-results">
+                <p className="results-state">No mods match “{query}”. Try a different word.</p>
+                <a className="btn-ghost" href={requestUrl(query)} target="_blank" rel="noopener noreferrer">
+                  ＋ Request “{query}” be added
+                </a>
+                <p className="request-note">We review every request by hand and only add mods that meet the bar.</p>
+              </div>
             ) : (
               <div className="grid">{matches.map((mod, i) => card(mod, i))}</div>
             )}

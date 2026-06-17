@@ -11,14 +11,14 @@ export default function ServerCta() {
     <aside className="server-cta">
       <div className="server-cta-body">
         <strong>Playing with friends?</strong>
-        <span>Run your modpack on an always-on server — set up in minutes, no port-forwarding.</span>
+        <span>Run your modpack on an always-on server. Set up in minutes, no port forwarding.</span>
       </div>
       <div className="server-cta-actions">
         {/* rel="sponsored" per Google guidance for paid/affiliate links */}
         <a className="btn-primary" href={HOST_REF} target="_blank" rel="noopener noreferrer sponsored">
           Get a server
         </a>
-        <span className="server-cta-disc">Affiliate link — supports Full Hearts at no cost to you.</span>
+        <span className="server-cta-disc">Affiliate link. Supports Full Hearts at no cost to you.</span>
       </div>
     </aside>
   );

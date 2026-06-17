@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 // Generates the social share preview for shared links (e.g. /results).
-export const alt = "Full Hearts — Find your perfect Minecraft mods";
+export const alt = "Full Hearts: a curated, hand-tested Minecraft mod collection";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const dynamic = "force-static";
@@ -31,7 +31,7 @@ export default function OpengraphImage() {
           <span style={{ color: "#7bd64b" }}>HEARTS</span>
         </div>
         <div style={{ fontSize: 40, color: "#b9a8d8", marginTop: 28, textAlign: "center", maxWidth: 900 }}>
-          Find your perfect Minecraft mods — with a reason for every pick.
+          Hand-tested Minecraft mods you can&apos;t go wrong with.
         </div>
         <div style={{ display: "flex", gap: 14, marginTop: 40 }}>
           {Array.from({ length: 10 }).map((_, i) => (

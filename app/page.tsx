@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import { QUESTIONS } from "@/lib/curation/questions";
+import { CATALOG } from "@/lib/curation/catalog";
 import { HEART_SRC } from "@/lib/asset";
 import DescribeBox from "@/components/DescribeBox";
 
@@ -20,7 +21,7 @@ const JSON_LD = {
   applicationCategory: "GameApplication",
   operatingSystem: "Web",
   description:
-    "Answer a few questions and get a personalized, compatible set of Minecraft mods — with a reason for every pick.",
+    "A hand-tested, curated Minecraft mod collection. Answer a few questions and get a personalized, compatible loadout you can't go wrong with, plus a reason for every pick.",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" }
 };
 
@@ -48,14 +49,14 @@ export default function Home() {
       <main>
         <section className="hero wrap">
           <div className="hero-glow" aria-hidden="true" />
-          <div className="eyebrow">PERSONALIZED · MINECRAFT JAVA</div>
+          <div className="eyebrow">CURATED · HAND-TESTED · MINECRAFT JAVA</div>
           <div className="hearts" aria-hidden="true">
             {Array.from({ length: 10 }).map((_, i) => (
               <span key={i} style={{ width: 30, height: 30, display: "inline-flex", animationDelay: `${i * 60}ms` }}>{HEART}</span>
             ))}
           </div>
-          <h1>Find the <span className="g">perfect mods</span><br />without the guesswork.</h1>
-          <p className="lede">Answer a few quick questions about how you like to play. We&apos;ll build you a compatible mod loadout — and tell you exactly why each one made the cut.</p>
+          <h1>A mod collection you <span className="g">can&apos;t go wrong</span> with.</h1>
+          <p className="lede">Every mod in Full Hearts is hand-picked and tested, so there are no duds. Answer a few quick questions about how you like to play and we&apos;ll build you a compatible loadout, with a reason behind every pick.</p>
           <div className="hero-actions">
             <Link className="btn-primary" href="/quiz">Build my loadout</Link>
             <Link className="btn-ghost" href="/explore">Browse mods</Link>
@@ -74,9 +75,9 @@ export default function Home() {
         </section>
 
         <section className="stats wrap">
+          <div className="stat"><div className="num">{CATALOG.length}</div><div className="lab">Hand-tested mods</div></div>
           <div className="stat"><div className="num">{QUESTIONS.length}</div><div className="lab">Quick questions</div></div>
           <div className="stat"><div className="num">0</div><div className="lab">Accounts required</div></div>
-          <div className="stat"><div className="num">100%</div><div className="lab">Reasons explained</div></div>
         </section>
 
         <section className="wrap" id="how" style={{ padding: "70px 0 90px" }}>
@@ -87,12 +88,13 @@ export default function Home() {
           <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))" }}>
             <article className="tip r-uncommon">
               <div className="row1"><span className="title">1 · Take the quiz</span><span className="loader">~2 MIN</span></div>
-              <p className="desc">Tell us how you like to play — building, exploring, automating, fighting — plus your version and mod loader.</p>
+              <p className="desc">Tell us how you like to play (building, exploring, automating, fighting) plus your version and mod loader.</p>
               <div className="fix"><span style={{ width: 14, height: 14, display: "inline-flex" }}>{HEART}</span>No jargon, one question at a time</div>
             </article>
             <article className="tip r-rare">
               <div className="row1"><span className="title">2 · Get your loadout</span><span className="loader">RANKED</span></div>
               <p className="desc">We rank compatible mods to your taste and show a plain-English reason for every pick, with dependencies flagged.</p>
+
               <div className="fix"><span style={{ width: 14, height: 14, display: "inline-flex" }}>{HEART}</span>A reason behind every mod</div>
             </article>
             <article className="tip r-epic">
