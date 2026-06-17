@@ -163,6 +163,10 @@ nav.links a:hover{color:var(--ink);}
 .tip-icon{width:34px;height:34px;flex:none;border-radius:6px;image-rendering:auto;background:#0a0718;object-fit:cover;}
 .tip .verified{flex:none;align-self:flex-start;font-size:9px;font-weight:700;color:var(--void);background:var(--grass);padding:3px 7px;border-radius:3px;letter-spacing:.3px;white-space:nowrap;}
 
+/* ---------- MODPACK DOWNLOAD ---------- */
+.pack-dl{margin:18px 0 6px;}
+.pack-note{font-size:12.5px;color:var(--mute);margin-top:8px;line-height:1.45;}
+
 /* ---------- COMPATIBILITY ---------- */
 .compat{font-size:13px;padding:10px 14px;margin:12px 0 4px;border:2px solid;font-weight:600;line-height:1.45;}
 .compat-ok{color:var(--grass);border-color:var(--grass-dk);background:rgba(116,192,67,.08);}

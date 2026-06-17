@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Mod } from "@/lib/sources/types";
 import type { QuizAnswers } from "@/lib/curation/questions";
+import type { Profile } from "@/lib/recommend/profile";
 import { recommend, recommendFromQuery, type RankedMod, type Recommendation } from "@/lib/recommend/index";
 import { pickLucky } from "@/lib/recommend/lucky";
 import { QUERY_STORAGE_KEY } from "@/lib/recommend/intent";
 import { checkCompatibility, compatibilitySummary } from "@/lib/recommend/compatibility";
+import DownloadPack from "@/components/DownloadPack";
 import { ensureCollection, addMod } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
 import { loadPool, isDegraded } from "@/lib/catalog/clientPool";
@@ -52,6 +54,7 @@ function loadQuery(): string | null {
 export default function Results() {
   const [status, setStatus] = useState<Status>("loading");
   const [results, setResults] = useState<RankedMod[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [summary, setSummary] = useState("");
   const [degraded, setDegraded] = useState(false);
   const [added, setAdded] = useState<Set<string>>(new Set());
@@ -114,6 +117,7 @@ export default function Results() {
         if (cancelled) return;
         const rec = compute(mods);
         setResults(rec.results);
+        setProfile(rec.profile);
         setSummary(rec.profileSummary);
         setDegraded(isDegraded(mods));
         setStatus(rec.results.length > 0 ? "ready" : "empty");
@@ -157,11 +161,19 @@ export default function Results() {
               <div className="compat compat-warn">⚠ {report.messages[0]}</div>
             );
           })()}
+          {status === "ready" && profile && (
+            <DownloadPack
+              name="Full Hearts loadout"
+              mods={results.map((r) => r.mod)}
+              loader={profile.loader}
+              mcVersion={profile.gameVersion}
+            />
+          )}
           {status === "ready" && (
             <div className="results-actions">
-              <button type="button" className="btn-primary" onClick={addAll}>Save all to collection</button>
+              <button type="button" className="btn-ghost" onClick={addAll}>Save all to collection</button>
               <button type="button" className="btn-ghost" onClick={openAll}>Open all mod pages ({results.length})</button>
-              <Link className="btn-ghost" href="/install">📦 Install all at once</Link>
+              <Link className="btn-ghost" href="/install">📦 Install guide</Link>
               <Link className="btn-ghost" href="/collections">View collections</Link>
             </div>
           )}

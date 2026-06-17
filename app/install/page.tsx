@@ -94,6 +94,12 @@ export default function Install() {
           </p>
         </div>
 
+        <div className="compat compat-ok" style={{ maxWidth: 620, margin: "0 auto 30px" }}>
+          ⚡ Easiest way: on your <Link href="/collections" style={{ color: "var(--grass)" }}>collections</Link> or
+          results page, hit <strong>“Download as modpack (.mrpack)”</strong> and import the single file into the Modrinth
+          App, Prism, or ATLauncher. No steps below needed. (Fabric &amp; Quilt.)
+        </div>
+
         <ol className="steps">
           {STEPS.map((step, i) => (
             <li className="step" key={i}>

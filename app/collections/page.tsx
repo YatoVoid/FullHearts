@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Mod } from "@/lib/sources/types";
 import { loadPool } from "@/lib/catalog/clientPool";
 import { checkCompatibility, compatibilitySummary } from "@/lib/recommend/compatibility";
+import DownloadPack from "@/components/DownloadPack";
 import {
   listCollections,
   createCollection,
@@ -176,14 +177,32 @@ export default function Collections() {
 
               {(() => {
                 const resolved = c.modIds.map((id) => byId[id]).filter((m): m is Mod => Boolean(m));
-                if (resolved.length < 2) return null;
+                if (resolved.length === 0) return null;
                 const report = checkCompatibility(resolved);
-                return report.ok ? (
-                  <div className="compat compat-ok">
-                    ✓ Should launch together{compatibilitySummary(report) && <> · {compatibilitySummary(report)}</>}
-                  </div>
-                ) : (
-                  <div className="compat compat-warn">⚠ {report.messages[0]}</div>
+                const loader =
+                  report.commonLoaders.find((l) => l === "fabric") ??
+                  report.commonLoaders.find((l) => l === "quilt") ??
+                  report.commonLoaders[0];
+                const mcVersion = report.commonVersions[0];
+                const canPack = report.ok && Boolean(loader) && Boolean(mcVersion);
+                return (
+                  <>
+                    {resolved.length >= 2 && (report.ok ? (
+                      <div className="compat compat-ok">
+                        ✓ Should launch together{compatibilitySummary(report) && <> · {compatibilitySummary(report)}</>}
+                      </div>
+                    ) : (
+                      <div className="compat compat-warn">⚠ {report.messages[0]}</div>
+                    ))}
+                    <DownloadPack
+                      name={c.name}
+                      mods={resolved}
+                      loader={loader ?? "fabric"}
+                      mcVersion={mcVersion ?? "1.21.1"}
+                      disabled={!canPack}
+                      hint={report.ok ? "Loader/version unknown yet for these mods." : "Fix the conflict above to export a modpack."}
+                    />
+                  </>
                 );
               })()}
 
