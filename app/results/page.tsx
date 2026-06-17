@@ -7,6 +7,7 @@ import type { QuizAnswers } from "@/lib/curation/questions";
 import { recommend, recommendFromQuery, type RankedMod, type Recommendation } from "@/lib/recommend/index";
 import { pickLucky } from "@/lib/recommend/lucky";
 import { QUERY_STORAGE_KEY } from "@/lib/recommend/intent";
+import { checkCompatibility, compatibilitySummary } from "@/lib/recommend/compatibility";
 import { ensureCollection, addMod } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
 import { loadPool, isDegraded } from "@/lib/catalog/clientPool";
@@ -148,6 +149,14 @@ export default function Results() {
               : "YOUR LOADOUT"}
           </div>
           {status === "ready" && <div className="summary">{summary}</div>}
+          {status === "ready" && (() => {
+            const report = checkCompatibility(results.map((r) => r.mod));
+            return report.ok ? (
+              <div className="compat compat-ok">✓ Compatible loadout{compatibilitySummary(report) && <> · {compatibilitySummary(report)}</>}</div>
+            ) : (
+              <div className="compat compat-warn">⚠ {report.messages[0]}</div>
+            );
+          })()}
           {status === "ready" && (
             <div className="results-actions">
               <button type="button" className="btn-primary" onClick={addAll}>Save all to collection</button>
@@ -192,6 +201,7 @@ export default function Results() {
                     <div className="row1">
                       {mod.iconUrl && <img className="tip-icon" src={mod.iconUrl} alt="" loading="lazy" />}
                       <span className="title">{mod.name}</span>
+                      {mod.verified && <span className="verified" title="Hand-tested by Full Hearts">✓ Verified</span>}
                     </div>
                     <div className="badges">
                       {mod.loaders.map((l) => <span className="badge" key={l}>{l.toUpperCase()}</span>)}

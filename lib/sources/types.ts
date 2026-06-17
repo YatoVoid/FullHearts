@@ -27,6 +27,8 @@ export interface Mod extends CuratedMod {
   links: { modrinth?: string; curseforge?: string };
   downloads?: number;
   iconUrl?: string;
+  /** True for hand-tested curated mods; absent/false for the dynamic pool. */
+  verified?: boolean;
 }
 
 /** Live data fetched for a single curated mod. */

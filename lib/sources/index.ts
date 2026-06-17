@@ -41,7 +41,8 @@ export function mergeEnrichment(
     );
     const iconUrl = found.find((e) => e.iconUrl)?.iconUrl;
 
-    return { ...m, loaders, gameVersions, dependencies, links, downloads, iconUrl };
+    // Curated mods are hand-tested, so they carry the verified badge.
+    return { ...m, loaders, gameVersions, dependencies, links, downloads, iconUrl, verified: true };
   });
 }
 

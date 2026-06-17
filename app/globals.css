@@ -161,6 +161,12 @@ nav.links a:hover{color:var(--ink);}
 .tip .row1{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:4px;}
 .tip .title{font-size:18px;font-weight:700;line-height:1.25;flex:1;min-width:0;}
 .tip-icon{width:34px;height:34px;flex:none;border-radius:6px;image-rendering:auto;background:#0a0718;object-fit:cover;}
+.tip .verified{flex:none;align-self:flex-start;font-size:9px;font-weight:700;color:var(--void);background:var(--grass);padding:3px 7px;border-radius:3px;letter-spacing:.3px;white-space:nowrap;}
+
+/* ---------- COMPATIBILITY ---------- */
+.compat{font-size:13px;padding:10px 14px;margin:12px 0 4px;border:2px solid;font-weight:600;line-height:1.45;}
+.compat-ok{color:var(--grass);border-color:var(--grass-dk);background:rgba(116,192,67,.08);}
+.compat-warn{color:var(--gold);border-color:#7a6a1e;background:rgba(252,252,84,.07);}
 .tip.r-common  .title{color:var(--ink);}
 .tip.r-uncommon .title{color:var(--gold);}
 .tip.r-rare    .title{color:var(--aqua);}

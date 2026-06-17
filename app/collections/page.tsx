@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import type { Mod } from "@/lib/sources/types";
 import { loadPool } from "@/lib/catalog/clientPool";
+import { checkCompatibility, compatibilitySummary } from "@/lib/recommend/compatibility";
 import {
   listCollections,
   createCollection,
@@ -41,6 +43,7 @@ export default function Collections() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [names, setNames] = useState<Record<string, string>>({});
   const [links, setLinks] = useState<Record<string, string>>({});
+  const [byId, setById] = useState<Record<string, Mod>>({});
   const [degraded, setDegraded] = useState(false);
   const [note, setNote] = useState("");
 
@@ -72,6 +75,7 @@ export default function Collections() {
         const mods = await loadPool();
         if (cancelled) return;
         setNames(Object.fromEntries(mods.map((m) => [m.id, m.name])));
+        setById(Object.fromEntries(mods.map((m) => [m.id, m])));
         setLinks(Object.fromEntries(
           mods
             .map((m) => [m.id, m.links.modrinth || m.links.curseforge] as const)
@@ -169,6 +173,19 @@ export default function Collections() {
                 </div>
               </div>
               <div className="col-meta">{c.modIds.length} mod{c.modIds.length === 1 ? "" : "s"}</div>
+
+              {(() => {
+                const resolved = c.modIds.map((id) => byId[id]).filter((m): m is Mod => Boolean(m));
+                if (resolved.length < 2) return null;
+                const report = checkCompatibility(resolved);
+                return report.ok ? (
+                  <div className="compat compat-ok">
+                    ✓ Should launch together{compatibilitySummary(report) && <> · {compatibilitySummary(report)}</>}
+                  </div>
+                ) : (
+                  <div className="compat compat-warn">⚠ {report.messages[0]}</div>
+                );
+              })()}
 
               {c.modIds.length === 0 ? (
                 <p className="col-empty-mods">No mods yet.</p>
