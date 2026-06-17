@@ -4,9 +4,9 @@ import Footer from "@/components/Footer";
 import { HEART_SRC, asset } from "@/lib/asset";
 
 export const metadata: Metadata = {
-  title: "Install your whole loadout at once | Full Hearts",
+  title: "How to install your mods | Full Hearts",
   description:
-    "Turn your Full Hearts loadout into a Modrinth collection and auto-download every mod in one go, no clicking through each page."
+    "Install your whole Full Hearts loadout in one click with a .mrpack file, or follow the manual Modrinth-collection route."
 };
 
 const DOWNLOADER = "https://github.com/kay-xr/modrinth-collection-downloader/releases";
@@ -86,48 +86,103 @@ export default function Install() {
 
       <main className="install">
         <div className="section-head">
-          <div className="eyebrow">INSTALL EVERYTHING AT ONCE</div>
-          <h2>Get your whole loadout in a few clicks</h2>
+          <div className="eyebrow">HOW TO INSTALL YOUR MODS</div>
+          <h2>One file. The whole loadout.</h2>
           <p className="intro-lede">
-            Instead of downloading each mod one by one, save your loadout as a Modrinth collection and let a small tool
-            grab them all. Here&apos;s the five-step flow.
+            Full Hearts builds you a single modpack file. Import it into a launcher and every mod installs at once,
+            already checked to work together. No clicking through each page.
           </p>
         </div>
 
-        <div className="compat compat-ok" style={{ maxWidth: 620, margin: "0 auto 30px" }}>
-          ⚡ Easiest way: on your <Link href="/collections" style={{ color: "var(--grass)" }}>collections</Link> or
-          results page, hit <strong>“Download as modpack (.mrpack)”</strong> and import the single file into the Modrinth
-          App, Prism, or ATLauncher. No steps below needed. (Fabric &amp; Quilt.)
-        </div>
-
-        <ol className="steps">
-          {STEPS.map((step, i) => (
-            <li className="step" key={i}>
+        {/* Method 1: the easy, recommended path */}
+        <section className="method method-primary">
+          <div className="method-head">
+            <span className="method-badge">RECOMMENDED</span>
+            <h3>One-click modpack (.mrpack)</h3>
+          </div>
+          <ol className="steps">
+            <li className="step">
               <div className="step-body">
-                <div className="step-num">{i + 1}</div>
+                <div className="step-num">1</div>
                 <div>
-                  <h3>{step.title}</h3>
-                  <p>{step.body}</p>
+                  <h3>Get a launcher that reads .mrpack</h3>
+                  <p>
+                    Use the{" "}
+                    <a href="https://modrinth.com/app" target="_blank" rel="noopener noreferrer">Modrinth App</a>,{" "}
+                    <a href="https://prismlauncher.org" target="_blank" rel="noopener noreferrer">Prism Launcher</a>, or{" "}
+                    <a href="https://atlauncher.com" target="_blank" rel="noopener noreferrer">ATLauncher</a> (all free).
+                  </p>
                 </div>
               </div>
-              {step.img && (
-                <img className="step-img" src={asset(step.img)} alt={step.title} loading="lazy" />
-              )}
             </li>
-          ))}
-        </ol>
+            <li className="step">
+              <div className="step-body">
+                <div className="step-num">2</div>
+                <div>
+                  <h3>Download your modpack</h3>
+                  <p>
+                    On your <Link href="/collections">collections</Link> or results page, click{" "}
+                    <strong>“Download as modpack (.mrpack)”</strong>. You get one small file.
+                  </p>
+                </div>
+              </div>
+            </li>
+            <li className="step">
+              <div className="step-body">
+                <div className="step-num">3</div>
+                <div>
+                  <h3>Import it and play</h3>
+                  <p>
+                    In your launcher choose <strong>Add instance → From file</strong> (or just drag the{" "}
+                    <code>.mrpack</code> in). It downloads and installs every mod for you. Launch and play.
+                  </p>
+                </div>
+              </div>
+            </li>
+          </ol>
+          <div className="install-cta">
+            <Link className="btn-primary" href="/collections">Download my modpack</Link>
+          </div>
+          <p className="install-note">Works for Fabric &amp; Quilt loadouts. Modrinth-hosted mods only.</p>
+        </section>
 
-        <div className="install-cta">
-          <a className="btn-primary" href={DOWNLOADER} target="_blank" rel="noopener noreferrer">
-            ⬇ Get the collection downloader
-          </a>
-          <Link className="btn-ghost" href="/collections">Open my collections</Link>
-        </div>
-
-        <p className="install-note">
-          The downloader is a third-party open-source tool. Always review what you run, and only download mods from
-          official sources.
-        </p>
+        {/* Method 2: manual fallback */}
+        <section className="method method-alt">
+          <div className="method-head">
+            <span className="method-badge alt">MANUAL</span>
+            <h3>Prefer a Modrinth collection? (or on Forge)</h3>
+          </div>
+          <p className="intro-lede" style={{ marginBottom: 24 }}>
+            You can also build a Modrinth collection and pull it down with a community tool. Slower, but works on any
+            loader.
+          </p>
+          <ol className="steps">
+            {STEPS.map((step, i) => (
+              <li className="step" key={i}>
+                <div className="step-body">
+                  <div className="step-num">{i + 1}</div>
+                  <div>
+                    <h3>{step.title}</h3>
+                    <p>{step.body}</p>
+                  </div>
+                </div>
+                {step.img && (
+                  <img className="step-img" src={asset(step.img)} alt={step.title} loading="lazy" />
+                )}
+              </li>
+            ))}
+          </ol>
+          <div className="install-cta">
+            <a className="btn-ghost" href={DOWNLOADER} target="_blank" rel="noopener noreferrer">
+              ⬇ Get the collection downloader
+            </a>
+            <Link className="btn-ghost" href="/collections">Open my collections</Link>
+          </div>
+          <p className="install-note">
+            The downloader is a third-party open-source tool. Always review what you run, and only download mods from
+            official sources.
+          </p>
+        </section>
       </main>
 
       <Footer />
