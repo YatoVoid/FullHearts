@@ -10,11 +10,12 @@ import { loadPool } from "@/lib/catalog/clientPool";
 import { HEART_SRC } from "@/lib/asset";
 import Footer from "@/components/Footer";
 import AdSlot from "@/components/AdSlot";
+import ModCard from "@/components/ModCard";
+import ScrollTop from "@/components/ScrollTop";
 
 const DEFAULT_COLLECTION = "My loadout";
 const MIN_SECTION = 4;     // a tag needs this many mods to get a section
 const PER_SECTION = 18;    // cap cards shown per section
-const RARITY = ["r-epic", "r-rare", "r-uncommon", "r-common"];
 
 // Requests go to the repo's issue tracker: a private-to-owner review queue, no
 // backend and no auto-publishing, so the "only tested mods" promise holds.
@@ -96,29 +97,7 @@ export default function Explore() {
   }
 
   const card = (mod: Mod, i: number) => (
-    <article className={`tip ${RARITY[i % RARITY.length]}`} key={mod.id}>
-      <div className="row1">
-        {mod.iconUrl && <img className="tip-icon" src={mod.iconUrl} alt="" loading="lazy" />}
-        <span className="title">{mod.name}</span>
-      </div>
-      <div className="badges">
-        {mod.loaders.slice(0, 3).map((l) => <span className="badge" key={l}>{l.toUpperCase()}</span>)}
-      </div>
-      <p className="desc">{mod.summary}</p>
-      <div className="tip-links">
-        <button
-          type="button"
-          className={`add-btn${added.has(mod.id) ? " added" : ""}`}
-          onClick={() => add(mod.id)}
-          disabled={added.has(mod.id)}
-        >
-          {added.has(mod.id) ? "Added ✓" : "+ Add"}
-        </button>
-        {mod.links.modrinth && (
-          <a href={mod.links.modrinth} target="_blank" rel="noopener noreferrer">Modrinth</a>
-        )}
-      </div>
-    </article>
+    <ModCard key={mod.id} mod={mod} i={i} added={added.has(mod.id)} onAdd={add} />
   );
 
   return (
@@ -198,7 +177,12 @@ export default function Explore() {
               <section className="explore-section" id={`tag-${section.tag}`} key={section.tag}>
                 <div className="row-head">
                   <h2>{section.label}</h2>
-                  <span className="count">{section.total} mods</span>
+                  <div className="row-head-right">
+                    <span className="count">{section.total} mods</span>
+                    {section.total > PER_SECTION && (
+                      <Link className="show-all" href={`/explore/${section.tag}`}>Show all →</Link>
+                    )}
+                  </div>
                 </div>
                 <div className="grid">
                   {section.mods.map((mod, i) => card(mod, i))}
@@ -210,6 +194,7 @@ export default function Explore() {
         )}
       </main>
 
+      <ScrollTop />
       <Footer />
     </>
   );

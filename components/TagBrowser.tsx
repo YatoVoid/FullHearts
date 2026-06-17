@@ -1,0 +1,111 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import type { Mod } from "@/lib/sources/types";
+import { TAG_LABELS, type Tag } from "@/lib/curation/tags";
+import { ensureCollection, addMod } from "@/lib/storage/collections";
+import { setLastCollectionId } from "@/lib/storage/user";
+import { loadPool } from "@/lib/catalog/clientPool";
+import { HEART_SRC } from "@/lib/asset";
+import Footer from "@/components/Footer";
+import ModCard from "@/components/ModCard";
+import ScrollTop from "@/components/ScrollTop";
+
+const DEFAULT_COLLECTION = "My loadout";
+const MATCH_THRESHOLD = 0.5; // same bar Explore uses to place a mod in a tag
+
+const HEART = (
+  <img
+    src={HEART_SRC}
+    alt=""
+    aria-hidden="true"
+    style={{ width: "100%", height: "100%", display: "block", imageRendering: "pixelated" }}
+  />
+);
+
+/** Full listing of every mod in a single tag (no per-section cap). */
+export default function TagBrowser({ tag }: { tag: Tag }) {
+  const [mods, setMods] = useState<Mod[]>([]);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [added, setAdded] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await loadPool();
+        if (cancelled) return;
+        setMods(data);
+        setStatus("ready");
+      } catch {
+        if (!cancelled) setStatus("error");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const inTag = useMemo(
+    () =>
+      mods
+        .filter((m) => (m.curatedTags[tag] ?? 0) >= MATCH_THRESHOLD)
+        .sort((a, b) => (b.downloads ?? 0) - (a.downloads ?? 0)),
+    [mods, tag]
+  );
+
+  function add(modId: string) {
+    const collection = ensureCollection(DEFAULT_COLLECTION);
+    addMod(collection.id, modId);
+    setLastCollectionId(collection.id);
+    setAdded((prev) => new Set(prev).add(modId));
+  }
+
+  return (
+    <>
+      <header className="nav">
+        <div className="nav-inner">
+          <Link className="brand" href="/" style={{ textDecoration: "none" }}>
+            <span className="heart" style={{ width: 26, height: 26, display: "inline-flex" }}>{HEART}</span>
+            <span className="name">FULL<b>HEARTS</b></span>
+          </Link>
+          <nav className="links">
+            <Link href="/explore">Explore</Link>
+            <Link href="/collections">Collections</Link>
+          </nav>
+          <Link className="nav-cta" href="/quiz">Start the quiz</Link>
+        </div>
+      </header>
+
+      <main className="explore">
+        <div className="section-head">
+          <div className="eyebrow"><Link href="/explore" style={{ color: "var(--grass)" }}>← All themes</Link></div>
+          <h2>{TAG_LABELS[tag]}</h2>
+        </div>
+
+        {status === "loading" && <p className="results-state">Loading mods…</p>}
+        {status === "error" && <p className="results-state">Couldn&apos;t load the library. Please refresh.</p>}
+
+        {status === "ready" && (
+          <>
+            <div className="row-head">
+              <h2>{TAG_LABELS[tag]}</h2>
+              <span className="count">{inTag.length} mods</span>
+            </div>
+            {inTag.length === 0 ? (
+              <p className="results-state">No mods in this theme yet.</p>
+            ) : (
+              <div className="grid">
+                {inTag.map((mod, i) => (
+                  <ModCard key={mod.id} mod={mod} i={i} added={added.has(mod.id)} onAdd={add} />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </main>
+
+      <ScrollTop />
+      <Footer />
+    </>
+  );
+}
