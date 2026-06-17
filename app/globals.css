@@ -163,14 +163,6 @@ nav.links a:hover{color:var(--ink);}
 .tip-icon{width:34px;height:34px;flex:none;border-radius:6px;image-rendering:auto;background:#0a0718;object-fit:cover;}
 .tip .verified{flex:none;align-self:flex-start;font-size:9px;font-weight:700;color:var(--void);background:var(--grass);padding:3px 7px;border-radius:3px;letter-spacing:.3px;white-space:nowrap;}
 
-/* ---------- PACK CARDS ---------- */
-.pack-card{display:block;text-decoration:none;color:inherit;}
-.pack-card:hover{transform:translateY(-4px);}
-.pack-emoji{font-size:34px;line-height:1;margin-bottom:12px;}
-.pack-tagline{font-size:13px;color:var(--gold);margin:2px 0 12px;}
-.pack-meta{font-size:12px;color:var(--mute);margin:12px 0 10px;}
-.pack-go{font-family:var(--pixel);font-size:8px;color:var(--grass);}
-
 /* ---------- MODPACK DOWNLOAD ---------- */
 .pack-dl{margin:18px 0 6px;}
 .pack-note{font-size:12.5px;color:var(--mute);margin-top:8px;line-height:1.45;}

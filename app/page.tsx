@@ -39,7 +39,6 @@ export default function Home() {
             <span className="name">FULL<b>HEARTS</b></span>
           </div>
           <nav className="links">
-            <Link href="/packs">Packs</Link>
             <Link href="/explore">Explore</Link>
             <Link href="/collections">Collections</Link>
           </nav>
