@@ -80,6 +80,25 @@ export default function Home() {
           <div className="stat"><div className="num">0</div><div className="lab">Accounts required</div></div>
         </section>
 
+        <section className="wrap">
+          <div className="mrpack-band">
+            <div className="mrpack-emoji" aria-hidden="true">📦</div>
+            <div className="mrpack-text">
+              <div className="eyebrow">THE ONE-CLICK MODPACK</div>
+              <h2>One file. The whole pack. Guaranteed to launch.</h2>
+              <p>
+                Download your loadout as a single <code>.mrpack</code>. Every mod <strong>and its dependencies</strong> are
+                bundled and version-matched, then checked to work together. Import it into the Modrinth App, Prism, or
+                ATLauncher in one click. No other mod recommender does this.
+              </p>
+              <div className="hero-actions" style={{ justifyContent: "flex-start" }}>
+                <Link className="btn-primary" href="/quiz">Build my modpack</Link>
+                <Link className="btn-ghost" href="/install">How it works</Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="wrap" id="how" style={{ padding: "70px 0 90px" }}>
           <div className="section-head">
             <div className="eyebrow">HOW IT WORKS</div>
@@ -98,9 +117,9 @@ export default function Home() {
               <div className="fix"><span style={{ width: 14, height: 14, display: "inline-flex" }}>{HEART}</span>A reason behind every mod</div>
             </article>
             <article className="tip r-epic">
-              <div className="row1"><span className="title">3 · Save &amp; install</span><span className="loader">1-CLICK</span></div>
-              <p className="desc">Save the collection in your browser, then open install links straight to Modrinth or CurseForge.</p>
-              <div className="fix"><span style={{ width: 14, height: 14, display: "inline-flex" }}>{HEART}</span>Export &amp; share your build</div>
+              <div className="row1"><span className="title">3 · One-click install</span><span className="loader">.MRPACK</span></div>
+              <p className="desc">Download the whole loadout as one modpack file, dependencies included, and import it into your launcher. It just launches.</p>
+              <div className="fix"><span style={{ width: 14, height: 14, display: "inline-flex" }}>{HEART}</span>No per-mod hunting</div>
             </article>
           </div>
         </section>

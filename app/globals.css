@@ -163,6 +163,23 @@ nav.links a:hover{color:var(--ink);}
 .tip-icon{width:34px;height:34px;flex:none;border-radius:6px;image-rendering:auto;background:#0a0718;object-fit:cover;}
 .tip .verified{flex:none;align-self:flex-start;font-size:9px;font-weight:700;color:var(--void);background:var(--grass);padding:3px 7px;border-radius:3px;letter-spacing:.3px;white-space:nowrap;}
 
+/* ---------- HOMEPAGE MRPACK BAND ---------- */
+.mrpack-band{display:flex;gap:26px;align-items:center;border:2px solid var(--grass);background:rgba(116,192,67,.05);box-shadow:0 4px 0 #0a0718;padding:28px 26px;margin:30px 0 10px;}
+.mrpack-emoji{font-size:56px;line-height:1;flex:none;}
+.mrpack-text h2{font-family:var(--pixel);font-size:clamp(13px,2.3vw,18px);color:var(--ink);margin:6px 0 12px;line-height:1.5;}
+.mrpack-text p{font-size:15px;color:#c5bfd6;line-height:1.6;margin-bottom:18px;max-width:62ch;}
+.mrpack-text code{background:#0a0718;padding:1px 6px;color:var(--aqua);font-size:13px;}
+@media (max-width:600px){
+  .mrpack-band{flex-direction:column;text-align:center;padding:22px 18px;}
+  .mrpack-band .hero-actions{justify-content:center !important;}
+  .mrpack-emoji{font-size:44px;}
+}
+
+/* ---------- COLLECTIONS: collapsible mod lists ---------- */
+.col-toggle{font-family:var(--pixel);font-size:9px;color:var(--ink);background:var(--slot);border:2px solid #2a2046;padding:9px 12px;cursor:pointer;margin:6px 0 4px;box-shadow:0 3px 0 #0a0718;}
+.col-toggle:hover{color:var(--grass);}
+.col-toggle:active{transform:translateY(3px);box-shadow:0 0 0 #0a0718;}
+
 /* ---------- MODPACK DOWNLOAD ---------- */
 .pack-dl{margin:18px 0 6px;}
 .pack-note{font-size:12.5px;color:var(--mute);margin-top:8px;line-height:1.45;}

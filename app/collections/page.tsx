@@ -48,8 +48,51 @@ export default function Collections() {
   const [byId, setById] = useState<Record<string, Mod>>({});
   const [degraded, setDegraded] = useState(false);
   const [note, setNote] = useState("");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [upTarget, setUpTarget] = useState<string | null>(null);
 
   const refresh = useCallback(() => setCollections(listCollections()), []);
+
+  const toggleExpanded = useCallback((id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  // Floating "back to this collection's top" arrow: while you're scrolled
+  // inside an expanded (long) list, point to the NEAREST expanded collection
+  // header above you — not the top of the page.
+  useEffect(() => {
+    function onScroll() {
+      let best: { id: string; top: number } | null = null;
+      for (const id of expanded) {
+        const el = document.getElementById(`col-${id}`);
+        if (!el) continue;
+        const r = el.getBoundingClientRect();
+        // header scrolled above the viewport, but the card is still on screen
+        if (r.top < 8 && r.bottom > 120) {
+          if (!best || r.top > best.top) best = { id, top: r.top };
+        }
+      }
+      setUpTarget(best ? best.id : null);
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [expanded, collections]);
+
+  const scrollToCollection = useCallback(() => {
+    if (!upTarget) return;
+    const el = document.getElementById(`col-${upTarget}`);
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 16, behavior: "smooth" });
+  }, [upTarget]);
 
   // Import a shared collection from the URL hash, then load state.
   useEffect(() => {
@@ -165,7 +208,7 @@ export default function Collections() {
           </p>
         ) : (
           collections.map((c) => (
-            <section className="col-card" key={c.id}>
+            <section className="col-card" id={`col-${c.id}`} key={c.id}>
               <div className="col-head">
                 <h3>{c.name}</h3>
                 <div className="col-actions">
@@ -210,6 +253,11 @@ export default function Collections() {
               {c.modIds.length === 0 ? (
                 <p className="col-empty-mods">No mods yet.</p>
               ) : (
+                <>
+                  <button type="button" className="col-toggle" onClick={() => toggleExpanded(c.id)} aria-expanded={expanded.has(c.id)}>
+                    {expanded.has(c.id) ? "▾ Hide mods" : `▸ Show ${c.modIds.length} mod${c.modIds.length === 1 ? "" : "s"}`}
+                  </button>
+                  {expanded.has(c.id) && (
                 <ul className="col-mods">
                   {c.modIds.map((id) => (
                     <li key={id}>
@@ -225,6 +273,8 @@ export default function Collections() {
                     </li>
                   ))}
                 </ul>
+                  )}
+                </>
               )}
 
               <div className="col-actions">
@@ -241,6 +291,12 @@ export default function Collections() {
 
         {collections.length > 0 && <ServerCta />}
       </main>
+
+      {upTarget && (
+        <button type="button" className="scroll-top" aria-label="Back to this collection" onClick={scrollToCollection}>
+          ▲
+        </button>
+      )}
     </>
   );
 }
