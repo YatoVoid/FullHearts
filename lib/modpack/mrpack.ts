@@ -84,10 +84,28 @@ export function buildIndex(opts: {
   };
 }
 
+// Per-session cache of Modrinth responses so re-building a pack (or two packs
+// that share dependencies) never refetches the same URL.
+const responseCache = new Map<string, unknown>();
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Fetch JSON, caching results and backing off once on a 429 to stay a good
+ *  API citizen (a heavy user shouldn't get themselves rate-limited). */
 async function fetchJSON(url: string): Promise<unknown> {
-  const r = await fetch(url, { headers: { Accept: "application/json" } });
-  if (!r.ok) throw new Error(`${url} -> ${r.status}`);
-  return r.json();
+  if (responseCache.has(url)) return responseCache.get(url);
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const r = await fetch(url, { headers: { Accept: "application/json" } });
+    if (r.status === 429) {
+      await sleep((Number(r.headers.get("Retry-After")) || 2) * 1000);
+      continue;
+    }
+    if (!r.ok) throw new Error(`${url} -> ${r.status}`);
+    const data = await r.json();
+    responseCache.set(url, data);
+    return data;
+  }
+  throw new Error(`${url} -> rate limited`);
 }
 
 /** Latest loader version for the launcher. Fabric/Quilt only (CORS-friendly). */
@@ -175,7 +193,7 @@ export async function buildMrpack(opts: {
   }
 
   while (queue.length > 0) {
-    const batch = queue.splice(0, 8); // bounded concurrency, kind to rate limits
+    const batch = queue.splice(0, 5); // bounded concurrency, kind to rate limits
     const settled = await Promise.all(batch.map(async (item) => ({ item, version: await resolve(item) })));
     const next: WorkItem[] = [];
 

@@ -6,7 +6,7 @@ const BISECT =
   "https://www.bisecthosting.com/clients/aff.php?aff=7330";
 const SHOCKBYTE =
   process.env.NEXT_PUBLIC_HOST_REF ||
-  "https://panel.shockbyte.com/refer/883382c0cadf9f25e5aab31b74cc6463";
+  "https://shockbyte.com/billing/aff.php?aff=11335";
 
 /** Contextual prompt to rent a server for a multiplayer modpack. */
 export default function ServerCta({
