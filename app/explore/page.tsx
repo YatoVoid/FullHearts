@@ -7,10 +7,12 @@ import { TAGS, TAG_LABELS, type Tag } from "@/lib/curation/tags";
 import { ensureCollection, addMod } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
 import { loadPool } from "@/lib/catalog/clientPool";
+import { type ModFilter, DEFAULT_FILTER, loadFilter, saveFilter, matchesFilter, versionOptions } from "@/lib/catalog/filter";
 import { HEART_SRC } from "@/lib/asset";
 import Footer from "@/components/Footer";
 import AdSlot from "@/components/AdSlot";
 import ModCard from "@/components/ModCard";
+import ModFilterBar from "@/components/ModFilterBar";
 import ScrollTop from "@/components/ScrollTop";
 
 const DEFAULT_COLLECTION = "My loadout";
@@ -63,8 +65,10 @@ export default function Explore() {
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [added, setAdded] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<ModFilter>(DEFAULT_FILTER);
 
   useEffect(() => {
+    setFilter(loadFilter());
     let cancelled = false;
     (async () => {
       try {
@@ -79,15 +83,24 @@ export default function Explore() {
     return () => { cancelled = true; };
   }, []);
 
-  const sections = useMemo(() => buildSections(mods), [mods]);
+  function changeFilter(f: ModFilter) {
+    setFilter(f);
+    saveFilter(f);
+  }
+
+  const versions = useMemo(() => versionOptions(mods), [mods]);
+  // Only mods that work with the chosen loader + version feed the whole page.
+  const pool = useMemo(() => mods.filter((m) => matchesFilter(m, filter)), [mods, filter]);
+
+  const sections = useMemo(() => buildSections(pool), [pool]);
 
   const term = query.trim().toLowerCase();
   const matches = useMemo(() => {
     if (!term) return null;
-    return mods
+    return pool
       .filter((m) => m.name.toLowerCase().includes(term) || (m.summary ?? "").toLowerCase().includes(term))
       .sort((a, b) => (b.downloads ?? 0) - (a.downloads ?? 0));
-  }, [term, mods]);
+  }, [term, pool]);
 
   function add(modId: string) {
     const collection = ensureCollection(DEFAULT_COLLECTION);
@@ -127,19 +140,22 @@ export default function Explore() {
         </div>
 
         {status === "ready" && (
-          <div className="explore-search">
-            <input
-              type="search"
-              className="explore-search-input"
-              placeholder="Search mods by name or description…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              aria-label="Search mods"
-            />
-            {query && (
-              <button type="button" className="explore-search-clear" onClick={() => setQuery("")} aria-label="Clear search">×</button>
-            )}
-          </div>
+          <>
+            <ModFilterBar filter={filter} versions={versions} onChange={changeFilter} />
+            <div className="explore-search">
+              <input
+                type="search"
+                className="explore-search-input"
+                placeholder="Search mods by name or description…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                aria-label="Search mods"
+              />
+              {query && (
+                <button type="button" className="explore-search-clear" onClick={() => setQuery("")} aria-label="Clear search">×</button>
+              )}
+            </div>
+          </>
         )}
 
         {status === "loading" && <p className="results-state">Loading the library…</p>}
@@ -165,7 +181,13 @@ export default function Explore() {
           </>
         )}
 
-        {status === "ready" && !matches && (
+        {status === "ready" && !matches && sections.length === 0 && (
+          <p className="results-state">
+            No mods match this loader/version yet. Try <button type="button" className="linklike" onClick={() => changeFilter(DEFAULT_FILTER)}>clearing the filter</button>.
+          </p>
+        )}
+
+        {status === "ready" && !matches && sections.length > 0 && (
           <>
             <nav className="tag-nav" aria-label="Jump to a category">
               {sections.map((s) => (

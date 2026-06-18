@@ -183,7 +183,11 @@ export default function Collections() {
             <span className="heart" style={{ width: 26, height: 26, display: "inline-flex" }}>{HEART}</span>
             <span className="name">FULL<b>HEARTS</b></span>
           </Link>
-          <Link className="nav-cta" href="/quiz">New loadout</Link>
+          <nav className="links">
+            <Link href="/explore">Explore</Link>
+            <Link href="/quiz">Quiz</Link>
+          </nav>
+          <Link className="nav-cta" href="/explore">Add more mods</Link>
         </div>
       </header>
 

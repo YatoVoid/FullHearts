@@ -7,9 +7,11 @@ import { TAG_LABELS, type Tag } from "@/lib/curation/tags";
 import { ensureCollection, addMod } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
 import { loadPool } from "@/lib/catalog/clientPool";
+import { type ModFilter, DEFAULT_FILTER, loadFilter, saveFilter, matchesFilter, versionOptions } from "@/lib/catalog/filter";
 import { HEART_SRC } from "@/lib/asset";
 import Footer from "@/components/Footer";
 import ModCard from "@/components/ModCard";
+import ModFilterBar from "@/components/ModFilterBar";
 import ScrollTop from "@/components/ScrollTop";
 
 const DEFAULT_COLLECTION = "My loadout";
@@ -29,8 +31,10 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
   const [mods, setMods] = useState<Mod[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [added, setAdded] = useState<Set<string>>(new Set());
+  const [filter, setFilter] = useState<ModFilter>(DEFAULT_FILTER);
 
   useEffect(() => {
+    setFilter(loadFilter());
     let cancelled = false;
     (async () => {
       try {
@@ -45,12 +49,19 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
     return () => { cancelled = true; };
   }, []);
 
+  function changeFilter(f: ModFilter) {
+    setFilter(f);
+    saveFilter(f);
+  }
+
+  const versions = useMemo(() => versionOptions(mods), [mods]);
+
   const inTag = useMemo(
     () =>
       mods
-        .filter((m) => (m.curatedTags[tag] ?? 0) >= MATCH_THRESHOLD)
+        .filter((m) => (m.curatedTags[tag] ?? 0) >= MATCH_THRESHOLD && matchesFilter(m, filter))
         .sort((a, b) => (b.downloads ?? 0) - (a.downloads ?? 0)),
-    [mods, tag]
+    [mods, tag, filter]
   );
 
   function add(modId: string) {
@@ -87,12 +98,13 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
 
         {status === "ready" && (
           <>
+            <ModFilterBar filter={filter} versions={versions} onChange={changeFilter} />
             <div className="row-head">
               <h2>{TAG_LABELS[tag]}</h2>
               <span className="count">{inTag.length} mods</span>
             </div>
             {inTag.length === 0 ? (
-              <p className="results-state">No mods in this theme yet.</p>
+              <p className="results-state">No mods match this loader/version in this theme.</p>
             ) : (
               <div className="grid">
                 {inTag.map((mod, i) => (

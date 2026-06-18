@@ -344,6 +344,16 @@ footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
 .beta-badge{display:inline-block;margin-left:10px;font-size:8px;letter-spacing:.5px;color:var(--void);background:var(--aqua);padding:3px 6px;vertical-align:middle;}
 .describe-note{margin-top:12px;font-size:11.5px;color:#5f5874;}
 
+/* ---------- EXPLORE FILTER BAR ---------- */
+.filter-bar{display:flex;flex-wrap:wrap;gap:14px 26px;align-items:center;justify-content:center;max-width:760px;margin:0 auto 22px;}
+.filter-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.filter-label{font-family:var(--pixel);font-size:8px;color:var(--gold);letter-spacing:.5px;margin-right:2px;}
+.filter-chip{font-size:12px;color:var(--mute);background:var(--slot);border:2px solid #2a2046;padding:7px 11px;cursor:pointer;}
+.filter-chip:hover{color:var(--ink);}
+.filter-chip.on{color:var(--void);background:var(--grass);border-color:var(--grass);box-shadow:0 2px 0 var(--grass-dk);}
+.filter-select{font-size:13px;color:var(--ink);background:var(--slot);border:2px solid #2a2046;padding:7px 10px;cursor:pointer;}
+.linklike{background:none;border:none;color:var(--grass);text-decoration:underline;cursor:pointer;font:inherit;padding:0;}
+
 /* ---------- EXPLORE SEARCH ---------- */
 .explore-search{position:relative;max-width:560px;margin:0 auto 30px;}
 .explore-search-input{width:100%;background:var(--slot);border:2px solid #2a2046;color:var(--ink);font-size:15px;padding:13px 40px 13px 16px;box-shadow:inset 0 2px 0 #0a0718;}
