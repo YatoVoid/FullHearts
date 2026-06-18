@@ -6,6 +6,7 @@ import type { Mod } from "@/lib/sources/types";
 import { loadPool } from "@/lib/catalog/clientPool";
 import { checkCompatibility, compatibilitySummary } from "@/lib/recommend/compatibility";
 import DownloadPack from "@/components/DownloadPack";
+import ServerCta from "@/components/ServerCta";
 import {
   listCollections,
   createCollection,
@@ -237,6 +238,8 @@ export default function Collections() {
             </section>
           ))
         )}
+
+        {collections.length > 0 && <ServerCta />}
       </main>
     </>
   );

@@ -1,24 +1,38 @@
-// Server-host referral CTA. Defaults to our Shockbyte referral ($4/sale);
-// override with NEXT_PUBLIC_HOST_REF to swap providers (e.g. BisectHosting
-// https://www.bisecthosting.com/clients/aff.php?aff=7330) without a code change.
-const HOST_REF =
+// Server-host affiliate CTA. BisectHosting is primary because it installs
+// Modrinth (.mrpack) modpacks in one click and runs a recurring creator
+// program; Shockbyte ($4/sale) is the budget secondary. Override either via env.
+const BISECT =
+  process.env.NEXT_PUBLIC_HOST_REF_BISECT ||
+  "https://www.bisecthosting.com/clients/aff.php?aff=7330";
+const SHOCKBYTE =
   process.env.NEXT_PUBLIC_HOST_REF ||
   "https://panel.shockbyte.com/refer/883382c0cadf9f25e5aab31b74cc6463";
 
-/** Non-intrusive, contextual prompt to rent a server for multiplayer modpacks. */
-export default function ServerCta() {
+/** Contextual prompt to rent a server for a multiplayer modpack. */
+export default function ServerCta({
+  compact = false,
+  heading,
+  body
+}: {
+  compact?: boolean;
+  heading?: string;
+  body?: string;
+}) {
   return (
-    <aside className="server-cta">
+    <aside className={`server-cta${compact ? " server-cta-compact" : ""}`}>
       <div className="server-cta-body">
-        <strong>Playing with friends?</strong>
-        <span>Run your modpack on an always-on server. Set up in minutes, no port forwarding.</span>
+        <strong>{heading ?? "Playing with friends?"}</strong>
+        <span>{body ?? "Run your modpack on an always-on server. BisectHosting installs Modrinth packs in one click."}</span>
       </div>
       <div className="server-cta-actions">
         {/* rel="sponsored" per Google guidance for paid/affiliate links */}
-        <a className="btn-primary" href={HOST_REF} target="_blank" rel="noopener noreferrer sponsored">
+        <a className="btn-primary" href={BISECT} target="_blank" rel="noopener noreferrer sponsored">
           Get a server
         </a>
-        <span className="server-cta-disc">Affiliate link. Supports Full Hearts at no cost to you.</span>
+        <span className="server-cta-disc">
+          Affiliate links, no cost to you.{" "}
+          <a href={SHOCKBYTE} target="_blank" rel="noopener noreferrer sponsored">Budget option →</a>
+        </span>
       </div>
     </aside>
   );
