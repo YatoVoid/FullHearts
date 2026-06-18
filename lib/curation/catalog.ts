@@ -108,7 +108,7 @@ export const CATALOG: CuratedMod[] = [
     summary: "A cozy cooking system with new crops, tools, and meals.",
     curatedTags: { "low-grind": 0.8, building: 0.3, rpg: 0.3 },
     reasonTemplate: "you wanted cozy, low-pressure content",
-    modrinthSlug: "farmers-delight"
+    modrinthSlug: "farmers-delight-refabricated"
   },
   {
     id: "terralith",
@@ -173,5 +173,253 @@ export const CATALOG: CuratedMod[] = [
   curatedTags: { food: 1, visual: 0.4 },
   reasonTemplate: "you wanted a crispy cookie expansion",
   modrinthSlug: "crispy!"
+  },
+  {
+    id: "emi",
+    name: "EMI",
+    summary: "A fast, modern item and recipe viewer with crafting trees and favorites.",
+    curatedTags: { interface: 1, qol: 0.6 },
+    reasonTemplate: "you wanted easy recipe lookups",
+    modrinthSlug: "emi"
+  },
+  {
+    id: "mouse-tweaks",
+    name: "Mouse Tweaks",
+    summary: "Smarter inventory dragging and item moving with the mouse.",
+    curatedTags: { qol: 1, interface: 0.4 },
+    reasonTemplate: "you wanted smoother inventory handling",
+    modrinthSlug: "mouse-tweaks"
+  },
+  {
+    id: "carry-on",
+    name: "Carry On",
+    summary: "Pick up and carry chests, machines, and mobs without breaking them.",
+    curatedTags: { qol: 1, building: 0.4 },
+    reasonTemplate: "you wanted easier hauling",
+    modrinthSlug: "carry-on"
+  },
+  {
+    id: "betterf3",
+    name: "BetterF3",
+    summary: "A clean, configurable replacement for the F3 debug screen.",
+    curatedTags: { interface: 1 },
+    reasonTemplate: "you wanted clearer on-screen info",
+    modrinthSlug: "betterf3"
+  },
+  {
+    id: "continuity",
+    name: "Continuity",
+    summary: "Connected textures done right, fully compatible with Sodium.",
+    curatedTags: { visual: 1 },
+    reasonTemplate: "you wanted nicer-looking blocks",
+    modrinthSlug: "continuity"
+  },
+  {
+    id: "modernfix",
+    name: "ModernFix",
+    summary: "Faster load times and lower memory use, stacks with other optimizers.",
+    curatedTags: { performance: 1, "low-end": 0.8 },
+    reasonTemplate: "you wanted faster loading and less RAM use",
+    modrinthSlug: "modernfix"
+  },
+  {
+    id: "not-enough-animations",
+    name: "Not Enough Animations",
+    summary: "Adds third-person animations for drinking, eating, climbing, and more.",
+    curatedTags: { visual: 1 },
+    reasonTemplate: "you wanted livelier player animations",
+    modrinthSlug: "not-enough-animations"
+  },
+  {
+    id: "3dskinlayers",
+    name: "3D Skin Layers",
+    summary: "Renders your skin's outer layer in 3D for a less flat look.",
+    curatedTags: { visual: 0.9 },
+    reasonTemplate: "you wanted a better-looking character",
+    modrinthSlug: "3dskinlayers"
+  },
+  {
+    id: "cobblemon",
+    name: "Cobblemon",
+    summary: "A polished, open-source Pokemon mod with capture, training, and battles.",
+    curatedTags: { rpg: 1, mobs: 0.8, exploration: 0.5 },
+    reasonTemplate: "you wanted creature collecting and battling",
+    modrinthSlug: "cobblemon"
+  },
+  {
+    id: "naturalist",
+    name: "Naturalist",
+    summary: "Realistic ambient wildlife: bears, deer, snakes, fireflies, and more.",
+    curatedTags: { mobs: 1, exploration: 0.4 },
+    reasonTemplate: "you wanted a more alive world",
+    modrinthSlug: "naturalist"
+  },
+  {
+    id: "friends-and-foes",
+    name: "Friends & Foes",
+    summary: "Adds the mobs Mojang showed but never shipped, faithfully done.",
+    curatedTags: { mobs: 1 },
+    reasonTemplate: "you wanted more creatures",
+    modrinthSlug: "friends-and-foes"
+  },
+  {
+    id: "creeper-overhaul",
+    name: "Creeper Overhaul",
+    summary: "Biome-specific creeper variants that look great and fit the world.",
+    curatedTags: { mobs: 1, visual: 0.4 },
+    reasonTemplate: "you wanted more characterful mobs",
+    modrinthSlug: "creeper-overhaul"
+  },
+  {
+    id: "deeperdarker",
+    name: "Deeper and Darker",
+    summary: "Expands the Deep Dark with a new dimension, gear, and a boss.",
+    curatedTags: { exploration: 1, combat: 0.6, structures: 0.5 },
+    reasonTemplate: "you wanted more to explore underground",
+    modrinthSlug: "deeperdarker"
+  },
+  {
+    id: "waystones",
+    name: "Waystones",
+    summary: "Place waystones and fast-travel between them across your world.",
+    curatedTags: { qol: 1, exploration: 0.5 },
+    reasonTemplate: "you wanted convenient fast travel",
+    modrinthSlug: "waystones"
+  },
+  {
+    id: "natures-compass",
+    name: "Nature's Compass",
+    summary: "Search for and locate any biome from a simple interface.",
+    curatedTags: { interface: 0.9, exploration: 0.7 },
+    reasonTemplate: "you wanted to find biomes easily",
+    modrinthSlug: "natures-compass"
+  },
+  {
+    id: "explorers-compass",
+    name: "Explorer's Compass",
+    summary: "Locate any structure in your world and track it down.",
+    curatedTags: { interface: 0.9, exploration: 0.7, structures: 0.5 },
+    reasonTemplate: "you wanted to find structures easily",
+    modrinthSlug: "explorers-compass"
+  },
+  {
+    id: "travelersbackpack",
+    name: "Traveler's Backpack",
+    summary: "Wearable backpacks with big storage, tanks, and crafting on the go.",
+    curatedTags: { qol: 1, exploration: 0.4 },
+    reasonTemplate: "you wanted more storage on the move",
+    modrinthSlug: "travelersbackpack"
+  },
+  {
+    id: "yungs-better-dungeons",
+    name: "YUNG's Better Dungeons",
+    summary: "Reworks vanilla dungeons into large, rewarding hand-built encounters.",
+    curatedTags: { structures: 1, exploration: 0.6, combat: 0.4 },
+    reasonTemplate: "you wanted better places to explore",
+    modrinthSlug: "yungs-better-dungeons"
+  },
+  {
+    id: "dungeons-and-taverns",
+    name: "Dungeons and Taverns",
+    summary: "Adds varied new structures and overhauls strongholds, datapack-light.",
+    curatedTags: { structures: 1, exploration: 0.6 },
+    reasonTemplate: "you wanted richer world structures",
+    modrinthSlug: "dungeons-and-taverns"
+  },
+  {
+    id: "better-combat",
+    name: "Better Combat",
+    summary: "Souls-like melee with combos, reach, and weapon-specific attacks.",
+    curatedTags: { combat: 1, rpg: 0.4 },
+    reasonTemplate: "you wanted deeper, snappier combat",
+    modrinthSlug: "better-combat"
+  },
+  {
+    id: "simply-swords",
+    name: "Simply Swords",
+    summary: "A big set of new weapon types with unique abilities and effects.",
+    curatedTags: { combat: 1, rpg: 0.5 },
+    reasonTemplate: "you wanted more weapon variety",
+    modrinthSlug: "simply-swords"
+  },
+  {
+    id: "immersive-armors",
+    name: "Immersive Armors",
+    summary: "Many balanced new armor sets, each with a useful set bonus.",
+    curatedTags: { combat: 0.8, rpg: 0.5 },
+    reasonTemplate: "you wanted more armor options",
+    modrinthSlug: "immersive-armors"
+  },
+  {
+    id: "biomes-o-plenty",
+    name: "Biomes O' Plenty",
+    summary: "Dozens of beautiful new biomes, blocks, and plants for overworld variety.",
+    curatedTags: { biome: 1, exploration: 0.6, visual: 0.4 },
+    reasonTemplate: "you wanted a richer overworld",
+    modrinthSlug: "biomes-o-plenty"
+  },
+  {
+    id: "biomeswevegone",
+    name: "Oh The Biomes We've Gone",
+    summary: "A massive biome expansion with new trees, terrain, and atmosphere.",
+    curatedTags: { biome: 1, exploration: 0.6 },
+    reasonTemplate: "you wanted far more biomes to find",
+    modrinthSlug: "oh-the-biomes-weve-gone"
+  },
+  {
+    id: "natures-spirit",
+    name: "Nature's Spirit",
+    summary: "Gorgeous new biomes, wood types, and decorative blocks.",
+    curatedTags: { biome: 1, building: 0.5, visual: 0.4 },
+    reasonTemplate: "you wanted prettier, more varied nature",
+    modrinthSlug: "natures-spirit"
+  },
+  {
+    id: "lets-do-vinery",
+    name: "[Let's Do] Vinery",
+    summary: "Grow grapes and craft wine with cozy winemaking blocks and decor.",
+    curatedTags: { food: 1, building: 0.5, "low-grind": 0.5 },
+    reasonTemplate: "you wanted cozy farming and crafting",
+    modrinthSlug: "lets-do-vinery"
+  },
+  {
+    id: "rightclickharvest",
+    name: "RightClickHarvest",
+    summary: "Harvest and replant crops with a single right-click.",
+    curatedTags: { qol: 1, food: 0.5 },
+    reasonTemplate: "you wanted easier farming",
+    modrinthSlug: "rightclickharvest"
+  },
+  {
+    id: "bountiful",
+    name: "Bountiful",
+    summary: "A bounty board that hands out fetch and hunt quests for rewards.",
+    curatedTags: { rpg: 0.8, exploration: 0.4 },
+    reasonTemplate: "you wanted goals and progression",
+    modrinthSlug: "bountiful"
+  },
+  {
+    id: "villager-trading-plus",
+    name: "Villager Trading Plus",
+    summary: "Expands villager trades with more useful, balanced offers.",
+    curatedTags: { qol: 0.8, rpg: 0.3 },
+    reasonTemplate: "you wanted better villager trading",
+    modrinthSlug: "trading+"
+  },
+  {
+    id: "enchantment-descriptions",
+    name: "Enchantment Descriptions",
+    summary: "Shows what each enchantment actually does, right in the tooltip.",
+    curatedTags: { interface: 1, magic: 0.4 },
+    reasonTemplate: "you wanted clearer enchantment info",
+    modrinthSlug: "enchantment-descriptions"
+  },
+  {
+    id: "immersive-aircraft",
+    name: "Immersive Aircraft",
+    summary: "Hand-crafted planes, airships, and gyrocopters for getting around.",
+    curatedTags: { tech: 0.8, exploration: 0.6 },
+    reasonTemplate: "you wanted new ways to travel",
+    modrinthSlug: "immersive-aircraft"
   }
 ];
