@@ -36,6 +36,7 @@ interface MrDependency {
 interface MrVersion {
   id: string;
   project_id: string;
+  version_type?: "release" | "beta" | "alpha";
   files: MrVersionFile[];
   dependencies?: MrDependency[];
 }
@@ -133,7 +134,10 @@ async function resolveVersionByProject(idOrSlug: string, loader: Loader, mc: str
     `&game_versions=${encodeURIComponent(JSON.stringify([mc]))}`;
   try {
     const versions = (await fetchJSON(url)) as MrVersion[];
-    return Array.isArray(versions) && versions.length > 0 ? versions[0] : null;
+    if (!Array.isArray(versions) || versions.length === 0) return null;
+    // Prefer the newest STABLE release (versions are date-desc). Bleeding-edge
+    // betas (e.g. a Sodium beta) are a common source of mod-vs-mod breakage.
+    return versions.find((v) => v.version_type === "release") ?? versions[0];
   } catch {
     return null;
   }
@@ -154,6 +158,23 @@ export interface MrpackResult {
   skipped: Mod[];
   /** How many required dependency libraries were auto-added. */
   depCount: number;
+  /** Mods dropped because they declared an incompatibility with another included mod. */
+  removedConflicts: { name: string; reason: string }[];
+}
+
+/** Pick which side of an incompatible pair to drop. Keeps load-bearing
+ *  (depended-upon) and user-selected mods; drops the declared-incompatible
+ *  target otherwise. */
+function chooseDrop(a: string, b: string, dependedUpon: Set<string>, selected: Set<string>): string {
+  const lba = dependedUpon.has(a);
+  const lbb = dependedUpon.has(b);
+  if (lba && !lbb) return b;
+  if (lbb && !lba) return a;
+  const sa = selected.has(a);
+  const sb = selected.has(b);
+  if (sa && !sb) return b;
+  if (sb && !sa) return a;
+  return b; // deterministic: drop the target of the incompatibility declaration
 }
 
 type WorkItem =
@@ -181,8 +202,10 @@ export async function buildMrpack(opts: {
 
   const resolvedByProject = new Map<string, MrVersion>(); // dedupe + closure
   const requested = new Set<string>();                    // avoid refetching a ref
-  const included: Mod[] = [];
   const skipped: Mod[] = [];
+  const modByProject = new Map<string, Mod>();            // project_id -> selected mod
+  const dependedUpon = new Set<string>();                 // required-dep project ids
+  const incompatEdges: [string, string][] = [];           // [declarer, target] project ids
 
   let queue: WorkItem[] = opts.mods.map((mod) => ({ kind: "mod", mod }));
 
@@ -202,12 +225,17 @@ export async function buildMrpack(opts: {
         if (item.kind === "mod") skipped.push(item.mod);
         continue;
       }
-      if (item.kind === "mod") included.push(item.mod);
+      if (item.kind === "mod") modByProject.set(version.project_id, item.mod);
       if (resolvedByProject.has(version.project_id)) continue;
       resolvedByProject.set(version.project_id, version);
 
       for (const dep of version.dependencies ?? []) {
+        if (dep.dependency_type === "incompatible") {
+          if (dep.project_id) incompatEdges.push([version.project_id, dep.project_id]);
+          continue;
+        }
         if (dep.dependency_type !== "required") continue; // skip optional/embedded
+        if (dep.project_id) dependedUpon.add(dep.project_id);
         if (dep.version_id) {
           const key = `v:${dep.version_id}`;
           if (!requested.has(key)) { requested.add(key); next.push({ kind: "version", id: dep.version_id }); }
@@ -220,13 +248,37 @@ export async function buildMrpack(opts: {
     queue = queue.concat(next);
   }
 
-  const files = [...resolvedByProject.values()]
-    .map(fileEntryFromVersion)
+  // Resolve declared mod-vs-mod incompatibilities by dropping one side of each
+  // conflicting pair (both must be present to be a real conflict).
+  const selectedProjects = new Set(modByProject.keys());
+  const nameOf = (pid: string) => modByProject.get(pid)?.name ?? "another mod";
+  const dropped = new Set<string>();
+  const removedConflicts: { name: string; reason: string }[] = [];
+  for (const [a, b] of incompatEdges) {
+    if (!resolvedByProject.has(a) || !resolvedByProject.has(b)) continue;
+    if (dropped.has(a) || dropped.has(b)) continue;
+    const victim = chooseDrop(a, b, dependedUpon, selectedProjects);
+    const other = victim === a ? b : a;
+    dropped.add(victim);
+    removedConflicts.push({ name: nameOf(victim), reason: `conflicts with ${nameOf(other)}` });
+  }
+
+  const files = [...resolvedByProject.entries()]
+    .filter(([pid]) => !dropped.has(pid))
+    .map(([, v]) => fileEntryFromVersion(v))
     .filter((f): f is MrpackFile => Boolean(f));
 
   if (files.length === 0) {
     throw new MrpackError("None of these mods had a compatible Modrinth file for that loader and version.");
   }
+
+  const included = opts.mods.filter((m) => {
+    const slug = m.modrinthSlug ?? m.id;
+    for (const [pid, mod] of modByProject) {
+      if ((mod.modrinthSlug ?? mod.id) === slug) return resolvedByProject.has(pid) && !dropped.has(pid);
+    }
+    return false;
+  });
 
   const index = buildIndex({
     name: opts.name,
@@ -239,5 +291,5 @@ export async function buildMrpack(opts: {
   const zipped = zipSync({ "modrinth.index.json": strToU8(JSON.stringify(index, null, 2)) });
   const blob = new Blob([zipped], { type: "application/x-modrinth-modpack+zip" });
   const depCount = Math.max(0, files.length - included.length);
-  return { blob, included, skipped, depCount };
+  return { blob, included, skipped, depCount, removedConflicts };
 }

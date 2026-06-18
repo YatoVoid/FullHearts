@@ -33,7 +33,7 @@ export default function DownloadPack({
     setState("building");
     setMsg("");
     try {
-      const { blob, included, skipped, depCount } = await buildMrpack({ name, mods, loader, mcVersion });
+      const { blob, included, skipped, depCount, removedConflicts } = await buildMrpack({ name, mods, loader, mcVersion });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -42,7 +42,11 @@ export default function DownloadPack({
       URL.revokeObjectURL(url);
       const deps = depCount > 0 ? ` + ${depCount} required ${depCount === 1 ? "dependency" : "dependencies"} (auto-included)` : "";
       const left = skipped.length > 0 ? ` ${skipped.length} mod(s) had no compatible Modrinth file and were left out.` : "";
-      setMsg(`Packed ${included.length} mods${deps}. Import the file into Modrinth App, Prism, or ATLauncher.${left}`);
+      const conflicts =
+        removedConflicts.length > 0
+          ? ` Removed ${removedConflicts.length} conflicting mod(s) so it'll launch: ${removedConflicts.map((c) => `${c.name} (${c.reason})`).join("; ")}.`
+          : "";
+      setMsg(`Packed ${included.length} mods${deps}. Import the file into Modrinth App, Prism, or ATLauncher.${left}${conflicts}`);
       setDone(true);
     } catch (e) {
       setMsg(e instanceof MrpackError ? e.message : "Couldn't build the modpack. Please try again.");

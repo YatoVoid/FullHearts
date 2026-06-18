@@ -77,6 +77,34 @@ describe("buildMrpack dependency closure", () => {
     expect(depCount).toBe(1); // fabric-api pulled in; optional architectury skipped
   });
 
+  it("drops one side of a declared mod-vs-mod incompatibility", async () => {
+    const lamb = { id: "vL", project_id: "LAMB", version_type: "release", files: [file("lamb.jar")], dependencies: [{ project_id: "SODIUMDL", version_id: null, dependency_type: "incompatible" }] };
+    const sodiumdl = { id: "vS", project_id: "SODIUMDL", version_type: "release", files: [file("sodiumdl.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/project/lamb/version")) return jsonRes([lamb]);
+      if (url.includes("/project/sodiumdl/version")) return jsonRes([sodiumdl]);
+      return jsonRes([]);
+    }));
+    const { removedConflicts, included } = await buildMrpack({
+      name: "t", mods: [modStub("lamb"), modStub("sodiumdl")], loader: "fabric", mcVersion: "1.21.1"
+    });
+    expect(removedConflicts).toHaveLength(1);
+    expect(included.length).toBe(1); // one side dropped
+  });
+
+  it("prefers a stable release over a newer beta", async () => {
+    const beta = { id: "b", project_id: "P", version_type: "beta", files: [file("beta.jar")], dependencies: [] };
+    const release = { id: "r", project_id: "P", version_type: "release", files: [file("release.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/project/p/version")) return jsonRes([beta, release]); // beta first (newer)
+      return jsonRes([]);
+    }));
+    const { included } = await buildMrpack({ name: "t", mods: [modStub("p")], loader: "fabric", mcVersion: "1.21.1" });
+    expect(included.map((m) => m.id)).toEqual(["p"]);
+  });
+
   it("reports mods with no compatible file as skipped", async () => {
     vi.stubGlobal("fetch", vi.fn(async (url: string) => {
       if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
