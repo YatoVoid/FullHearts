@@ -109,8 +109,24 @@ async function fetchJSON(url: string): Promise<unknown> {
   throw new Error(`${url} -> rate limited`);
 }
 
-/** Latest loader version for the launcher. Fabric/Quilt only (CORS-friendly). */
-export async function resolveLoaderVersion(loader: Loader): Promise<string | null> {
+// Forge/NeoForge version metadata isn't browser-CORS-accessible, so we ship a
+// known-good version per MC version. The loader version only needs to be valid
+// for that MC (loaders are stable across minor builds); bump these over time.
+const FORGE_VERSIONS: Record<string, string> = {
+  "1.21.1": "52.1.14",
+  "1.21": "51.0.33",
+  "1.20.1": "47.4.20"
+};
+const NEOFORGE_VERSIONS: Record<string, string> = {
+  "1.21.1": "21.1.233",
+  "1.21": "21.0.167"
+};
+
+/** Loader version string for the launcher. Fabric/Quilt are fetched live from
+ *  their meta APIs; Forge/NeoForge use a pinned known-good map. */
+export async function resolveLoaderVersion(loader: Loader, mc: string): Promise<string | null> {
+  if (loader === "forge") return FORGE_VERSIONS[mc] ?? null;
+  if (loader === "neoforge") return NEOFORGE_VERSIONS[mc] ?? null;
   try {
     if (loader === "fabric") {
       const list = (await fetchJSON("https://meta.fabricmc.net/v2/versions/loader")) as { loader?: { version?: string }; version?: string }[];
@@ -123,7 +139,7 @@ export async function resolveLoaderVersion(loader: Loader): Promise<string | nul
   } catch {
     return null;
   }
-  return null; // forge / neoforge not supported for one-click yet
+  return null;
 }
 
 /** Newest version of a project matching loader + game version, or null. */
@@ -193,10 +209,10 @@ export async function buildMrpack(opts: {
   loader: Loader;
   mcVersion: string;
 }): Promise<MrpackResult> {
-  const loaderVersion = await resolveLoaderVersion(opts.loader);
+  const loaderVersion = await resolveLoaderVersion(opts.loader, opts.mcVersion);
   if (!loaderVersion) {
     throw new MrpackError(
-      `One-click .mrpack currently supports Fabric and Quilt. For ${opts.loader}, use the install guide instead.`
+      `Couldn't determine a ${opts.loader} build for Minecraft ${opts.mcVersion}. Try a different version, or use the manual install guide.`
     );
   }
 

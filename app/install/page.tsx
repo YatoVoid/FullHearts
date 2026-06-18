@@ -143,7 +143,7 @@ export default function Install() {
           <div className="install-cta">
             <Link className="btn-primary" href="/collections">Download my modpack</Link>
           </div>
-          <p className="install-note">Works for Fabric &amp; Quilt loadouts. Modrinth-hosted mods only.</p>
+          <p className="install-note">Works for Fabric, Quilt, Forge &amp; NeoForge loadouts. Modrinth-hosted mods only.</p>
         </section>
 
         {/* Method 2: manual fallback */}
