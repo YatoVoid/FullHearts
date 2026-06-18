@@ -30,6 +30,7 @@ export default function Footer() {
       <p className="note">
         Mod data from <a href="https://modrinth.com" target="_blank" rel="noopener noreferrer">Modrinth</a>.
         {" · "}<Link href="/privacy">Privacy</Link>
+        {" · "}<Link href="/terms">Terms</Link>
       </p>
       <p className="note">Not affiliated with or endorsed by Mojang or Microsoft. Minecraft is a trademark of Mojang AB.</p>
     </footer>

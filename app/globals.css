@@ -23,6 +23,12 @@
 
 img{max-width:100%;}
 
+/* Visible keyboard-focus indicator (accessibility / ADA). Mouse clicks don't
+   trigger :focus-visible, so this only shows for keyboard/AT users. */
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:3px solid var(--aqua);outline-offset:2px;
+}
+
 html{scroll-behavior:smooth;}
 
 body{
