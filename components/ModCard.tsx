@@ -19,7 +19,6 @@ export default function ModCard({
       <div className="row1">
         {mod.iconUrl && <img className="tip-icon" src={mod.iconUrl} alt="" loading="lazy" />}
         <span className="title">{mod.name}</span>
-        {mod.verified && <span className="verified" title="Hand-tested by Full Hearts">✓ Verified</span>}
       </div>
       <div className="badges">
         {mod.loaders.slice(0, 3).map((l) => <span className="badge" key={l}>{l.toUpperCase()}</span>)}
