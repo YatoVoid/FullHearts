@@ -30,3 +30,7 @@ coverage/
 
 # TypeScript incremental build cache
 tsconfig.tsbuildinfo
+
+# Playwright audit artifacts
+.playwright-mcp/
+*.jpeg

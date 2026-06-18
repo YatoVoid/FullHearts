@@ -108,6 +108,8 @@ nav.links a:hover{color:var(--ink);}
   box-shadow:0 5px 0 #0c0820;transition:transform .08s,box-shadow .08s;
 }
 .btn-ghost:active{transform:translateY(4px);box-shadow:0 1px 0 #0c0820;}
+.btn-primary:disabled,.btn-ghost:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+.btn-primary:disabled:active,.btn-ghost:disabled:active{transform:none;}
 
 /* XP-bar divider */
 .xpbar{margin:54px auto 0;max-width:620px;height:14px;background:#1a1330;border:2px solid #050308;position:relative;overflow:hidden;}
