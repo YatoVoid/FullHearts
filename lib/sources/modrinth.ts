@@ -205,6 +205,29 @@ export async function searchMods(limit = 60): Promise<Mod[]> {
   return Array.from(bySlug.values());
 }
 
+/**
+ * Live, query-based Modrinth search for a specific mod the local pool doesn't
+ * have. Unlike searchMods, this keeps untaggable hits (the user asked for a
+ * specific mod by name) and is relevance-ordered.
+ */
+export async function searchModrinthQuery(
+  query: string,
+  opts: { loader?: Loader; version?: string; limit?: number } = {}
+): Promise<Mod[]> {
+  const facets: string[][] = [["project_type:mod"]];
+  if (opts.loader) facets.push([`categories:${opts.loader}`]);
+  if (opts.version) facets.push([`versions:${opts.version}`]);
+  const path =
+    `/search?query=${encodeURIComponent(query)}` +
+    `&limit=${opts.limit ?? 20}&index=relevance&facets=${encodeURIComponent(JSON.stringify(facets))}`;
+  try {
+    const res = await mrFetch<MrSearchResponse>(path);
+    return (res.hits ?? []).map(normalizeSearchHit);
+  } catch {
+    return [];
+  }
+}
+
 export const modrinthSource: ModSource = {
   name: "modrinth",
   async enrich(mods: CuratedMod[]): Promise<Map<string, Enrichment>> {

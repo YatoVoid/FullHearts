@@ -7,6 +7,8 @@ import { TAGS, TAG_LABELS, type Tag } from "@/lib/curation/tags";
 import { ensureCollection, addMod } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
 import { loadPool } from "@/lib/catalog/clientPool";
+import { searchModrinthQuery } from "@/lib/sources/modrinth";
+import { isHighQuality } from "@/lib/catalog/quality";
 import { type ModFilter, DEFAULT_FILTER, loadFilter, saveFilter, matchesFilter, versionOptions } from "@/lib/catalog/filter";
 import { HEART_SRC } from "@/lib/asset";
 import Footer from "@/components/Footer";
@@ -66,6 +68,9 @@ export default function Explore() {
   const [added, setAdded] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<ModFilter>(DEFAULT_FILTER);
+  const [live, setLive] = useState<Mod[]>([]);
+  const [liveLoading, setLiveLoading] = useState(false);
+  const [qualityOn, setQualityOn] = useState(true);
 
   useEffect(() => {
     setFilter(loadFilter());
@@ -101,6 +106,45 @@ export default function Explore() {
       .filter((m) => m.name.toLowerCase().includes(term) || (m.summary ?? "").toLowerCase().includes(term))
       .sort((a, b) => (b.downloads ?? 0) - (a.downloads ?? 0));
   }, [term, pool]);
+
+  // Live Modrinth fallback: find specific mods our library doesn't have.
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) { setLive([]); return; }
+    let cancelled = false;
+    setLiveLoading(true);
+    const t = setTimeout(async () => {
+      const hits = await searchModrinthQuery(q, {
+        loader: filter.loader === "all" ? undefined : filter.loader,
+        version: filter.version === "all" ? undefined : filter.version
+      });
+      if (cancelled) return;
+      // Drop anything already in our library (by id/slug) to avoid duplicates.
+      const known = new Set<string>();
+      for (const m of mods) { known.add(m.id); if (m.modrinthSlug) known.add(m.modrinthSlug); }
+      setLive(hits.filter((m) => !known.has(m.id) && !known.has(m.modrinthSlug ?? "")));
+      setLiveLoading(false);
+    }, 400);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [query, filter, mods]);
+
+  const liveShown = useMemo(
+    () => (qualityOn ? live.filter(isHighQuality) : live),
+    [live, qualityOn]
+  );
+  const liveHidden = live.length - liveShown.length;
+
+  function toggleQuality() {
+    if (qualityOn) {
+      const ok = window.confirm(
+        "Turn off the quality filter?\n\nThis shows every mod on Modrinth, including untested, niche, or abandoned ones. Only recommended if you know the exact mod you want."
+      );
+      if (!ok) return;
+      setQualityOn(false);
+    } else {
+      setQualityOn(true);
+    }
+  }
 
   function add(modId: string) {
     const collection = ensureCollection(DEFAULT_COLLECTION);
@@ -164,19 +208,46 @@ export default function Explore() {
         {status === "ready" && matches && (
           <>
             <div className="row-head">
-              <h2>Search results</h2>
+              <h2>From our tested library</h2>
               <span className="count">{matches.length} match{matches.length === 1 ? "" : "es"}</span>
             </div>
             {matches.length === 0 ? (
+              <p className="results-state">Nothing in our tested library matches “{query}”. Checking Modrinth below.</p>
+            ) : (
+              <div className="grid">{matches.map((mod, i) => card(mod, i))}</div>
+            )}
+
+            {/* Live Modrinth fallback for specific mods we don't curate */}
+            <div className="row-head" style={{ marginTop: 40 }}>
+              <h2>More from Modrinth</h2>
+              <label className="quality-toggle">
+                <input type="checkbox" checked={qualityOn} onChange={toggleQuality} />
+                High-quality only
+              </label>
+            </div>
+            {liveLoading ? (
+              <p className="results-state">Searching Modrinth…</p>
+            ) : liveShown.length > 0 ? (
+              <>
+                <div className="grid">{liveShown.map((mod, i) => card(mod, i))}</div>
+                {qualityOn && liveHidden > 0 && (
+                  <p className="request-note" style={{ textAlign: "center", marginTop: 14 }}>
+                    {liveHidden} lower-quality match{liveHidden === 1 ? "" : "es"} hidden. Untick “High-quality only” to see {liveHidden === 1 ? "it" : "them"}.
+                  </p>
+                )}
+              </>
+            ) : live.length > 0 && qualityOn ? (
+              <p className="results-state">
+                No high-quality Modrinth matches. <button type="button" className="linklike" onClick={toggleQuality}>Show all matches</button> (not recommended).
+              </p>
+            ) : (
               <div className="no-results">
-                <p className="results-state">No mods match “{query}”. Try a different word.</p>
+                <p className="results-state">No Modrinth mods match “{query}” for this loader/version.</p>
                 <a className="btn-ghost" href={requestUrl(query)} target="_blank" rel="noopener noreferrer">
                   ＋ Request “{query}” be added
                 </a>
                 <p className="request-note">We review every request by hand and only add mods that meet the bar.</p>
               </div>
-            ) : (
-              <div className="grid">{matches.map((mod, i) => card(mod, i))}</div>
             )}
           </>
         )}
