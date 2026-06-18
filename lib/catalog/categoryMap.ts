@@ -65,7 +65,7 @@ const TEXT_TAG_KEYWORDS: Partial<Record<Tag, string[]>> = {
   "low-end": ["low-end", "potato pc", "older hardware"],
   structures: ["structure", "dungeon", "villages", "ruins", "towers", "temples"],
   biome: ["biome", "terrain", "worldgen", "world generation"],
-  mobs: ["creatures", "monsters", "new mobs", "animals"],
+  mobs: ["creatures", "monsters", "new mobs", "mob variants"],
   food: ["cooking", "crops", "farming", "recipes", "cuisine", "meals"],
   qol: ["quality of life", "inventory", "storage", "convenien", "backpack"]
 };
@@ -80,8 +80,9 @@ export function tagsFromText(text: string): Partial<Record<Tag, number>> {
   for (const [tag, words] of Object.entries(TEXT_TAG_KEYWORDS) as [Tag, string[]][]) {
     let hits = 0;
     for (const w of words) if (haystack.includes(w)) hits++;
-    // 1 hit -> 0.5 (meets the 0.5 section/match bar), more hits raise confidence.
-    if (hits > 0) out[tag] = Math.min(0.5 + 0.15 * (hits - 1), 0.85);
+    // 1 hit -> 0.45 (below the 0.5 section bar, so a single weak keyword can't
+    // mis-place a mod like Vinery into "mobs"); 2+ hits cross into a section.
+    if (hits > 0) out[tag] = Math.min(0.45 + 0.15 * (hits - 1), 0.85);
   }
   return out;
 }
