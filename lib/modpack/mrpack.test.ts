@@ -1,5 +1,18 @@
-import { describe, it, expect } from "vitest";
-import { fileEntryFromVersion, buildIndex } from "@/lib/modpack/mrpack";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { fileEntryFromVersion, buildIndex, buildMrpack } from "@/lib/modpack/mrpack";
+import type { Mod } from "@/lib/sources/types";
+
+function file(filename: string) {
+  return { url: `https://cdn/${filename}`, filename, primary: true, size: 1, hashes: { sha1: "1", sha512: "5" } };
+}
+function modStub(id: string): Mod {
+  return { id, name: id, summary: "", curatedTags: {}, reasonTemplate: "", modrinthSlug: id, loaders: [], gameVersions: [], dependencies: [], links: {} };
+}
+function jsonRes(data: unknown) {
+  return { ok: true, json: async () => data } as Response;
+}
+
+afterEach(() => vi.restoreAllMocks());
 
 describe("fileEntryFromVersion", () => {
   const version = {
@@ -40,5 +53,42 @@ describe("buildIndex", () => {
     expect(idx.game).toBe("minecraft");
     expect(idx.name).toBe("My Pack");
     expect(idx.dependencies).toEqual({ minecraft: "1.21.1", "fabric-loader": "0.16.0" });
+  });
+});
+
+describe("buildMrpack dependency closure", () => {
+  it("auto-includes a mod's required dependencies (transitively)", async () => {
+    const modA = { id: "vA", project_id: "A", files: [file("moda.jar")], dependencies: [{ project_id: "FAPI", version_id: null, dependency_type: "required" }] };
+    const fapi = { id: "vF", project_id: "FAPI", files: [file("fabric-api.jar")], dependencies: [{ project_id: "ARCH", version_id: null, dependency_type: "optional" }] };
+
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/project/modA/version")) return jsonRes([modA]);
+      if (url.includes("/project/FAPI/version")) return jsonRes([fapi]);
+      return jsonRes([]); // ARCH is optional -> never requested
+    }));
+
+    const { included, skipped, depCount } = await buildMrpack({
+      name: "t", mods: [modStub("modA")], loader: "fabric", mcVersion: "1.21.1"
+    });
+
+    expect(included.map((m) => m.id)).toEqual(["modA"]);
+    expect(skipped).toHaveLength(0);
+    expect(depCount).toBe(1); // fabric-api pulled in; optional architectury skipped
+  });
+
+  it("reports mods with no compatible file as skipped", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/project/good/version")) return jsonRes([{ id: "vg", project_id: "G", files: [file("good.jar")], dependencies: [] }]);
+      return jsonRes([]); // "bad" has no matching version
+    }));
+
+    const { included, skipped } = await buildMrpack({
+      name: "t", mods: [modStub("good"), modStub("bad")], loader: "fabric", mcVersion: "1.21.1"
+    });
+
+    expect(included.map((m) => m.id)).toEqual(["good"]);
+    expect(skipped.map((m) => m.id)).toEqual(["bad"]);
   });
 });

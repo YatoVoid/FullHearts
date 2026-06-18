@@ -28,8 +28,16 @@ interface MrVersionFile {
   size: number;
   hashes: { sha1?: string; sha512?: string };
 }
+interface MrDependency {
+  project_id: string | null;
+  version_id: string | null;
+  dependency_type: "required" | "optional" | "incompatible" | "embedded";
+}
 interface MrVersion {
+  id: string;
+  project_id: string;
   files: MrVersionFile[];
+  dependencies?: MrDependency[];
 }
 
 const LOADER_KEY: Record<Loader, string> = {
@@ -42,7 +50,7 @@ const LOADER_KEY: Record<Loader, string> = {
 export class MrpackError extends Error {}
 
 /** Map a Modrinth version's primary jar to an mrpack file entry, or null. Pure. */
-export function fileEntryFromVersion(v: MrVersion): MrpackFile | null {
+export function fileEntryFromVersion(v: { files: MrVersionFile[] }): MrpackFile | null {
   const f = v.files.find((x) => x.primary) ?? v.files[0];
   if (!f || !f.filename.endsWith(".jar")) return null;
   if (!f.hashes.sha1 || !f.hashes.sha512) return null;
@@ -99,37 +107,47 @@ export async function resolveLoaderVersion(loader: Loader): Promise<string | nul
   return null; // forge / neoforge not supported for one-click yet
 }
 
-async function fetchModFile(mod: Mod, loader: Loader, mc: string): Promise<MrpackFile | null> {
-  const slug = mod.modrinthSlug ?? mod.id;
+/** Newest version of a project matching loader + game version, or null. */
+async function resolveVersionByProject(idOrSlug: string, loader: Loader, mc: string): Promise<MrVersion | null> {
   const url =
-    `${API}/project/${encodeURIComponent(slug)}/version` +
+    `${API}/project/${encodeURIComponent(idOrSlug)}/version` +
     `?loaders=${encodeURIComponent(JSON.stringify([loader]))}` +
     `&game_versions=${encodeURIComponent(JSON.stringify([mc]))}`;
   try {
     const versions = (await fetchJSON(url)) as MrVersion[];
-    if (!Array.isArray(versions) || versions.length === 0) return null;
-    return fileEntryFromVersion(versions[0]);
+    return Array.isArray(versions) && versions.length > 0 ? versions[0] : null;
   } catch {
     return null;
   }
 }
 
-/** Run an async fn over items with bounded concurrency (Modrinth rate-limit kindness). */
-async function mapLimit<T, R>(items: T[], limit: number, fn: (t: T) => Promise<R>): Promise<R[]> {
-  const out: R[] = [];
-  for (let i = 0; i < items.length; i += limit) {
-    const batch = items.slice(i, i + limit);
-    out.push(...(await Promise.all(batch.map(fn))));
+/** A specific version by its id (used when a dependency pins an exact version). */
+async function resolveVersionById(versionId: string): Promise<MrVersion | null> {
+  try {
+    return (await fetchJSON(`${API}/version/${encodeURIComponent(versionId)}`)) as MrVersion;
+  } catch {
+    return null;
   }
-  return out;
 }
 
 export interface MrpackResult {
   blob: Blob;
   included: Mod[];
   skipped: Mod[];
+  /** How many required dependency libraries were auto-added. */
+  depCount: number;
 }
 
+type WorkItem =
+  | { kind: "mod"; mod: Mod }
+  | { kind: "project"; id: string }
+  | { kind: "version"; id: string };
+
+/**
+ * Build a .mrpack including the selected mods AND the full closure of their
+ * required dependencies (fabric-api, architectury, geckolib, …) at versions
+ * matching the loader + game version. Without this the pack won't launch.
+ */
 export async function buildMrpack(opts: {
   name: string;
   mods: Mod[];
@@ -143,14 +161,50 @@ export async function buildMrpack(opts: {
     );
   }
 
-  const results = await mapLimit(opts.mods, 8, async (mod) => ({
-    mod,
-    file: await fetchModFile(mod, opts.loader, opts.mcVersion)
-  }));
+  const resolvedByProject = new Map<string, MrVersion>(); // dedupe + closure
+  const requested = new Set<string>();                    // avoid refetching a ref
+  const included: Mod[] = [];
+  const skipped: Mod[] = [];
 
-  const files = results.map((r) => r.file).filter((f): f is MrpackFile => Boolean(f));
-  const included = results.filter((r) => r.file).map((r) => r.mod);
-  const skipped = results.filter((r) => !r.file).map((r) => r.mod);
+  let queue: WorkItem[] = opts.mods.map((mod) => ({ kind: "mod", mod }));
+
+  async function resolve(item: WorkItem): Promise<MrVersion | null> {
+    if (item.kind === "mod") return resolveVersionByProject(item.mod.modrinthSlug ?? item.mod.id, opts.loader, opts.mcVersion);
+    if (item.kind === "project") return resolveVersionByProject(item.id, opts.loader, opts.mcVersion);
+    return resolveVersionById(item.id);
+  }
+
+  while (queue.length > 0) {
+    const batch = queue.splice(0, 8); // bounded concurrency, kind to rate limits
+    const settled = await Promise.all(batch.map(async (item) => ({ item, version: await resolve(item) })));
+    const next: WorkItem[] = [];
+
+    for (const { item, version } of settled) {
+      if (!version) {
+        if (item.kind === "mod") skipped.push(item.mod);
+        continue;
+      }
+      if (item.kind === "mod") included.push(item.mod);
+      if (resolvedByProject.has(version.project_id)) continue;
+      resolvedByProject.set(version.project_id, version);
+
+      for (const dep of version.dependencies ?? []) {
+        if (dep.dependency_type !== "required") continue; // skip optional/embedded
+        if (dep.version_id) {
+          const key = `v:${dep.version_id}`;
+          if (!requested.has(key)) { requested.add(key); next.push({ kind: "version", id: dep.version_id }); }
+        } else if (dep.project_id && !resolvedByProject.has(dep.project_id)) {
+          const key = `p:${dep.project_id}`;
+          if (!requested.has(key)) { requested.add(key); next.push({ kind: "project", id: dep.project_id }); }
+        }
+      }
+    }
+    queue = queue.concat(next);
+  }
+
+  const files = [...resolvedByProject.values()]
+    .map(fileEntryFromVersion)
+    .filter((f): f is MrpackFile => Boolean(f));
 
   if (files.length === 0) {
     throw new MrpackError("None of these mods had a compatible Modrinth file for that loader and version.");
@@ -166,5 +220,6 @@ export async function buildMrpack(opts: {
 
   const zipped = zipSync({ "modrinth.index.json": strToU8(JSON.stringify(index, null, 2)) });
   const blob = new Blob([zipped], { type: "application/x-modrinth-modpack+zip" });
-  return { blob, included, skipped };
+  const depCount = Math.max(0, files.length - included.length);
+  return { blob, included, skipped, depCount };
 }

@@ -31,18 +31,16 @@ export default function DownloadPack({
     setState("building");
     setMsg("");
     try {
-      const { blob, included, skipped } = await buildMrpack({ name, mods, loader, mcVersion });
+      const { blob, included, skipped, depCount } = await buildMrpack({ name, mods, loader, mcVersion });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = `${safeName(name)}.mrpack`;
       a.click();
       URL.revokeObjectURL(url);
-      setMsg(
-        skipped.length > 0
-          ? `Packed ${included.length} mods. ${skipped.length} had no compatible Modrinth file and were left out.`
-          : `Packed ${included.length} mods. Drop the file into Modrinth App, Prism, or ATLauncher.`
-      );
+      const deps = depCount > 0 ? ` + ${depCount} required ${depCount === 1 ? "dependency" : "dependencies"} (auto-included)` : "";
+      const left = skipped.length > 0 ? ` ${skipped.length} mod(s) had no compatible Modrinth file and were left out.` : "";
+      setMsg(`Packed ${included.length} mods${deps}. Import the file into Modrinth App, Prism, or ATLauncher.${left}`);
     } catch (e) {
       setMsg(e instanceof MrpackError ? e.message : "Couldn't build the modpack. Please try again.");
     } finally {
