@@ -1,5 +1,6 @@
 import type { Mod } from "@/lib/sources/types";
 import type { Profile } from "@/lib/recommend/profile";
+import { isBlocked } from "@/lib/curation/blocklist";
 
 /** Tiny weight so popularity only breaks ties between equal-affinity mods. */
 const POPULARITY_EPS = 1e-4;
@@ -31,11 +32,22 @@ export function score(mod: Mod, profile: Profile): number {
 }
 
 /**
- * Hard filters on live fields. Empty live arrays pass (graceful: a mod whose
- * enrichment failed still renders from curated data rather than vanishing).
+ * Hard filters on live fields.
+ *
+ * Verified (hand-tested) curated mods are trusted: empty live arrays pass, so a
+ * mod whose enrichment momentarily failed still renders rather than vanishing.
+ *
+ * The unvetted dynamic pool fails CLOSED — it must explicitly declare support
+ * for this loader AND game version. A Modrinth mod that lists "forge" only
+ * because it ships a flaky beta/SNAPSHOT port (a common crash source) is exactly
+ * what we must keep away from a Forge user; unknown support is treated as "no".
  */
 export function passesHardFilters(mod: Mod, profile: Profile): boolean {
-  if (mod.loaders.length > 0 && !mod.loaders.includes(profile.loader)) return false;
-  if (mod.gameVersions.length > 0 && !mod.gameVersions.includes(profile.gameVersion)) return false;
-  return true;
+  if (mod.verified) {
+    if (mod.loaders.length > 0 && !mod.loaders.includes(profile.loader)) return false;
+    if (mod.gameVersions.length > 0 && !mod.gameVersions.includes(profile.gameVersion)) return false;
+    return true;
+  }
+  if (isBlocked(mod, profile.loader)) return false;
+  return mod.loaders.includes(profile.loader) && mod.gameVersions.includes(profile.gameVersion);
 }

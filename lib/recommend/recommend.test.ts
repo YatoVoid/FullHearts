@@ -69,11 +69,23 @@ describe("score & hard filters", () => {
     expect(score(light, low)).toBeGreaterThan(score(heavy, low));
   });
 
-  it("filters out wrong loader/version but passes empty live arrays", () => {
+  it("filters out wrong loader/version", () => {
     const wrong = mod({ id: "w", name: "W", loaders: ["forge"], gameVersions: ["1.20.1"] });
-    const unenriched = mod({ id: "u", name: "U", loaders: [], gameVersions: [] });
     expect(passesHardFilters(wrong, profile)).toBe(false);
-    expect(passesHardFilters(unenriched, profile)).toBe(true);
+  });
+
+  it("trusts a VERIFIED mod with empty live arrays, but fails an unvetted one CLOSED", () => {
+    const verifiedUnenriched = mod({ id: "v", name: "V", loaders: [], gameVersions: [], verified: true });
+    const dynamicUnenriched = mod({ id: "d", name: "D", loaders: [], gameVersions: [] });
+    expect(passesHardFilters(verifiedUnenriched, profile)).toBe(true);
+    expect(passesHardFilters(dynamicUnenriched, profile)).toBe(false);
+  });
+
+  it("blocks a known-bad mod on the loader it crashes on", () => {
+    // profile is fabric here, so build a forge profile to exercise the denylist.
+    const forgeProfile = buildProfile({ playstyle: ["build"], loader: ["forge"], version: ["v121"], size: ["small"], hardware: [] });
+    const bad = mod({ id: "3dskinlayers", name: "3D Skin Layers", modrinthSlug: "3dskinlayers", loaders: ["forge"], gameVersions: ["1.21.1"] });
+    expect(passesHardFilters(bad, forgeProfile)).toBe(false);
   });
 });
 

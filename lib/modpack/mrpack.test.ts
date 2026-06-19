@@ -125,6 +125,37 @@ describe("buildMrpack dependency closure", () => {
     expect(skipped.map((m) => m.id)).toEqual(["needy"]);
   });
 
+  it("skips a Forge mod that only has a beta/SNAPSHOT build (no stable release)", async () => {
+    // tr7zw-style case: a Forge port exists but only as an unstable build that
+    // crashes on launch. We refuse to ship it rather than ship a known-flaky jar.
+    const betaOnly = { id: "vB", project_id: "B", version_type: "beta", files: [file("snapshot.jar")], dependencies: [] };
+    const stable = { id: "vG", project_id: "G", version_type: "release", files: [file("stable.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("52.1.14") || url.includes("forge")) { /* loader version is pinned, no fetch */ }
+      if (url.includes("/project/betamod/version")) return jsonRes([betaOnly]);
+      if (url.includes("/project/stablemod/version")) return jsonRes([stable]);
+      return jsonRes([]);
+    }));
+
+    const { included, skipped } = await buildMrpack({
+      name: "t", mods: [modStub("betamod"), modStub("stablemod")], loader: "forge", mcVersion: "1.21.1"
+    });
+
+    expect(included.map((m) => m.id)).toEqual(["stablemod"]);
+    expect(skipped.map((m) => m.id)).toEqual(["betamod"]);
+  });
+
+  it("still allows a beta build on Fabric (native target, lower risk)", async () => {
+    const beta = { id: "vB2", project_id: "FB", version_type: "beta", files: [file("fbeta.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/project/fabbeta/version")) return jsonRes([beta]);
+      return jsonRes([]);
+    }));
+    const { included } = await buildMrpack({ name: "t", mods: [modStub("fabbeta")], loader: "fabric", mcVersion: "1.21.1" });
+    expect(included.map((m) => m.id)).toEqual(["fabbeta"]);
+  });
+
   it("reports mods with no compatible file as skipped", async () => {
     vi.stubGlobal("fetch", vi.fn(async (url: string) => {
       if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);

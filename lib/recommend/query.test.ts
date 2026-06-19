@@ -8,7 +8,9 @@ function mod(id: string, name: string, summary: string, extra: Partial<Mod> = {}
     id, name, summary,
     curatedTags: {},
     reasonTemplate: "it fits",
-    loaders: [], gameVersions: [], dependencies: [], links: {},
+    // Real search hits always carry loader + version; the default profile is
+    // fabric/1.21.1, so match it (the hard filter now fails closed for unvetted mods).
+    loaders: ["fabric"], gameVersions: ["1.21.1"], dependencies: [], links: {},
     ...extra
   };
 }

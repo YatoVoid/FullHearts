@@ -153,7 +153,15 @@ async function resolveVersionByProject(idOrSlug: string, loader: Loader, mc: str
     if (!Array.isArray(versions) || versions.length === 0) return null;
     // Prefer the newest STABLE release (versions are date-desc). Bleeding-edge
     // betas (e.g. a Sodium beta) are a common source of mod-vs-mod breakage.
-    return versions.find((v) => v.version_type === "release") ?? versions[0];
+    const release = versions.find((v) => v.version_type === "release");
+    if (release) return release;
+    // On Forge/NeoForge, mods ported from Fabric often only ship unstable
+    // SNAPSHOT/beta builds that crash on launch (e.g. tr7zw's TRender). Refuse to
+    // ship a non-release build there rather than ship a known-flaky port; the mod
+    // is then skipped/reported. Fabric & Quilt are native targets, so a beta is
+    // lower-risk and we fall back to it.
+    if (loader === "forge" || loader === "neoforge") return null;
+    return versions[0];
   } catch {
     return null;
   }
