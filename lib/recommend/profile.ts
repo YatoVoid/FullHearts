@@ -12,7 +12,7 @@ export interface Profile {
 }
 
 export const PROFILE_DEFAULTS = {
-  loader: "fabric" as Loader,
+  loader: "forge" as Loader,
   gameVersion: "1.21.1",
   maxMods: 8,
   lowEnd: false

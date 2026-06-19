@@ -123,11 +123,11 @@ export const QUESTIONS: Question[] = [
     id: "loader",
     kind: "single",
     prompt: "Which mod loader do you use?",
-    help: "Not sure? Fabric is the most common starting point.",
+    help: "Most modded servers use Forge. Not sure? Forge is the safest pick.",
     options: [
-      { id: "fabric", label: "Fabric", loader: "fabric" },
-      { id: "forge", label: "Forge", loader: "forge" },
+      { id: "forge", label: "Forge (most popular)", loader: "forge" },
       { id: "neoforge", label: "NeoForge", loader: "neoforge" },
+      { id: "fabric", label: "Fabric", loader: "fabric" },
       { id: "quilt", label: "Quilt", loader: "quilt" }
     ]
   },

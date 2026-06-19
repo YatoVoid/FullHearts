@@ -10,7 +10,7 @@ function mod(partial: Partial<Mod> & Pick<Mod, "id" | "name">): Mod {
     summary: "s",
     curatedTags: {},
     reasonTemplate: "it fits",
-    loaders: ["fabric"],
+    loaders: ["forge", "fabric"],
     gameVersions: ["1.21.1"],
     dependencies: [],
     links: {},
@@ -36,9 +36,14 @@ describe("buildProfile", () => {
     expect(p.lowEnd).toBe(true);
   });
 
+  it("defaults to the Forge loader when none is answered", () => {
+    const p = buildProfile({ playstyle: ["build"] });
+    expect(p.loader).toBe("forge");
+  });
+
   it("falls back to defaults when answers are empty", () => {
     const p = buildProfile({});
-    expect(p.loader).toBe("fabric");
+    expect(p.loader).toBe("forge");
     expect(p.gameVersion).toBe("1.21.1");
     expect(p.maxMods).toBe(8);
     expect(p.lowEnd).toBe(false);

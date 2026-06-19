@@ -9,8 +9,8 @@ function mod(id: string, name: string, summary: string, extra: Partial<Mod> = {}
     curatedTags: {},
     reasonTemplate: "it fits",
     // Real search hits always carry loader + version; the default profile is
-    // fabric/1.21.1, so match it (the hard filter now fails closed for unvetted mods).
-    loaders: ["fabric"], gameVersions: ["1.21.1"], dependencies: [], links: {},
+    // forge/1.21.1, so match it (the hard filter now fails closed for unvetted mods).
+    loaders: ["forge", "fabric"], gameVersions: ["1.21.1"], dependencies: [], links: {},
     ...extra
   };
 }
