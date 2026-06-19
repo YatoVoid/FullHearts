@@ -377,6 +377,11 @@ footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
 .quality-toggle input{width:15px;height:15px;accent-color:var(--grass);cursor:pointer;}
 
 /* ---------- EXPLORE SEARCH ---------- */
+/* sticky "adding to <collection>" picker so the target is always visible/changeable */
+.coll-picker{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:0 auto 22px;padding:10px 14px;background:rgba(13,9,28,.92);backdrop-filter:blur(4px);border:2px solid var(--grass);box-shadow:0 4px 0 #0a0718;width:fit-content;max-width:100%;}
+.coll-picker label{font-family:var(--pixel);font-size:9px;color:var(--grass);letter-spacing:1px;}
+.coll-picker select{background:var(--slot);border:2px solid #2a2046;color:var(--ink);font-size:14px;padding:8px 12px;box-shadow:inset 0 2px 0 #0a0718;cursor:pointer;max-width:70vw;}
+.coll-picker select:focus{outline:none;border-color:var(--grass);}
 .explore-search{position:relative;max-width:560px;margin:0 auto 30px;}
 .explore-search-input{width:100%;background:var(--slot);border:2px solid #2a2046;color:var(--ink);font-size:15px;padding:13px 40px 13px 16px;box-shadow:inset 0 2px 0 #0a0718;}
 .explore-search-input:focus{outline:none;border-color:var(--grass);}

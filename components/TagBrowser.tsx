@@ -4,17 +4,16 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { Mod } from "@/lib/sources/types";
 import { TAG_LABELS, type Tag } from "@/lib/curation/tags";
-import { ensureCollection, addMod } from "@/lib/storage/collections";
-import { setLastCollectionId } from "@/lib/storage/user";
+import { useCollectionTarget } from "@/lib/storage/useCollectionTarget";
 import { loadPool } from "@/lib/catalog/clientPool";
 import { type ModFilter, DEFAULT_FILTER, loadFilter, saveFilter, matchesFilter, versionOptions } from "@/lib/catalog/filter";
 import { HEART_SRC } from "@/lib/asset";
 import Footer from "@/components/Footer";
 import ModCard from "@/components/ModCard";
 import ModFilterBar from "@/components/ModFilterBar";
+import CollectionPicker from "@/components/CollectionPicker";
 import ScrollTop from "@/components/ScrollTop";
 
-const DEFAULT_COLLECTION = "My loadout";
 const MATCH_THRESHOLD = 0.5; // same bar Explore uses to place a mod in a tag
 
 const HEART = (
@@ -30,7 +29,7 @@ const HEART = (
 export default function TagBrowser({ tag }: { tag: Tag }) {
   const [mods, setMods] = useState<Mod[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-  const [added, setAdded] = useState<Set<string>>(new Set());
+  const { collections, targetId, selectTarget, createAndSelect, addToTarget, added } = useCollectionTarget();
   const [filter, setFilter] = useState<ModFilter>(DEFAULT_FILTER);
 
   useEffect(() => {
@@ -64,13 +63,6 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
     [mods, tag, filter]
   );
 
-  function add(modId: string) {
-    const collection = ensureCollection(DEFAULT_COLLECTION);
-    addMod(collection.id, modId);
-    setLastCollectionId(collection.id);
-    setAdded((prev) => new Set(prev).add(modId));
-  }
-
   return (
     <>
       <header className="nav">
@@ -98,6 +90,7 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
 
         {status === "ready" && (
           <>
+            <CollectionPicker collections={collections} targetId={targetId} onSelect={selectTarget} onCreate={(n) => createAndSelect(n)} />
             <ModFilterBar filter={filter} versions={versions} onChange={changeFilter} />
             <div className="row-head">
               <h2>{TAG_LABELS[tag]}</h2>
@@ -108,7 +101,7 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
             ) : (
               <div className="grid">
                 {inTag.map((mod, i) => (
-                  <ModCard key={mod.id} mod={mod} i={i} added={added.has(mod.id)} onAdd={add} />
+                  <ModCard key={mod.id} mod={mod} i={i} added={added.has(mod.id)} onAdd={addToTarget} />
                 ))}
               </div>
             )}

@@ -4,8 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { Mod } from "@/lib/sources/types";
 import { TAGS, TAG_LABELS, type Tag } from "@/lib/curation/tags";
-import { ensureCollection, addMod } from "@/lib/storage/collections";
-import { setLastCollectionId } from "@/lib/storage/user";
+import { useCollectionTarget } from "@/lib/storage/useCollectionTarget";
 import { loadPool } from "@/lib/catalog/clientPool";
 import { searchModrinthQuery } from "@/lib/sources/modrinth";
 import { isHighQuality } from "@/lib/catalog/quality";
@@ -15,9 +14,9 @@ import Footer from "@/components/Footer";
 import AdSlot from "@/components/AdSlot";
 import ModCard from "@/components/ModCard";
 import ModFilterBar from "@/components/ModFilterBar";
+import CollectionPicker from "@/components/CollectionPicker";
 import ScrollTop from "@/components/ScrollTop";
 
-const DEFAULT_COLLECTION = "My loadout";
 const MIN_SECTION = 4;     // a tag needs this many mods to get a section
 const PER_SECTION = 18;    // cap cards shown per section
 
@@ -65,7 +64,7 @@ function buildSections(mods: Mod[]): Section[] {
 export default function Explore() {
   const [mods, setMods] = useState<Mod[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-  const [added, setAdded] = useState<Set<string>>(new Set());
+  const { collections, targetId, selectTarget, createAndSelect, addToTarget, added } = useCollectionTarget();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<ModFilter>(DEFAULT_FILTER);
   const [live, setLive] = useState<Mod[]>([]);
@@ -146,15 +145,8 @@ export default function Explore() {
     }
   }
 
-  function add(modId: string) {
-    const collection = ensureCollection(DEFAULT_COLLECTION);
-    addMod(collection.id, modId);
-    setLastCollectionId(collection.id);
-    setAdded((prev) => new Set(prev).add(modId));
-  }
-
   const card = (mod: Mod, i: number) => (
-    <ModCard key={mod.id} mod={mod} i={i} added={added.has(mod.id)} onAdd={add} />
+    <ModCard key={mod.id} mod={mod} i={i} added={added.has(mod.id)} onAdd={addToTarget} />
   );
 
   return (
@@ -185,6 +177,7 @@ export default function Explore() {
 
         {status === "ready" && (
           <>
+            <CollectionPicker collections={collections} targetId={targetId} onSelect={selectTarget} onCreate={(n) => createAndSelect(n)} />
             <ModFilterBar filter={filter} versions={versions} onChange={changeFilter} />
             <div className="explore-search">
               <input
