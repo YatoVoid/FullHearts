@@ -51,7 +51,8 @@ describe("recommendedSize", () => {
 describe("sizeOptionsFor", () => {
   it("never offers a tier far above availability and marks one recommended", () => {
     const opts = sizeOptionsFor(50);
-    expect(opts.map((o) => o.maxMods)).toEqual([10, 25]);
+    expect(opts.map((o) => o.maxMods)).toEqual([10, 25, 40]); // capped at availability, not below it
+    expect(opts.map((o) => o.maxMods)).not.toContain(60);     // 60 > 50 available
     expect(opts.filter((o) => o.recommended)).toHaveLength(1);
     expect(opts.find((o) => o.recommended)?.maxMods).toBe(25);
   });

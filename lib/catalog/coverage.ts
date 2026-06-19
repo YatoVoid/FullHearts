@@ -77,7 +77,9 @@ export function recommendedSize(count: number): number {
  */
 export function sizeOptionsFor(count: number): { id: string; label: string; maxMods: number; recommended: boolean }[] {
   const rec = recommendedSize(count);
-  const cap = Math.max(Math.round(count * 0.5), 10);
+  // Offer every tier up to what's actually available (so 50 mods can offer ~40),
+  // never a tier above availability. The recommendation sits in the middle.
+  const cap = Math.max(count, 10);
   const tiers = TIERS.filter((t) => t <= cap);
   return tiers.map((t) => ({ ...TIER_META[t], maxMods: t, recommended: t === rec }));
 }
