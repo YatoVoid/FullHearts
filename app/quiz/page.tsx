@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { QUESTIONS, type QuizAnswers } from "@/lib/curation/questions";
 import { HEART_SRC } from "@/lib/asset";
+import { computeCoverage, recommendedVersion, sizeOptionsFor, type Coverage } from "@/lib/catalog/coverage";
+import snapshotCoverage from "@/lib/catalog/coverage.snapshot.json";
+import { loadPool } from "@/lib/catalog/clientPool";
+import type { Loader } from "@/lib/sources/types";
 
 const ANSWERS_KEY = "fullhearts:answers";
 const PROGRESS_KEY = "fullhearts:progress";
@@ -29,6 +33,17 @@ export default function Quiz() {
   const [answers, setAnswers] = useState<QuizAnswers>({});
   const [resume, setResume] = useState<SavedProgress | null>(null);
   const hydrated = useRef(false);
+
+  // Coverage: start from the committed snapshot, replace with live counts when the
+  // cached pool resolves. Counts are advisory and never block advancing.
+  const [coverage, setCoverage] = useState<Coverage>(snapshotCoverage as Coverage);
+  useEffect(() => {
+    let cancelled = false;
+    loadPool()
+      .then((pool) => { if (!cancelled) setCoverage(computeCoverage(pool)); })
+      .catch(() => { /* keep snapshot */ });
+    return () => { cancelled = true; };
+  }, []);
 
   // On mount, surface any in-progress quiz as a resume offer (don't auto-apply).
   useEffect(() => {
@@ -80,6 +95,40 @@ export default function Quiz() {
   const progress = Math.round((step / total) * 100);
   const canAdvance = selected.length > 0;
 
+  // Map quiz answers -> chosen loader/version (loader option ids equal loader names).
+  const chosenLoader = (answers.loader?.[0] ?? "forge") as Loader;
+  const versionById: Record<string, string> = {};
+  for (const o of QUESTIONS.find((q) => q.id === "version")?.options ?? []) {
+    if (o.gameVersion) versionById[o.id] = o.gameVersion;
+  }
+  const chosenVersion = versionById[answers.version?.[0] ?? ""] ?? "1.20.1";
+  const recVersion = recommendedVersion(coverage, chosenLoader);
+
+  // Decorate the version and size steps with live availability. Other steps render
+  // their static options unchanged. Size ids stay aligned so buildProfile is intact.
+  type DisplayOption = { id: string; label: string; note?: string; recommended?: boolean };
+  let displayOptions: DisplayOption[];
+  if (question.id === "version") {
+    displayOptions = question.options.map((o) => {
+      const count = coverage[chosenLoader]?.[o.gameVersion ?? ""] ?? 0;
+      return {
+        id: o.id,
+        label: o.label,
+        note: `${count} mods`,
+        recommended: o.gameVersion === recVersion
+      };
+    });
+  } else if (question.id === "size") {
+    const count = coverage[chosenLoader]?.[chosenVersion] ?? 0;
+    displayOptions = sizeOptionsFor(count).map((o) => ({
+      id: o.id,
+      label: o.label,
+      recommended: o.recommended
+    }));
+  } else {
+    displayOptions = question.options.map((o) => ({ id: o.id, label: o.label }));
+  }
+
   const toggle = useCallback(
     (optionId: string) => {
       setAnswers((prev) => {
@@ -130,14 +179,14 @@ export default function Quiz() {
         back();
       } else {
         const n = Number(e.key);
-        if (Number.isInteger(n) && n >= 1 && n <= question.options.length) {
-          toggle(question.options[n - 1].id);
+        if (Number.isInteger(n) && n >= 1 && n <= displayOptions.length) {
+          toggle(displayOptions[n - 1].id);
         }
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [next, back, toggle, question, resume]);
+  }, [next, back, toggle, displayOptions, resume]);
 
   return (
     <>
@@ -170,9 +219,15 @@ export default function Quiz() {
 
         <h2>{question.prompt}</h2>
         {question.help && <p className="help">{question.help}</p>}
+        {question.id === "version" && (
+          <p className="help">
+            Recommended for {chosenLoader.charAt(0).toUpperCase() + chosenLoader.slice(1)}:{" "}
+            {recVersion} (biggest mod selection).
+          </p>
+        )}
 
         <div className="quiz-options" role={question.kind === "single" ? "radiogroup" : "group"}>
-          {question.options.map((opt, i) => {
+          {displayOptions.map((opt, i) => {
             const isSel = selected.includes(opt.id);
             return (
               <button
@@ -183,7 +238,9 @@ export default function Quiz() {
                 onClick={() => toggle(opt.id)}
               >
                 <span className="key">{i + 1}</span>
-                {opt.label}
+                <span className="quiz-option-label">{opt.label}</span>
+                {opt.recommended && <span className="quiz-tag">Recommended</span>}
+                {opt.note && <span className="quiz-note">{opt.note}</span>}
               </button>
             );
           })}
