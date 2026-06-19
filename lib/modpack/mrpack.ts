@@ -221,6 +221,7 @@ export async function buildMrpack(opts: {
   const skipped: Mod[] = [];
   const modByProject = new Map<string, Mod>();            // project_id -> selected mod
   const dependedUpon = new Set<string>();                 // required-dep project ids
+  const requiredEdges: [string, string][] = [];           // [parent, requiredChild] project ids
   const incompatEdges: [string, string][] = [];           // [declarer, target] project ids
 
   let queue: WorkItem[] = opts.mods.map((mod) => ({ kind: "mod", mod }));
@@ -251,7 +252,7 @@ export async function buildMrpack(opts: {
           continue;
         }
         if (dep.dependency_type !== "required") continue; // skip optional/embedded
-        if (dep.project_id) dependedUpon.add(dep.project_id);
+        if (dep.project_id) { dependedUpon.add(dep.project_id); requiredEdges.push([version.project_id, dep.project_id]); }
         if (dep.version_id) {
           const key = `v:${dep.version_id}`;
           if (!requested.has(key)) { requested.add(key); next.push({ kind: "version", id: dep.version_id }); }
@@ -264,11 +265,40 @@ export async function buildMrpack(opts: {
     queue = queue.concat(next);
   }
 
-  // Resolve declared mod-vs-mod incompatibilities by dropping one side of each
-  // conflicting pair (both must be present to be a real conflict).
   const selectedProjects = new Set(modByProject.keys());
   const nameOf = (pid: string) => modByProject.get(pid)?.name ?? "another mod";
   const dropped = new Set<string>();
+
+  // Validate the required-dependency closure: only ship a selected mod if every
+  // required dependency it (transitively) declares actually resolved for this
+  // loader + MC version. Otherwise the launcher aborts with "requires X, which
+  // is missing". Unsatisfiable mods are dropped and reported as skipped.
+  const unresolvedRequired = new Set([...dependedUpon].filter((pid) => !resolvedByProject.has(pid)));
+  if (unresolvedRequired.size > 0) {
+    const reqChildren = new Map<string, string[]>();
+    for (const [p, c] of requiredEdges) {
+      const arr = reqChildren.get(p);
+      if (arr) arr.push(c);
+      else reqChildren.set(p, [c]);
+    }
+    const missesDep = (root: string): boolean => {
+      const seen = new Set([root]);
+      const stack = [root];
+      while (stack.length) {
+        for (const c of reqChildren.get(stack.pop()!) ?? []) {
+          if (unresolvedRequired.has(c)) return true;
+          if (!seen.has(c)) { seen.add(c); stack.push(c); }
+        }
+      }
+      return false;
+    };
+    for (const pid of selectedProjects) {
+      if (missesDep(pid)) { dropped.add(pid); skipped.push(modByProject.get(pid)!); }
+    }
+  }
+
+  // Resolve declared mod-vs-mod incompatibilities by dropping one side of each
+  // conflicting pair (both must be present to be a real conflict).
   const removedConflicts: { name: string; reason: string }[] = [];
   for (const [a, b] of incompatEdges) {
     if (!resolvedByProject.has(a) || !resolvedByProject.has(b)) continue;

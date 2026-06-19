@@ -105,6 +105,26 @@ describe("buildMrpack dependency closure", () => {
     expect(included.map((m) => m.id)).toEqual(["p"]);
   });
 
+  it("drops a mod whose required dependency has no compatible version (and reports it skipped)", async () => {
+    // modA requires DEP, but DEP has no matching version -> shipping modA alone
+    // would produce a pack that fails to launch with "requires DEP, which is missing".
+    const needy = { id: "vN", project_id: "NEEDY", version_type: "release", files: [file("needy.jar")], dependencies: [{ project_id: "MISSINGDEP", version_id: null, dependency_type: "required" }] };
+    const fine = { id: "vOK", project_id: "OK", version_type: "release", files: [file("fine.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/project/needy/version")) return jsonRes([needy]);
+      if (url.includes("/project/fine/version")) return jsonRes([fine]);
+      return jsonRes([]); // MISSINGDEP unresolvable
+    }));
+
+    const { included, skipped } = await buildMrpack({
+      name: "t", mods: [modStub("needy"), modStub("fine")], loader: "fabric", mcVersion: "1.21.1"
+    });
+
+    expect(included.map((m) => m.id)).toEqual(["fine"]);
+    expect(skipped.map((m) => m.id)).toEqual(["needy"]);
+  });
+
   it("reports mods with no compatible file as skipped", async () => {
     vi.stubGlobal("fetch", vi.fn(async (url: string) => {
       if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);

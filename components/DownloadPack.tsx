@@ -41,7 +41,7 @@ export default function DownloadPack({
       a.click();
       URL.revokeObjectURL(url);
       const deps = depCount > 0 ? ` + ${depCount} required ${depCount === 1 ? "dependency" : "dependencies"} (auto-included)` : "";
-      const left = skipped.length > 0 ? ` ${skipped.length} mod(s) had no compatible Modrinth file and were left out.` : "";
+      const left = skipped.length > 0 ? ` ${skipped.length} mod(s) couldn't be included (no compatible file or a required dependency was unavailable) and were left out.` : "";
       const conflicts =
         removedConflicts.length > 0
           ? ` Removed ${removedConflicts.length} conflicting mod(s) so it'll launch: ${removedConflicts.map((c) => `${c.name} (${c.reason})`).join("; ")}.`
