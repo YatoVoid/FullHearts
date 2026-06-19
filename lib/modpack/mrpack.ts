@@ -1,5 +1,20 @@
 import { zipSync, strToU8 } from "fflate";
 import type { Loader, Mod } from "@/lib/sources/types";
+import type { ManifestInfo } from "@/lib/modpack/manifest";
+import { satisfies } from "@/lib/modpack/range";
+
+/** Reads jar manifests via the server route (keyed by immutable jar URL). */
+export type JarInspector = (jobs: { key: string; url: string }[]) => Promise<Record<string, ManifestInfo | null>>;
+
+const defaultInspector: JarInspector = async (jobs) => {
+  const r = await fetch("/api/manifest-deps", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jobs })
+  });
+  if (!r.ok) return {};
+  return (await r.json()) as Record<string, ManifestInfo | null>;
+};
 
 /**
  * Builds a Modrinth modpack (.mrpack) entirely in the browser. A .mrpack is a
@@ -167,6 +182,20 @@ async function resolveVersionByProject(idOrSlug: string, loader: Loader, mc: str
   }
 }
 
+/** All loader+mc versions of a project, newest first (for range reconciliation). */
+async function listVersionsByProject(idOrSlug: string, loader: Loader, mc: string): Promise<MrVersion[]> {
+  const url =
+    `${API}/project/${encodeURIComponent(idOrSlug)}/version` +
+    `?loaders=${encodeURIComponent(JSON.stringify([loader]))}` +
+    `&game_versions=${encodeURIComponent(JSON.stringify([mc]))}`;
+  try {
+    const versions = (await fetchJSON(url)) as MrVersion[];
+    return Array.isArray(versions) ? versions : [];
+  } catch {
+    return [];
+  }
+}
+
 /** A specific version by its id (used when a dependency pins an exact version). */
 async function resolveVersionById(versionId: string): Promise<MrVersion | null> {
   try {
@@ -245,7 +274,8 @@ function chooseDrop(a: string, b: string, dependedUpon: Set<string>, selected: S
 type WorkItem =
   | { kind: "mod"; mod: Mod }
   | { kind: "project"; id: string }
-  | { kind: "version"; id: string };
+  | { kind: "version"; id: string }
+  | { kind: "resolved"; version: MrVersion }; // already-fetched (a discovered undeclared dep)
 
 /**
  * Build a .mrpack including the selected mods AND the full closure of their
@@ -257,6 +287,8 @@ export async function buildMrpack(opts: {
   mods: Mod[];
   loader: Loader;
   mcVersion: string;
+  /** Override the jar-manifest reader (defaults to the /api/manifest-deps route). */
+  inspectJars?: JarInspector;
 }): Promise<MrpackResult> {
   const loaderVersion = await resolveLoaderVersion(opts.loader, opts.mcVersion);
   if (!loaderVersion) {
@@ -278,72 +310,215 @@ export async function buildMrpack(opts: {
   async function resolve(item: WorkItem): Promise<MrVersion | null> {
     if (item.kind === "mod") return resolveVersionByProject(item.mod.modrinthSlug ?? item.mod.id, opts.loader, opts.mcVersion);
     if (item.kind === "project") return resolveVersionByProject(item.id, opts.loader, opts.mcVersion);
+    if (item.kind === "resolved") return item.version;
     return resolveVersionById(item.id);
   }
 
-  while (queue.length > 0) {
-    const batch = queue.splice(0, 5); // bounded concurrency, kind to rate limits
-    const settled = await Promise.all(batch.map(async (item) => ({ item, version: await resolve(item) })));
-    const next: WorkItem[] = [];
-
-    for (const { item, version } of settled) {
-      if (!version) {
-        if (item.kind === "mod") skipped.push(item.mod);
-        continue;
-      }
-      if (item.kind === "mod") modByProject.set(version.project_id, item.mod);
-      if (resolvedByProject.has(version.project_id)) continue;
-      resolvedByProject.set(version.project_id, version);
-
-      for (const dep of version.dependencies ?? []) {
-        if (dep.dependency_type === "incompatible") {
-          if (dep.project_id) incompatEdges.push([version.project_id, dep.project_id]);
+  // Drain the queue, recording each resolved version and its Modrinth-declared
+  // required/incompatible edges. Re-runnable: the manifest pass feeds new items
+  // back in and calls this again to follow their Modrinth dependencies too.
+  async function runClosure() {
+    while (queue.length > 0) {
+      const batch = queue.splice(0, 5); // bounded concurrency, kind to rate limits
+      const settled = await Promise.all(batch.map(async (item) => ({ item, version: await resolve(item) })));
+      const next: WorkItem[] = [];
+      for (const { item, version } of settled) {
+        if (!version) {
+          if (item.kind === "mod") skipped.push(item.mod);
           continue;
         }
-        if (dep.dependency_type !== "required") continue; // skip optional/embedded
-        if (dep.project_id) { dependedUpon.add(dep.project_id); requiredEdges.push([version.project_id, dep.project_id]); }
-        if (dep.version_id) {
-          const key = `v:${dep.version_id}`;
-          if (!requested.has(key)) { requested.add(key); next.push({ kind: "version", id: dep.version_id }); }
-        } else if (dep.project_id && !resolvedByProject.has(dep.project_id)) {
-          const key = `p:${dep.project_id}`;
-          if (!requested.has(key)) { requested.add(key); next.push({ kind: "project", id: dep.project_id }); }
+        if (item.kind === "mod") modByProject.set(version.project_id, item.mod);
+        if (resolvedByProject.has(version.project_id)) continue;
+        resolvedByProject.set(version.project_id, version);
+
+        for (const dep of version.dependencies ?? []) {
+          if (dep.dependency_type === "incompatible") {
+            if (dep.project_id) incompatEdges.push([version.project_id, dep.project_id]);
+            continue;
+          }
+          if (dep.dependency_type !== "required") continue; // skip optional/embedded
+          if (dep.project_id) { dependedUpon.add(dep.project_id); requiredEdges.push([version.project_id, dep.project_id]); }
+          if (dep.version_id) {
+            const key = `v:${dep.version_id}`;
+            if (!requested.has(key)) { requested.add(key); next.push({ kind: "version", id: dep.version_id }); }
+          } else if (dep.project_id && !resolvedByProject.has(dep.project_id)) {
+            const key = `p:${dep.project_id}`;
+            if (!requested.has(key)) { requested.add(key); next.push({ kind: "project", id: dep.project_id }); }
+          }
+        }
+      }
+      queue = queue.concat(next);
+    }
+  }
+
+  await runClosure();
+
+  // ---- Manifest-aware augmentation ----------------------------------------
+  // Modrinth's dependency metadata is frequently incomplete (deps not listed at
+  // all) and never carries version ranges. Read each resolved jar's real
+  // manifest (fabric.mod.json / mods.toml) to (a) discover required mods
+  // Modrinth omitted and pull them in, and (b) capture the actual version ranges
+  // so we can validate the dependency versions we picked. Best-effort: any
+  // failure degrades to the Modrinth-only result.
+  const inspect = opts.inspectJars ?? defaultInspector;
+  const manifestByProject = new Map<string, ManifestInfo>();
+  const projectByModId = new Map<string, string>(); // manifest modid -> resolved project_id
+  const inspected = new Set<string>();
+  const unmappableModId = new Set<string>();
+  const manifestRangeEdges: { parent: string; modid: string; range: string }[] = [];
+
+  const jarUrl = (v: MrVersion): string | null => (v.files.find((x) => x.primary) ?? v.files[0])?.url ?? null;
+
+  async function readManifests() {
+    const jobs: { key: string; url: string }[] = [];
+    for (const [pid, v] of resolvedByProject) {
+      if (inspected.has(pid)) continue;
+      inspected.add(pid);
+      const url = jarUrl(v);
+      if (url) jobs.push({ key: pid, url });
+    }
+    if (jobs.length === 0) return;
+    let data: Record<string, ManifestInfo | null> = {};
+    try { data = await inspect(jobs); } catch { return; }
+    for (const [pid, info] of Object.entries(data)) {
+      if (!info) continue;
+      manifestByProject.set(pid, info);
+      for (const id of info.provides) if (!projectByModId.has(id)) projectByModId.set(id, pid);
+    }
+  }
+
+  // Map a manifest modid to a Modrinth version, trying _/- slug variants.
+  async function resolveModId(modid: string): Promise<MrVersion | null> {
+    for (const cand of [modid, modid.replace(/_/g, "-"), modid.replace(/-/g, "_")]) {
+      const v = await resolveVersionByProject(cand, opts.loader, opts.mcVersion);
+      if (v) return v;
+    }
+    return null;
+  }
+
+  try {
+    for (let pass = 0; pass < 6; pass++) {
+      await readManifests();
+      const wanted = new Set<string>();
+      for (const [, info] of manifestByProject) {
+        for (const req of info.requires) {
+          if (!projectByModId.has(req.id) && !unmappableModId.has(req.id)) wanted.add(req.id);
+        }
+      }
+      if (wanted.size === 0) break;
+      let q = [...wanted];
+      let added = false;
+      while (q.length) {
+        const batch = q.splice(0, 5);
+        const settled = await Promise.all(batch.map(async (modid) => ({ modid, v: await resolveModId(modid) })));
+        for (const { modid, v } of settled) {
+          if (!v) { unmappableModId.add(modid); continue; }
+          projectByModId.set(modid, v.project_id);
+          if (!resolvedByProject.has(v.project_id)) {
+            queue.push({ kind: "resolved", version: v }); // follow its Modrinth deps too
+            dependedUpon.add(v.project_id);
+            added = true;
+          }
+        }
+      }
+      if (queue.length) await runClosure();
+      if (!added) break;
+    }
+    await readManifests(); // manifests for anything added in the final pass
+
+    // Fold manifest-declared required deps into the edge graph: real project ids
+    // when we could map the modid, a "missing:" placeholder (always unresolved,
+    // so the dependent drops) when we couldn't.
+    for (const [pid, info] of manifestByProject) {
+      for (const req of info.requires) {
+        const childPid = projectByModId.get(req.id);
+        if (childPid) {
+          dependedUpon.add(childPid);
+          requiredEdges.push([pid, childPid]);
+          manifestRangeEdges.push({ parent: pid, modid: req.id, range: req.range });
+        } else {
+          const placeholder = `missing:${req.id}`;
+          dependedUpon.add(placeholder);
+          requiredEdges.push([pid, placeholder]);
         }
       }
     }
-    queue = queue.concat(next);
+  } catch {
+    // best-effort; fall through with the Modrinth-only closure
   }
 
   const selectedProjects = new Set(modByProject.keys());
   const nameOf = (pid: string) => modByProject.get(pid)?.name ?? "another mod";
   const dropped = new Set<string>();
 
-  // Validate the required-dependency closure: only ship a selected mod if every
-  // required dependency it (transitively) declares actually resolved for this
-  // loader + MC version. Otherwise the launcher aborts with "requires X, which
-  // is missing". Unsatisfiable mods are dropped and reported as skipped.
-  const unresolvedRequired = new Set([...dependedUpon].filter((pid) => !resolvedByProject.has(pid)));
-  if (unresolvedRequired.size > 0) {
-    const reqChildren = new Map<string, string[]>();
-    for (const [p, c] of requiredEdges) {
-      const arr = reqChildren.get(p);
-      if (arr) arr.push(c);
-      else reqChildren.set(p, [c]);
-    }
-    const missesDep = (root: string): boolean => {
-      const seen = new Set([root]);
-      const stack = [root];
-      while (stack.length) {
-        for (const c of reqChildren.get(stack.pop()!) ?? []) {
-          if (unresolvedRequired.has(c)) return true;
-          if (!seen.has(c)) { seen.add(c); stack.push(c); }
+  // ---- Version-range reconciliation ----------------------------------------
+  // For each dependency with declared ranges, make sure the version we shipped
+  // satisfies its dependents. If not, swap in the newest version that satisfies
+  // ALL of them; if no single version can, the violating dependents are dropped
+  // (other dependents of the same library keep working). This is what fixes the
+  // "estrogen requires create <6.0.0 but create is 6.0.8" class of failure.
+  const rangeBrokenDependents = new Set<string>();
+  const rangesByProvider = new Map<string, { parent: string; range: string }[]>();
+  for (const e of manifestRangeEdges) {
+    const providerPid = projectByModId.get(e.modid);
+    if (!providerPid) continue;
+    const list = rangesByProvider.get(providerPid) ?? [];
+    list.push({ parent: e.parent, range: e.range });
+    rangesByProvider.set(providerPid, list);
+  }
+
+  try {
+    for (const [providerPid, reqs] of rangesByProvider) {
+      const cur = manifestByProject.get(providerPid)?.version ?? "";
+      if (cur && reqs.every((r) => satisfies(cur, r.range))) continue;
+      const v0 = resolvedByProject.get(providerPid);
+      if (!v0) continue;
+      const probe = (await listVersionsByProject(v0.project_id, opts.loader, opts.mcVersion)).slice(0, 12);
+      let swapped: MrVersion | null = null;
+      if (probe.length) {
+        const infos = await inspect(probe.map((v) => ({ key: v.id, url: jarUrl(v) ?? "" })).filter((j) => j.url));
+        for (const v of probe) { // newest first
+          const ver = infos[v.id]?.version ?? "";
+          if (ver && reqs.every((r) => satisfies(ver, r.range)) && fileEntryFromVersion(v)) { swapped = v; break; }
         }
       }
-      return false;
-    };
-    for (const pid of selectedProjects) {
-      if (missesDep(pid)) { dropped.add(pid); skipped.push(modByProject.get(pid)!); }
+      if (swapped) {
+        resolvedByProject.set(providerPid, swapped);
+        const info = (await inspect([{ key: providerPid, url: jarUrl(swapped) ?? "" }]))[providerPid];
+        if (info) manifestByProject.set(providerPid, info);
+      } else {
+        const ver = manifestByProject.get(providerPid)?.version ?? "";
+        for (const r of reqs) if (ver && !satisfies(ver, r.range)) rangeBrokenDependents.add(r.parent);
+      }
     }
+  } catch {
+    // best-effort
+  }
+
+  // Drop any selected mod that (transitively) requires something unresolved —
+  // a missing dependency, or one whose version range can't be satisfied.
+  const reqChildren = new Map<string, string[]>();
+  for (const [p, c] of requiredEdges) {
+    const arr = reqChildren.get(p);
+    if (arr) arr.push(c);
+    else reqChildren.set(p, [c]);
+  }
+  const unresolvedRequired = new Set([...dependedUpon].filter((pid) => !resolvedByProject.has(pid)));
+  const isBroken = (root: string): boolean => {
+    const seen = new Set([root]);
+    const stack = [root];
+    while (stack.length) {
+      const node = stack.pop()!;
+      if (rangeBrokenDependents.has(node)) return true;
+      for (const c of reqChildren.get(node) ?? []) {
+        if (unresolvedRequired.has(c) || rangeBrokenDependents.has(c)) return true;
+        if (!seen.has(c)) { seen.add(c); stack.push(c); }
+      }
+    }
+    return false;
+  };
+  for (const pid of selectedProjects) {
+    if (isBroken(pid)) { dropped.add(pid); skipped.push(modByProject.get(pid)!); }
   }
 
   // Resolve declared mod-vs-mod incompatibilities by dropping one side of each

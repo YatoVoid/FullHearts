@@ -156,6 +156,81 @@ describe("buildMrpack dependency closure", () => {
     expect(included.map((m) => m.id)).toEqual(["fabbeta"]);
   });
 
+  it("discovers a dependency Modrinth didn't declare, from the jar manifest", async () => {
+    // aquamirae declares NO deps on Modrinth, but its jar requires obscure_api.
+    const aqua = { id: "vA", project_id: "AQUA", version_type: "release", files: [file("aquamirae.jar")], dependencies: [] };
+    const obs = { id: "vO", project_id: "OBS", version_type: "release", files: [file("obscure.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/project/aquamirae/version")) return jsonRes([aqua]);
+      if (url.includes("/project/obscure_api/version")) return jsonRes([]); // underscore slug miss
+      if (url.includes("/project/obscure-api/version")) return jsonRes([obs]); // dash slug hits
+      return jsonRes([]);
+    }));
+    const manifests: Record<string, unknown> = {
+      "https://cdn/aquamirae.jar": { version: "6.4.0", provides: ["aquamirae"], requires: [{ id: "obscure_api", range: "[15,)" }] },
+      "https://cdn/obscure.jar": { version: "16.0", provides: ["obscure_api"], requires: [] }
+    };
+    const inspectJars = async (jobs: { key: string; url: string }[]) =>
+      Object.fromEntries(jobs.map((j) => [j.key, manifests[j.url] ?? null]));
+
+    const { included, skipped, depCount } = await buildMrpack({
+      name: "t", mods: [modStub("aquamirae")], loader: "fabric", mcVersion: "1.20.1", inspectJars: inspectJars as never
+    });
+    expect(included.map((m) => m.id)).toEqual(["aquamirae"]);
+    expect(skipped).toHaveLength(0);
+    expect(depCount).toBe(1); // obscure_api auto-pulled from the manifest
+  });
+
+  it("swaps a dependency to a version inside the dependent's range", async () => {
+    // estrogen needs create [0.5.1,6.0.0); newest create is 6.0.8 -> must downgrade.
+    const est = { id: "vE", project_id: "EST", version_type: "release", files: [file("estrogen.jar")], dependencies: [{ project_id: "CREATE", version_id: null, dependency_type: "required" }] };
+    const create6 = { id: "vC6", project_id: "CREATE", version_type: "release", files: [file("create-6.jar")], dependencies: [] };
+    const create05 = { id: "vC05", project_id: "CREATE", version_type: "release", files: [file("create-05.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/project/estrogen/version")) return jsonRes([est]);
+      if (url.includes("/project/CREATE/version")) return jsonRes([create6, create05]); // newest first
+      return jsonRes([]);
+    }));
+    const manifests: Record<string, unknown> = {
+      "https://cdn/estrogen.jar": { version: "4.3.4", provides: ["estrogen"], requires: [{ id: "create", range: "[0.5.1,6.0.0)" }] },
+      "https://cdn/create-6.jar": { version: "6.0.8", provides: ["create"], requires: [] },
+      "https://cdn/create-05.jar": { version: "0.5.1", provides: ["create"], requires: [] }
+    };
+    const inspectJars = async (jobs: { key: string; url: string }[]) =>
+      Object.fromEntries(jobs.map((j) => [j.key, manifests[j.url] ?? null]));
+
+    const { included, skipped } = await buildMrpack({
+      name: "t", mods: [modStub("estrogen")], loader: "fabric", mcVersion: "1.20.1", inspectJars: inspectJars as never
+    });
+    expect(included.map((m) => m.id)).toEqual(["estrogen"]); // kept, not dropped
+    expect(skipped).toHaveLength(0);
+  });
+
+  it("drops the dependent when no dependency version satisfies its range", async () => {
+    const est = { id: "vE", project_id: "EST", version_type: "release", files: [file("estrogen.jar")], dependencies: [{ project_id: "CREATE", version_id: null, dependency_type: "required" }] };
+    const create6 = { id: "vC6", project_id: "CREATE", version_type: "release", files: [file("create-6.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/project/estrogen/version")) return jsonRes([est]);
+      if (url.includes("/project/CREATE/version")) return jsonRes([create6]); // only 6.0.8 exists
+      return jsonRes([]);
+    }));
+    const manifests: Record<string, unknown> = {
+      "https://cdn/estrogen.jar": { version: "4.3.4", provides: ["estrogen"], requires: [{ id: "create", range: "[0.5.1,6.0.0)" }] },
+      "https://cdn/create-6.jar": { version: "6.0.8", provides: ["create"], requires: [] }
+    };
+    const inspectJars = async (jobs: { key: string; url: string }[]) =>
+      Object.fromEntries(jobs.map((j) => [j.key, manifests[j.url] ?? null]));
+
+    const { included, skipped } = await buildMrpack({
+      name: "t", mods: [modStub("estrogen")], loader: "fabric", mcVersion: "1.20.1", inspectJars: inspectJars as never
+    });
+    expect(included).toHaveLength(0);
+    expect(skipped.map((m) => m.id)).toEqual(["estrogen"]);
+  });
+
   it("resolveBuildable splits mods by whether a real loader+mc file exists", async () => {
     vi.stubGlobal("fetch", vi.fn(async (url: string) => {
       if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
