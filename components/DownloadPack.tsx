@@ -104,13 +104,6 @@ export default function DownloadPack({
       )}
       {disabled && hint && <p className="pack-note">{hint}</p>}
       {msg && <p className="pack-note" role="status">{msg}</p>}
-      {done && (
-        <ServerCta
-          compact
-          heading="🎉 Pack ready. Play it with friends?"
-          body="Spin up an always-on server and drop your new modpack in. BisectHosting installs Modrinth packs in one click."
-        />
-      )}
     </div>
   );
 }
