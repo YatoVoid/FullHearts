@@ -289,7 +289,11 @@ export async function buildMrpack(opts: {
   mcVersion: string;
   /** Override the jar-manifest reader (defaults to the /api/manifest-deps route). */
   inspectJars?: JarInspector;
+  /** Coarse progress for the UI: pct 0–100 + a human label for the current phase. */
+  onProgress?: (pct: number, label: string) => void;
 }): Promise<MrpackResult> {
+  const report = opts.onProgress ?? (() => {});
+  report(6, "Resolving loader + mod versions…");
   const loaderVersion = await resolveLoaderVersion(opts.loader, opts.mcVersion);
   if (!loaderVersion) {
     throw new MrpackError(
@@ -351,6 +355,7 @@ export async function buildMrpack(opts: {
     }
   }
 
+  report(34, "Pulling in required dependencies…");
   await runClosure();
 
   // ---- Manifest-aware augmentation ----------------------------------------
@@ -398,6 +403,7 @@ export async function buildMrpack(opts: {
 
   try {
     for (let pass = 0; pass < 6; pass++) {
+      report(40 + pass * 7, "Cross-checking jar manifests to prevent crashes…");
       await readManifests();
       const wanted = new Set<string>();
       for (const [, info] of manifestByProject) {
@@ -467,6 +473,7 @@ export async function buildMrpack(opts: {
     rangesByProvider.set(providerPid, list);
   }
 
+  report(86, "Reconciling dependency versions…");
   try {
     for (const [providerPid, reqs] of rangesByProvider) {
       const cur = manifestByProject.get(providerPid)?.version ?? "";
@@ -558,6 +565,7 @@ export async function buildMrpack(opts: {
     files
   });
 
+  report(96, "Packaging .mrpack…");
   const zipped = zipSync({ "modrinth.index.json": strToU8(JSON.stringify(index, null, 2)) });
   const blob = new Blob([zipped], { type: "application/x-modrinth-modpack+zip" });
   const depCount = Math.max(0, files.length - included.length);

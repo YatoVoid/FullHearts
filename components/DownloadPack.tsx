@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Loader, Mod } from "@/lib/sources/types";
 import { buildMrpack, MrpackError } from "@/lib/modpack/mrpack";
 import ServerCta from "@/components/ServerCta";
@@ -28,12 +28,38 @@ export default function DownloadPack({
   const [state, setState] = useState<"idle" | "building">("idle");
   const [msg, setMsg] = useState("");
   const [done, setDone] = useState(false);
+  const [pct, setPct] = useState(0);
+  const [label, setLabel] = useState("");
+  const floor = useRef(0); // real phase progress; the bar creeps but never drops below it
+
+  // Creep the bar up a hair every tick so it always looks alive between phases,
+  // staying at least at the real floor and short of 100 until the pack is ready.
+  useEffect(() => {
+    if (state !== "building") return;
+    const t = setInterval(() => {
+      setPct((p) => Math.min(96, Math.max(floor.current, p + 0.5)));
+    }, 220);
+    return () => clearInterval(t);
+  }, [state]);
 
   async function go() {
+    floor.current = 4;
+    setPct(4);
+    setLabel("Starting up");
     setState("building");
     setMsg("");
     try {
-      const { blob, included, skipped, depCount, removedConflicts } = await buildMrpack({ name, mods, loader, mcVersion });
+      const { blob, included, skipped, depCount, removedConflicts } = await buildMrpack({
+        name,
+        mods,
+        loader,
+        mcVersion,
+        onProgress: (p, l) => {
+          floor.current = p;
+          setPct((cur) => Math.max(cur, p));
+          setLabel(l);
+        }
+      });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -44,7 +70,7 @@ export default function DownloadPack({
       const loaderLabel = loader.charAt(0).toUpperCase() + loader.slice(1);
       const left =
         skipped.length > 0
-          ? ` ${skipped.length} mod(s) were left out — no stable ${loaderLabel} ${mcVersion} build, or a required dependency was missing: ${skipped.map((m) => m.name).join(", ")}.`
+          ? ` ${skipped.length} mod(s) were left out. No stable ${loaderLabel} ${mcVersion} build, or a required dependency was missing: ${skipped.map((m) => m.name).join(", ")}.`
           : "";
       const conflicts =
         removedConflicts.length > 0
@@ -64,12 +90,24 @@ export default function DownloadPack({
       <button type="button" className="btn-primary" onClick={go} disabled={disabled || state === "building"}>
         {state === "building" ? "Building .mrpack…" : "⬇ Download as modpack (.mrpack)"}
       </button>
+      {state === "building" && (
+        <div className="pack-progress" role="status" aria-live="polite">
+          <div className="quiz-progress" aria-hidden="true">
+            <i style={{ width: `${pct}%` }} />
+          </div>
+          <p className="pack-note">
+            {label} <span className="pack-pct">{Math.round(pct)}%</span>
+            <br />
+            We&apos;re cross-checking every mod against Modrinth so your pack actually launches. That careful checking is why this takes a moment.
+          </p>
+        </div>
+      )}
       {disabled && hint && <p className="pack-note">{hint}</p>}
       {msg && <p className="pack-note" role="status">{msg}</p>}
       {done && (
         <ServerCta
           compact
-          heading="🎉 Pack ready — play it with friends?"
+          heading="🎉 Pack ready. Play it with friends?"
           body="Spin up an always-on server and drop your new modpack in. BisectHosting installs Modrinth packs in one click."
         />
       )}

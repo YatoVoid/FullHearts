@@ -1,4 +1,5 @@
 import { extractManifestDeps, type ManifestInfo } from "@/lib/modpack/manifest";
+import { rateLimited, clientIp } from "@/lib/rate-limit";
 
 /**
  * Reads mod-jar manifests server-side so the browser doesn't have to download
@@ -10,6 +11,10 @@ import { extractManifestDeps, type ManifestInfo } from "@/lib/modpack/manifest";
 
 // jar url -> parsed manifest (or null when it has none / failed). Immutable url.
 const cache = new Map<string, ManifestInfo | null>();
+
+// A full pack build makes ~8-12 calls here, so 200/hr is ~15-20 builds/hour:
+// generous for a human, a wall for a script.
+const LIMIT = 200;
 
 // SSRF guard: this route fetches arbitrary URLs server-side, so only ever touch
 // Modrinth's CDN. Anything else is rejected at the boundary.
@@ -29,6 +34,14 @@ async function inspect(url: string): Promise<ManifestInfo | null> {
 }
 
 export async function POST(req: Request): Promise<Response> {
+  const limit = rateLimited(clientIp(req), LIMIT);
+  if (limit.blocked) {
+    return Response.json(
+      { error: "rate limited" },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
+    );
+  }
+
   let jobs: { key: string; url: string }[];
   try {
     const body = (await req.json()) as { jobs?: unknown };
