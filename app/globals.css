@@ -344,7 +344,7 @@ footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
 .server-cta-disc{font-size:10.5px;color:#5f5874;}
 .server-cta-disc a{color:var(--mute);text-decoration:underline;}
 .server-cta-disc a:hover{color:var(--ink);}
-.server-cta-compact{margin:14px 0 4px;padding:14px 16px;gap:12px;}
+.server-cta-compact{margin:14px auto 4px;padding:14px 16px;gap:12px;}
 .server-cta-compact .server-cta-body strong{font-size:10px;margin-bottom:5px;}
 .server-cta-compact .server-cta-body span{font-size:13px;}
 
