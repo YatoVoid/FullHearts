@@ -23,7 +23,7 @@ describe("buildProfile", () => {
     const p = buildProfile({
       playstyle: ["build", "automate"],
       loader: ["forge"],
-      version: ["v121"],
+      version: ["1.21"],
       size: ["small"],
       hardware: ["lowend"]
     });
@@ -88,7 +88,7 @@ describe("score & hard filters", () => {
 
   it("blocks a known-bad mod on the loader it crashes on", () => {
     // profile is fabric here, so build a forge profile to exercise the denylist.
-    const forgeProfile = buildProfile({ playstyle: ["build"], loader: ["forge"], version: ["v121"], size: ["small"], hardware: [] });
+    const forgeProfile = buildProfile({ playstyle: ["build"], loader: ["forge"], version: ["1.21"], size: ["small"], hardware: [] });
     const bad = mod({ id: "3dskinlayers", name: "3D Skin Layers", modrinthSlug: "3dskinlayers", loaders: ["forge"], gameVersions: ["1.21.1"] });
     expect(passesHardFilters(bad, forgeProfile)).toBe(false);
   });
@@ -139,7 +139,7 @@ describe("recommend", () => {
   });
 
   it("summarize produces a readable header", () => {
-    const rec = recommend({ playstyle: ["build"], loader: ["fabric"], version: ["v1211"] }, catalog);
+    const rec = recommend({ playstyle: ["build"], loader: ["fabric"], version: ["1.21.1"] }, catalog);
     expect(rec.profileSummary).toContain("building");
     expect(rec.profileSummary).toContain("Fabric 1.21.1");
   });

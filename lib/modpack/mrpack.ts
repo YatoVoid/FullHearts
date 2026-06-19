@@ -137,11 +137,29 @@ const NEOFORGE_VERSIONS: Record<string, string> = {
   "1.21": "21.0.167"
 };
 
+/** Forge/NeoForge loader version live from our server route (CORS-blocked client
+ *  side, so it can't be fetched directly). Used for any MC version not in the
+ *  pinned map. */
+async function fetchLoaderVersion(loader: Loader, mc: string): Promise<string | null> {
+  try {
+    const r = await fetch("/api/loader-version", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ loader, mc })
+    });
+    if (!r.ok) return null;
+    return ((await r.json()) as { version?: string | null }).version ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** Loader version string for the launcher. Fabric/Quilt are fetched live from
- *  their meta APIs; Forge/NeoForge use a pinned known-good map. */
+ *  their meta APIs; Forge/NeoForge use a pinned known-good map, falling back to a
+ *  live lookup so versions beyond the pinned three still build. */
 export async function resolveLoaderVersion(loader: Loader, mc: string): Promise<string | null> {
-  if (loader === "forge") return FORGE_VERSIONS[mc] ?? null;
-  if (loader === "neoforge") return NEOFORGE_VERSIONS[mc] ?? null;
+  if (loader === "forge") return FORGE_VERSIONS[mc] ?? (await fetchLoaderVersion("forge", mc));
+  if (loader === "neoforge") return NEOFORGE_VERSIONS[mc] ?? (await fetchLoaderVersion("neoforge", mc));
   try {
     if (loader === "fabric") {
       const list = (await fetchJSON("https://meta.fabricmc.net/v2/versions/loader")) as { loader?: { version?: string }; version?: string }[];
@@ -216,8 +234,11 @@ export interface BuildableReport {
  * Pre-flight: which of these mods can actually ship in a pack for this loader +
  * MC version? Uses the SAME concrete per-version Modrinth resolution the builder
  * uses (and shares its response cache), so what the results page shows equals
- * what the .mrpack contains — no silent drops. Per-mod only; the dependency
- * closure is still validated at build time.
+ * what the .mrpack contains. Validates each mod's full Modrinth-declared
+ * required-dependency closure, so a mod whose dependency has no build for this
+ * version is excluded here (not silently added to the loadout, then dropped at
+ * download). ponytail: catches Modrinth-declared deps; manifest-only deps and
+ * version-range mismatches are still reconciled in buildMrpack at download.
  */
 export async function resolveBuildable(mods: Mod[], loader: Loader, mc: string): Promise<BuildableReport> {
   const loaderVersion = await resolveLoaderVersion(loader, mc);
@@ -226,21 +247,84 @@ export async function resolveBuildable(mods: Mod[], loader: Loader, mc: string):
     return { buildable: [], excluded: mods.map((mod) => ({ mod, reason: `no ${loaderLabel} build for Minecraft ${mc}` })) };
   }
 
-  const buildable: Mod[] = [];
-  const excluded: { mod: Mod; reason: string }[] = [];
-  let queue = [...mods];
+  // Resolve each mod AND follow its required-dependency closure, recording which
+  // project ids resolved to a real file and the [parent, requiredChild] edges.
+  const resolved = new Map<string, boolean>();   // project_id -> has a deliverable file
+  const requested = new Set<string>();           // refs already queued
+  const requiredEdges: [string, string][] = [];  // [parent, requiredChild]
+  const modProject = new Map<Mod, string | null>();
+
+  type Item = { kind: "mod"; mod: Mod } | { kind: "project"; id: string } | { kind: "version"; id: string };
+  let queue: Item[] = mods.map((mod) => ({ kind: "mod", mod }));
+
   while (queue.length > 0) {
     const batch = queue.splice(0, 5); // bounded concurrency, kind to rate limits
     const settled = await Promise.all(
-      batch.map(async (mod) => {
-        const v = await resolveVersionByProject(mod.modrinthSlug ?? mod.id, loader, mc);
-        const file = v ? fileEntryFromVersion(v) : null;
-        return { mod, ok: Boolean(file) };
+      batch.map(async (item) => {
+        const v =
+          item.kind === "mod"
+            ? await resolveVersionByProject(item.mod.modrinthSlug ?? item.mod.id, loader, mc)
+            : item.kind === "project"
+            ? await resolveVersionByProject(item.id, loader, mc)
+            : await resolveVersionById(item.id);
+        return { item, v };
       })
     );
-    for (const { mod, ok } of settled) {
-      if (ok) buildable.push(mod);
-      else excluded.push({ mod, reason: `no ${loaderLabel} ${mc} file on Modrinth` });
+    const next: Item[] = [];
+    for (const { item, v } of settled) {
+      if (item.kind === "mod") modProject.set(item.mod, v?.project_id ?? null);
+      if (!v) continue;
+      if (resolved.has(v.project_id)) continue;
+      resolved.set(v.project_id, Boolean(fileEntryFromVersion(v)));
+      for (const dep of v.dependencies ?? []) {
+        if (dep.dependency_type !== "required") continue;
+        if (dep.project_id) {
+          requiredEdges.push([v.project_id, dep.project_id]);
+          if (!resolved.has(dep.project_id)) {
+            const key = `p:${dep.project_id}`;
+            if (!requested.has(key)) { requested.add(key); next.push({ kind: "project", id: dep.project_id }); }
+          }
+        }
+        if (dep.version_id) {
+          const key = `v:${dep.version_id}`;
+          if (!requested.has(key)) { requested.add(key); next.push({ kind: "version", id: dep.version_id }); }
+        }
+      }
+    }
+    queue = queue.concat(next);
+  }
+
+  // A mod is broken if it (transitively) requires a project with no deliverable
+  // file for this loader + version.
+  const reqChildren = new Map<string, string[]>();
+  for (const [p, c] of requiredEdges) {
+    const arr = reqChildren.get(p);
+    if (arr) arr.push(c);
+    else reqChildren.set(p, [c]);
+  }
+  const isBroken = (root: string): boolean => {
+    const seen = new Set([root]);
+    const stack = [root];
+    while (stack.length) {
+      const node = stack.pop()!;
+      for (const c of reqChildren.get(node) ?? []) {
+        if (!resolved.get(c)) return true; // dep unresolved or no deliverable file
+        if (!seen.has(c)) { seen.add(c); stack.push(c); }
+      }
+    }
+    return false;
+  };
+
+  const buildable: Mod[] = [];
+  const excluded: { mod: Mod; reason: string }[] = [];
+  for (const mod of mods) {
+    const pid = modProject.get(mod) ?? null;
+    if (!pid || !resolved.get(pid)) {
+      excluded.push({ mod, reason: `no ${loaderLabel} ${mc} file on Modrinth` });
+    } else if (isBroken(pid)) {
+      excluded.push({ mod, reason: `a required dependency has no ${loaderLabel} ${mc} build` });
+    } else {
+      buildable.push(mod);
     }
   }
   return { buildable, excluded };

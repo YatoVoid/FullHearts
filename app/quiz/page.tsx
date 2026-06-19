@@ -114,15 +114,27 @@ export default function Quiz() {
   type DisplayOption = { id: string; label: string; note?: string; recommended?: boolean };
   let displayOptions: DisplayOption[];
   if (question.id === "version") {
-    displayOptions = question.options.map((o) => {
-      const count = coverage[chosenLoader]?.[o.gameVersion ?? ""] ?? 0;
-      return {
+    // NeoForge only exists for 1.20.1+, even though Modrinth tags some older mods
+    // with it — don't offer versions it can't actually build.
+    const NEOFORGE_OK = new Set(["1.21.1", "1.21", "1.20.4", "1.20.1"]);
+    const withCounts = question.options
+      .filter((o) => chosenLoader !== "neoforge" || NEOFORGE_OK.has(o.gameVersion ?? ""))
+      .map((o) => ({
         id: o.id,
         label: o.label,
-        note: `${count} mods`,
-        recommended: o.gameVersion === recVersion
-      };
-    });
+        count: coverage[chosenLoader]?.[o.gameVersion ?? ""] ?? 0,
+        gameVersion: o.gameVersion
+      }));
+    // Show only versions that actually have mods for this loader, richest first;
+    // if counts haven't loaded yet, keep the full static list in its given order.
+    const haveCounts = withCounts.some((o) => o.count > 0);
+    const shown = haveCounts ? withCounts.filter((o) => o.count > 0).sort((a, b) => b.count - a.count) : withCounts;
+    displayOptions = shown.map((o) => ({
+      id: o.id,
+      label: o.label,
+      note: `${o.count} mods`,
+      recommended: o.gameVersion === recVersion
+    }));
   } else if (question.id === "size") {
     const count = coverage[chosenLoader]?.[chosenVersion] ?? 0;
     displayOptions = sizeOptionsFor(count).map((o) => ({

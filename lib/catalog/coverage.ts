@@ -3,8 +3,9 @@ import type { Loader, Mod } from "@/lib/sources/types";
 
 /** Canonical loader order -- Forge first (primary). */
 export const LOADERS: Loader[] = ["forge", "neoforge", "fabric", "quilt"];
-/** Supported Minecraft versions, newest first. */
-export const VERSIONS: string[] = ["1.21.1", "1.21", "1.20.1"];
+/** Candidate Minecraft versions, newest first. The quiz only shows the ones that
+ *  actually have mods for the chosen loader, so dead versions never appear. */
+export const VERSIONS: string[] = ["1.21.1", "1.21", "1.20.4", "1.20.1", "1.19.2", "1.18.2", "1.16.5"];
 
 /** Deliverable-mod counts per loader -> version. */
 export type Coverage = Partial<Record<Loader, Record<string, number>>>;

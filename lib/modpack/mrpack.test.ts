@@ -255,6 +255,24 @@ describe("buildMrpack dependency closure", () => {
     expect(excluded.map((e) => e.mod.id)).toEqual(["anything"]);
   });
 
+  it("resolveBuildable excludes a mod whose required dependency has no build for the version", async () => {
+    const needy = { id: "vN", project_id: "N", files: [file("needy.jar")], dependencies: [{ project_id: "DEP", version_id: null, dependency_type: "required" }] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/project/needsdep/version")) return jsonRes([needy]);
+      if (url.includes("/project/solo/version")) return jsonRes([{ id: "vS", project_id: "S", files: [file("solo.jar")], dependencies: [] }]);
+      return jsonRes([]); // DEP has no compatible version
+    }));
+
+    const { buildable, excluded } = await resolveBuildable(
+      [modStub("needsdep"), modStub("solo")], "fabric", "1.20.1"
+    );
+
+    expect(buildable.map((m) => m.id)).toEqual(["solo"]);
+    expect(excluded.map((e) => e.mod.id)).toEqual(["needsdep"]);
+    expect(excluded[0].reason).toMatch(/required dependency/);
+  });
+
   it("reports mods with no compatible file as skipped", async () => {
     vi.stubGlobal("fetch", vi.fn(async (url: string) => {
       if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);

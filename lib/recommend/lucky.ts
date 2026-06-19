@@ -46,7 +46,7 @@ export const THEMES: LuckyTheme[] = [
 
 const DEFAULT_BASICS: QuizAnswers = {
   loader: ["fabric"],
-  version: ["v1211"],
+  version: ["1.21.1"],
   size: ["medium"]
 };
 

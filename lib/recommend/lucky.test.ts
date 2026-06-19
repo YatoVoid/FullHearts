@@ -20,7 +20,7 @@ const pool: Mod[] = TAGS.map((t) => ({
 describe("lucky themes", () => {
   it("every theme produces answers that yield a non-empty loadout", () => {
     for (const theme of THEMES) {
-      const answers = { loader: ["fabric"], version: ["v1211"], size: ["medium"], ...theme.picks };
+      const answers = { loader: ["fabric"], version: ["1.21.1"], size: ["medium"], ...theme.picks };
       const rec = recommend(answers, pool);
       expect(rec.results.length, `theme ${theme.id} returned nothing`).toBeGreaterThan(0);
     }
@@ -30,7 +30,7 @@ describe("lucky themes", () => {
     const { theme, answers } = pickLucky(() => 0); // first theme
     expect(theme.id).toBe(THEMES[0].id);
     expect(answers.loader).toEqual(["fabric"]);
-    expect(answers.version).toEqual(["v1211"]);
+    expect(answers.version).toEqual(["1.21.1"]);
     expect(answers.size).toEqual(["medium"]);
   });
 
