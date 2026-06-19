@@ -173,11 +173,21 @@ const SEARCH_FACETS = [
   "adventure", "mobs", "food", "utility", "decoration"
 ];
 
-async function searchOne(category: string | null, limit: number): Promise<MrSearchHit[]> {
-  const facets = category
-    ? `[["project_type:mod"],["categories:${category}"]]`
-    : `[["project_type:mod"]]`;
-  const path = `/search?limit=${limit}&index=downloads&facets=${encodeURIComponent(facets)}`;
+/** Optional loader/version targeting so the pool matches the user's profile. */
+export interface SearchOpts {
+  loader?: Loader;
+  version?: string;
+  limit?: number;
+}
+
+async function searchOne(category: string | null, limit: number, opts: SearchOpts): Promise<MrSearchHit[]> {
+  // Modrinth treats loaders as categories, so loader + content category + game
+  // version are each their own AND'd facet group.
+  const groups: string[][] = [["project_type:mod"]];
+  if (category) groups.push([`categories:${category}`]);
+  if (opts.loader) groups.push([`categories:${opts.loader}`]);
+  if (opts.version) groups.push([`versions:${opts.version}`]);
+  const path = `/search?limit=${limit}&index=downloads&facets=${encodeURIComponent(JSON.stringify(groups))}`;
   try {
     const res = await mrFetch<MrSearchResponse>(path);
     return res.hits ?? [];
@@ -189,10 +199,13 @@ async function searchOne(category: string | null, limit: number): Promise<MrSear
 /**
  * Build a large, deduped pool of auto-tagged mods from Modrinth search.
  * Runs facet searches in parallel; drops mods with no mappable tags (e.g.
- * pure libraries). Returns [] on total failure so callers fall back to curated.
+ * pure libraries). When a loader/version is given, the whole pool is faceted to
+ * it — so a Forge profile pulls Forge mods, not the Fabric-skewed global top.
+ * Returns [] on total failure so callers fall back to curated.
  */
-export async function searchMods(limit = 60): Promise<Mod[]> {
-  const batches = await Promise.all(SEARCH_FACETS.map((c) => searchOne(c, limit)));
+export async function searchMods(opts: SearchOpts = {}): Promise<Mod[]> {
+  const limit = opts.limit ?? 60;
+  const batches = await Promise.all(SEARCH_FACETS.map((c) => searchOne(c, limit, opts)));
   const bySlug = new Map<string, Mod>();
   for (const hits of batches) {
     for (const hit of hits) {

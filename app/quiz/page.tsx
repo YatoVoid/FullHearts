@@ -37,13 +37,6 @@ export default function Quiz() {
   // Coverage: start from the committed snapshot, replace with live counts when the
   // cached pool resolves. Counts are advisory and never block advancing.
   const [coverage, setCoverage] = useState<Coverage>(snapshotCoverage as Coverage);
-  useEffect(() => {
-    let cancelled = false;
-    loadPool()
-      .then((pool) => { if (!cancelled) setCoverage(computeCoverage(pool)); })
-      .catch(() => { /* keep snapshot */ });
-    return () => { cancelled = true; };
-  }, []);
 
   // On mount, surface any in-progress quiz as a resume offer (don't auto-apply).
   useEffect(() => {
@@ -102,6 +95,18 @@ export default function Quiz() {
     if (o.gameVersion) versionById[o.id] = o.gameVersion;
   }
   const chosenVersion = versionById[answers.version?.[0] ?? ""] ?? "1.20.1";
+
+  // Refetch coverage faceted to the chosen loader so per-version counts and the
+  // recommended version reflect what that loader actually offers (Forge peaks on
+  // 1.20.1, not 1.21.1) — matching what the results page will deliver.
+  useEffect(() => {
+    let cancelled = false;
+    loadPool({ loader: chosenLoader })
+      .then((pool) => { if (!cancelled) setCoverage(computeCoverage(pool)); })
+      .catch(() => { /* keep snapshot */ });
+    return () => { cancelled = true; };
+  }, [chosenLoader]);
+
   const recVersion = recommendedVersion(coverage, chosenLoader);
 
   // Decorate the version and size steps with live availability. Other steps render

@@ -11,7 +11,7 @@ function mod(partial: Partial<Mod> & Pick<Mod, "id" | "name">): Mod {
     curatedTags: {},
     reasonTemplate: "it fits",
     loaders: ["forge", "fabric"],
-    gameVersions: ["1.21.1"],
+    gameVersions: ["1.20.1"],
     dependencies: [],
     links: {},
     ...partial
@@ -44,7 +44,7 @@ describe("buildProfile", () => {
   it("falls back to defaults when answers are empty", () => {
     const p = buildProfile({});
     expect(p.loader).toBe("forge");
-    expect(p.gameVersion).toBe("1.21.1");
+    expect(p.gameVersion).toBe("1.20.1");
     expect(p.maxMods).toBe(8);
     expect(p.lowEnd).toBe(false);
     expect(p.weights).toEqual({});
@@ -75,7 +75,7 @@ describe("score & hard filters", () => {
   });
 
   it("filters out wrong loader/version", () => {
-    const wrong = mod({ id: "w", name: "W", loaders: ["forge"], gameVersions: ["1.20.1"] });
+    const wrong = mod({ id: "w", name: "W", loaders: ["forge"], gameVersions: ["1.19.2"] });
     expect(passesHardFilters(wrong, profile)).toBe(false);
   });
 

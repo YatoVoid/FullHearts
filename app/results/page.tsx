@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Mod } from "@/lib/sources/types";
 import type { QuizAnswers } from "@/lib/curation/questions";
-import type { Profile } from "@/lib/recommend/profile";
+import { buildProfile, type Profile } from "@/lib/recommend/profile";
 import { recommend, recommendFromQuery, type RankedMod, type Recommendation } from "@/lib/recommend/index";
 import { pickLucky } from "@/lib/recommend/lucky";
-import { QUERY_STORAGE_KEY } from "@/lib/recommend/intent";
+import { QUERY_STORAGE_KEY, parseIntent } from "@/lib/recommend/intent";
 import { resolveBuildable } from "@/lib/modpack/mrpack";
 import DownloadPack from "@/components/DownloadPack";
 import { ensureCollection, addMod } from "@/lib/storage/collections";
@@ -97,22 +97,31 @@ export default function Results() {
     // Pick the source of the recommendation: lucky theme, a parsed playstyle
     // description, or the saved quiz answers.
     let compute: ((mods: Mod[]) => Recommendation) | null = null;
+    // The profile is known from the answers/query alone (before any fetch), so we
+    // can fetch a pool FACETED to the chosen loader+version — the key to a Forge
+    // quiz returning real Forge mods instead of a Fabric-skewed top-downloads pool.
+    let poolProfile: Profile | null = null;
     if (params.get("lucky")) {
       const { theme, answers: luckyAnswers } = pickLucky();
       setLuckyLabel(theme.label);
+      poolProfile = buildProfile(luckyAnswers);
       compute = (mods) => recommend(luckyAnswers, mods, CANDIDATE_LIMIT);
     } else if (params.get("mode") === "describe") {
       const query = loadQuery();
       if (query) {
         setDescribeQuery(query);
+        poolProfile = parseIntent(query).profile;
         compute = (mods) => recommendFromQuery(query, mods, CANDIDATE_LIMIT);
       }
     } else {
       const answers = loadAnswers();
-      if (answers && Object.keys(answers).length > 0) compute = (mods) => recommend(answers, mods, CANDIDATE_LIMIT);
+      if (answers && Object.keys(answers).length > 0) {
+        poolProfile = buildProfile(answers);
+        compute = (mods) => recommend(answers, mods, CANDIDATE_LIMIT);
+      }
     }
 
-    if (!compute) {
+    if (!compute || !poolProfile) {
       setStatus("no-answers");
       return;
     }
@@ -120,7 +129,7 @@ export default function Results() {
     let cancelled = false;
     (async () => {
       try {
-        const mods = await loadPool();
+        const mods = await loadPool({ loader: poolProfile!.loader, version: poolProfile!.gameVersion });
         if (cancelled) return;
         const rec = compute!(mods);
         const deg = isDegraded(mods);

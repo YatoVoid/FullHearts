@@ -1,7 +1,7 @@
 import type { Mod } from "@/lib/sources/types";
 import { CATALOG } from "@/lib/curation/catalog";
 import { enrichCatalog } from "@/lib/sources/index";
-import { searchMods } from "@/lib/sources/modrinth";
+import { searchMods, type SearchOpts } from "@/lib/sources/modrinth";
 
 /**
  * Merge the dynamic search pool with the curated overlay. Curated entries win
@@ -37,9 +37,9 @@ export function mergePool(dynamic: Mod[], curated: Mod[]): Mod[] {
  * The full discovery pool: a large dynamic Modrinth set plus the curated
  * overlay. Graceful — if search returns nothing, the curated pool stands alone.
  */
-export async function buildPool(): Promise<Mod[]> {
+export async function buildPool(opts: SearchOpts = {}): Promise<Mod[]> {
   const [dynamic, curated] = await Promise.all([
-    searchMods().catch(() => [] as Mod[]),
+    searchMods(opts).catch(() => [] as Mod[]),
     enrichCatalog(CATALOG)
   ]);
   return mergePool(dynamic, curated);

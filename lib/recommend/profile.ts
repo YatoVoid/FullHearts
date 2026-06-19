@@ -13,7 +13,10 @@ export interface Profile {
 
 export const PROFILE_DEFAULTS = {
   loader: "forge" as Loader,
-  gameVersion: "1.21.1",
+  // Forge's richest ecosystem by far (~22k mods vs ~4.6k on 1.21.1, where the
+  // community moved to NeoForge). Pairing Forge with 1.20.1 lets a Forge loadout
+  // actually fill to size with mods that build together.
+  gameVersion: "1.20.1",
   maxMods: 8,
   lowEnd: false
 };
