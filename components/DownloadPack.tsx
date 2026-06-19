@@ -41,7 +41,11 @@ export default function DownloadPack({
       a.click();
       URL.revokeObjectURL(url);
       const deps = depCount > 0 ? ` + ${depCount} required ${depCount === 1 ? "dependency" : "dependencies"} (auto-included)` : "";
-      const left = skipped.length > 0 ? ` ${skipped.length} mod(s) couldn't be included (no compatible file or a required dependency was unavailable) and were left out.` : "";
+      const loaderLabel = loader.charAt(0).toUpperCase() + loader.slice(1);
+      const left =
+        skipped.length > 0
+          ? ` ${skipped.length} mod(s) were left out — no stable ${loaderLabel} ${mcVersion} build, or a required dependency was missing: ${skipped.map((m) => m.name).join(", ")}.`
+          : "";
       const conflicts =
         removedConflicts.length > 0
           ? ` Removed ${removedConflicts.length} conflicting mod(s) so it'll launch: ${removedConflicts.map((c) => `${c.name} (${c.reason})`).join("; ")}.`
