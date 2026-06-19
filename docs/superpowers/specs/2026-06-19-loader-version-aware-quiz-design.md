@@ -78,6 +78,16 @@ Data source is **hybrid**: live count preferred, snapshot fallback.
 ### `lib/curation/catalog.ts`
 - Add ~30–40 Forge-strong / multi-loader mods (Modrinth-verified slugs) with
   curated tags and reason templates, skewed to strong 1.20.1 + 1.21.1 Forge support.
+- **User-requested seed list** (each slug verified on Modrinth during implementation;
+  CurseForge-only mods cannot be delivered by the Modrinth pipeline and will be
+  reported back, not silently dropped):
+  JEI, FTB Quests, FTB Chunks, Create, CC: Tweaked, Advanced Peripherals,
+  Farmer's Delight, Let's Do: Bakery, Let's Do: Vinery, Waystones, Comforts,
+  Patchouli, Xaero's Minimap, Xaero's World Map, Lightman's Currency, Bountiful,
+  LearnPlay, Simple Playtime Tracker, ChatGuard, Ledger, WatchDog Anti-Cheat.
+- Constraint: the recommender/exporter is **Modrinth-only**. A CurseForge-exclusive
+  mod is out of scope for this plan; adding CurseForge as a source is a separate
+  future feature.
 
 ## Data Flow
 
