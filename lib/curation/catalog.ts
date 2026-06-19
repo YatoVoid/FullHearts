@@ -103,7 +103,7 @@ export const CATALOG: CuratedMod[] = [
     modrinthSlug: "ars-nouveau"
   },
   {
-    id: "farmers-delight",
+    id: "farmers-delight-refabricated",
     name: "Farmer's Delight",
     summary: "A cozy cooking system with new crops, tools, and meals.",
     curatedTags: { "low-grind": 0.8, building: 0.3, rpg: 0.3 },
@@ -421,5 +421,85 @@ export const CATALOG: CuratedMod[] = [
     curatedTags: { tech: 0.8, exploration: 0.6 },
     reasonTemplate: "you wanted new ways to travel",
     modrinthSlug: "immersive-aircraft"
+  },
+  {
+    id: "create-forge",
+    name: "Create",
+    summary: "Build rotating contraptions, machines, and automated factories with style.",
+    curatedTags: { tech: 1, automation: 1, building: 0.5 },
+    reasonTemplate: "you wanted mechanical automation",
+    modrinthSlug: "create"
+  },
+  {
+    id: "cc-tweaked",
+    name: "CC: Tweaked",
+    summary: "Programmable in-game computers and robots you script with Lua.",
+    curatedTags: { tech: 1, automation: 0.6 },
+    reasonTemplate: "you like engineering and automation",
+    modrinthSlug: "cc-tweaked"
+  },
+  {
+    id: "advanced-peripherals",
+    name: "Advanced Peripherals",
+    summary: "Extends CC: Tweaked computers with blocks that interact with the world.",
+    curatedTags: { tech: 1, automation: 0.7 },
+    reasonTemplate: "you like deep tech systems",
+    modrinthSlug: "advancedperipherals"
+  },
+  {
+    id: "farmers-delight",
+    name: "Farmer's Delight",
+    summary: "Cooking, crops, and kitchen tools for a richer farm-to-table loop.",
+    curatedTags: { food: 1, "low-grind": 0.4 },
+    reasonTemplate: "you wanted cozy farming and cooking",
+    modrinthSlug: "farmers-delight"
+  },
+  {
+    id: "lets-do-bakery",
+    name: "Let's Do: Bakery",
+    summary: "Baking stations, breads, and shop counters for cozy cafes.",
+    curatedTags: { food: 1, building: 0.3 },
+    reasonTemplate: "you wanted cooking and decoration",
+    modrinthSlug: "lets-do-bakery"
+  },
+  {
+    id: "comforts",
+    name: "Comforts",
+    summary: "Sleeping bags and hammocks so you can rest without setting spawn.",
+    curatedTags: { qol: 0.8, "low-grind": 0.3 },
+    reasonTemplate: "you wanted quality-of-life travel comfort",
+    modrinthSlug: "comforts"
+  },
+  {
+    id: "patchouli",
+    name: "Patchouli",
+    summary: "Powers in-game guidebooks and tutorials used by many content mods.",
+    curatedTags: { interface: 0.7, qol: 0.5 },
+    reasonTemplate: "you wanted in-game guides",
+    modrinthSlug: "patchouli"
+  },
+  {
+    id: "xaeros-world-map",
+    name: "Xaero's World Map",
+    summary: "Full-screen self-writing world map that pairs with the minimap.",
+    curatedTags: { interface: 1, exploration: 0.4 },
+    reasonTemplate: "you wanted maps and navigation",
+    modrinthSlug: "xaeros-world-map"
+  },
+  {
+    id: "lightmans-currency",
+    name: "Lightman's Currency",
+    summary: "Coins, ATMs, and player-run shops for server economies.",
+    curatedTags: { coop: 0.7, qol: 0.5, interface: 0.3 },
+    reasonTemplate: "you play with friends or on servers",
+    modrinthSlug: "lightmans-currency"
+  },
+  {
+    id: "learnplay",
+    name: "LearnPlay",
+    summary: "Educational flashcard pop-ups that turn play into light learning.",
+    curatedTags: { interface: 0.6, qol: 0.4 },
+    reasonTemplate: "you wanted a learning-friendly twist",
+    modrinthSlug: "learnplay"
   }
 ];
