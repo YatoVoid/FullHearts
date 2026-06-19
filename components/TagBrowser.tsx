@@ -51,19 +51,7 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
   }, []);
 
   function changeFilter(f: ModFilter) {
-    if (targetMods.length > 0) {
-      const report = checkCompatibility(targetMods);
-      if (report.ok) {
-        if (report.commonLoaders.length > 0 && (f.loader === "all" || !report.commonLoaders.includes(f.loader))) {
-          window.alert("This collection requires a matching mod loader. Please stay on the collection's loader.");
-          return;
-        }
-        if (report.commonVersions.length > 0 && (f.version === "all" || !report.commonVersions.includes(f.version))) {
-          window.alert("This collection requires a matching Minecraft version. Please stay on the collection's version.");
-          return;
-        }
-      }
-    }
+    if (lock) return; // locked to the collection's loader/version
     setFilter(f);
     saveFilter(f);
   }
@@ -91,16 +79,21 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
     [mods, target, extraTargetMods]
   );
 
-  useEffect(() => {
-    if (targetMods.length === 0) return;
+  const lock = useMemo(() => {
+    if (targetMods.length === 0) return null;
     const report = checkCompatibility(targetMods);
-    if (!report.ok || report.commonLoaders.length === 0 || report.commonVersions.length === 0) return;
-    const desiredLoader = report.commonLoaders[0];
-    const desiredVersion = report.commonVersions[0];
-    if (filter.loader !== desiredLoader || filter.version !== desiredVersion) {
-      setFilter({ loader: desiredLoader, version: desiredVersion });
+    if (!report.ok || report.commonLoaders.length === 0 || report.commonVersions.length === 0) return null;
+    return { loader: report.commonLoaders[0], version: report.commonVersions[0] };
+  }, [targetMods]);
+
+  const needsChoice = Boolean(target) && !lock && (filter.loader === "all" || filter.version === "all");
+
+  useEffect(() => {
+    if (!lock) return;
+    if (filter.loader !== lock.loader || filter.version !== lock.version) {
+      setFilter({ loader: lock.loader, version: lock.version });
     }
-  }, [targetMods, filter.loader, filter.version]);
+  }, [lock, filter.loader, filter.version]);
 
   const isCompatibleWithTarget = useMemo(
     () => {
@@ -146,7 +139,20 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
         {status === "ready" && (
           <>
             <CollectionPicker collections={collections} targetId={targetId} onSelect={selectTarget} onCreate={(n) => createAndSelect(n)} />
-            <ModFilterBar filter={filter} versions={versions} onChange={changeFilter} />
+            {needsChoice && (
+              <p className="filter-prompt" role="status">
+                Pick a mod loader and Minecraft version for <b>{target?.name}</b> before adding mods — that&apos;s what the pack is built for.
+              </p>
+            )}
+            <ModFilterBar
+              filter={filter}
+              versions={versions}
+              onChange={changeFilter}
+              lockLoader={lock?.loader}
+              lockVersion={lock?.version}
+              needLoader={needsChoice && filter.loader === "all"}
+              needVersion={needsChoice && filter.version === "all"}
+            />
             <div className="row-head">
               <h2>{TAG_LABELS[tag]}</h2>
               <span className="count">{inTag.length} mods</span>
@@ -161,7 +167,7 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
                     mod={mod}
                     i={i}
                     added={added.has(mod.id)}
-                    disabled={!added.has(mod.id) && !isCompatibleWithTarget(mod)}
+                    disabled={needsChoice || (!added.has(mod.id) && !isCompatibleWithTarget(mod))}
                     onAdd={addToTarget}
                   />
                 ))}

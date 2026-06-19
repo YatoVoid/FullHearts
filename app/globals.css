@@ -372,6 +372,14 @@ footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
 .filter-chip:hover{color:var(--ink);}
 .filter-chip.on{color:var(--void);background:var(--grass);border-color:var(--grass);box-shadow:0 2px 0 var(--grass-dk);}
 .filter-select{font-size:13px;color:var(--ink);background:var(--slot);border:2px solid #2a2046;padding:7px 10px;cursor:pointer;}
+.filter-select:disabled{opacity:.85;cursor:not-allowed;border-color:var(--grass);}
+/* locked to a collection's loader/version: other options grayed + unpickable */
+.filter-chip:disabled,.filter-chip.filter-locked{opacity:.32;cursor:not-allowed;}
+.filter-chip:disabled:hover{color:var(--mute);}
+/* pulse the group green when the user must pick a loader/version first */
+.filter-need{padding:6px 10px;border:2px solid var(--grass);animation:filterpulse 1.3s ease-in-out infinite;}
+@keyframes filterpulse{0%,100%{box-shadow:0 0 0 0 rgba(124,193,70,.0);}50%{box-shadow:0 0 0 4px rgba(124,193,70,.45);}}
+.filter-prompt{max-width:620px;margin:0 auto 14px;text-align:center;font-size:13px;color:var(--gold);background:rgba(124,193,70,.08);border:1px solid var(--grass);padding:10px 14px;}
 .linklike{background:none;border:none;color:var(--grass);text-decoration:underline;cursor:pointer;font:inherit;padding:0;}
 .quality-toggle{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--mute);cursor:pointer;user-select:none;white-space:nowrap;}
 .quality-toggle input{width:15px;height:15px;accent-color:var(--grass);cursor:pointer;}

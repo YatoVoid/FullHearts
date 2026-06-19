@@ -7,6 +7,7 @@ import { loadPool } from "@/lib/catalog/clientPool";
 import { fetchModsBySlugs } from "@/lib/sources/modrinth";
 import { checkCompatibility, compatibilitySummary } from "@/lib/recommend/compatibility";
 import DownloadPack from "@/components/DownloadPack";
+import ServerCta from "@/components/ServerCta";
 import {
   listCollections,
   createCollection,
@@ -315,6 +316,7 @@ export default function Collections() {
           ))
         )}
 
+        {collections.length > 0 && <ServerCta />}
       </main>
 
       {upTarget && (
