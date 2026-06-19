@@ -8,7 +8,7 @@ import type { Profile } from "@/lib/recommend/profile";
 import { recommend, recommendFromQuery, type RankedMod, type Recommendation } from "@/lib/recommend/index";
 import { pickLucky } from "@/lib/recommend/lucky";
 import { QUERY_STORAGE_KEY } from "@/lib/recommend/intent";
-import { checkCompatibility, compatibilitySummary } from "@/lib/recommend/compatibility";
+import { resolveBuildable } from "@/lib/modpack/mrpack";
 import DownloadPack from "@/components/DownloadPack";
 import { ensureCollection, addMod } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
@@ -19,6 +19,12 @@ import ServerCta from "@/components/ServerCta";
 import AdSlot from "@/components/AdSlot";
 
 const DEFAULT_COLLECTION = "My loadout";
+
+// Rank more candidates than the loadout size so we can fill it with mods that
+// ACTUALLY build for the chosen loader+version, then bound how many we resolve
+// live (per-mod Modrinth calls) to maxMods + this buffer.
+const CANDIDATE_LIMIT = 90;
+const RESOLVE_BUFFER = 20;
 
 const ANSWERS_KEY = "fullhearts:answers";
 const RARITY = ["r-epic", "r-rare", "r-uncommon"];
@@ -54,6 +60,7 @@ function loadQuery(): string | null {
 export default function Results() {
   const [status, setStatus] = useState<Status>("loading");
   const [results, setResults] = useState<RankedMod[]>([]);
+  const [excluded, setExcluded] = useState<{ mod: Mod; reason: string }[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [summary, setSummary] = useState("");
   const [degraded, setDegraded] = useState(false);
@@ -93,16 +100,16 @@ export default function Results() {
     if (params.get("lucky")) {
       const { theme, answers: luckyAnswers } = pickLucky();
       setLuckyLabel(theme.label);
-      compute = (mods) => recommend(luckyAnswers, mods);
+      compute = (mods) => recommend(luckyAnswers, mods, CANDIDATE_LIMIT);
     } else if (params.get("mode") === "describe") {
       const query = loadQuery();
       if (query) {
         setDescribeQuery(query);
-        compute = (mods) => recommendFromQuery(query, mods);
+        compute = (mods) => recommendFromQuery(query, mods, CANDIDATE_LIMIT);
       }
     } else {
       const answers = loadAnswers();
-      if (answers && Object.keys(answers).length > 0) compute = (mods) => recommend(answers, mods);
+      if (answers && Object.keys(answers).length > 0) compute = (mods) => recommend(answers, mods, CANDIDATE_LIMIT);
     }
 
     if (!compute) {
@@ -115,12 +122,36 @@ export default function Results() {
       try {
         const mods = await loadPool();
         if (cancelled) return;
-        const rec = compute(mods);
-        setResults(rec.results);
+        const rec = compute!(mods);
+        const deg = isDegraded(mods);
         setProfile(rec.profile);
         setSummary(rec.profileSummary);
-        setDegraded(isDegraded(mods));
-        setStatus(rec.results.length > 0 ? "ready" : "empty");
+        setDegraded(deg);
+
+        const max = rec.profile.maxMods;
+        if (deg) {
+          // Live data is down — can't verify buildability, so show the ranked
+          // candidates as-is (old behavior) rather than excluding everything.
+          setResults(rec.results.slice(0, max));
+          setExcluded([]);
+          setStatus(rec.results.length > 0 ? "ready" : "empty");
+          return;
+        }
+
+        // Resolve, in rank order, which candidates ACTUALLY build for this
+        // loader+version. The loadout shown == the loadout downloaded.
+        const candidates = rec.results.slice(0, max + RESOLVE_BUFFER);
+        const { buildable, excluded: ex } = await resolveBuildable(
+          candidates.map((c) => c.mod),
+          rec.profile.loader,
+          rec.profile.gameVersion
+        );
+        if (cancelled) return;
+        const okIds = new Set(buildable.map((m) => m.id));
+        const finalResults = candidates.filter((c) => okIds.has(c.mod.id)).slice(0, max);
+        setResults(finalResults);
+        setExcluded(ex);
+        setStatus(finalResults.length > 0 ? "ready" : "empty");
       } catch {
         if (!cancelled) setStatus("error");
       }
@@ -153,14 +184,29 @@ export default function Results() {
               : "YOUR LOADOUT"}
           </div>
           {status === "ready" && <div className="summary">{summary}</div>}
-          {status === "ready" && (() => {
-            const report = checkCompatibility(results.map((r) => r.mod));
-            return report.ok ? (
-              <div className="compat compat-ok">✓ Compatible loadout{compatibilitySummary(report) && <> · {compatibilitySummary(report)}</>}</div>
-            ) : (
-              <div className="compat compat-warn">⚠ {report.messages[0]}</div>
-            );
-          })()}
+          {status === "ready" && profile && !degraded && (
+            <div className="compat compat-ok">
+              ✓ {results.length} mods verified for {profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1)} {profile.gameVersion} — every one builds.
+            </div>
+          )}
+          {status === "ready" && profile && excluded.length > 0 && (
+            <details className="excluded">
+              <summary>
+                ⚠ {excluded.length} mod{excluded.length === 1 ? "" : "s"} left out (no {profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1)} {profile.gameVersion} build) — tap to review before downloading
+              </summary>
+              <ul>
+                {excluded.map(({ mod, reason }) => (
+                  <li key={mod.id}>
+                    <b>{mod.name}</b> — {reason}
+                    {mod.links.modrinth && (
+                      <> · <a href={mod.links.modrinth} target="_blank" rel="noopener noreferrer">check on Modrinth</a></>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <p className="excluded-tip">These aren&apos;t in your pack. To include them, retake the quiz with a different loader or Minecraft version.</p>
+            </details>
+          )}
           {status === "ready" && profile && (
             <DownloadPack
               name="Full Hearts loadout"
@@ -195,7 +241,9 @@ export default function Results() {
 
         {status === "empty" && (
           <p className="results-state">
-            No matches for those answers yet. <Link href="/quiz" style={{ color: "var(--grass)" }}>Tweak your quiz</Link> and try again.
+            {profile
+              ? <>No mods build for {profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1)} {profile.gameVersion}. <Link href="/quiz" style={{ color: "var(--grass)" }}>Retake the quiz</Link> with a different loader or Minecraft version.</>
+              : <>No matches for those answers yet. <Link href="/quiz" style={{ color: "var(--grass)" }}>Tweak your quiz</Link> and try again.</>}
           </p>
         )}
 

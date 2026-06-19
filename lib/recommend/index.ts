@@ -36,20 +36,20 @@ export function summarize(profile: Profile): string {
  * each carrying its generated reason. Required dependencies are surfaced
  * per-mod via `mod.dependencies` (shown, not auto-resolved, per spec).
  */
-export function recommendWithProfile(profile: Profile, mods: Mod[]): Recommendation {
+export function recommendWithProfile(profile: Profile, mods: Mod[], limit = profile.maxMods): Recommendation {
   const results = mods
     .filter((m) => passesHardFilters(m, profile))
     .map((m) => ({ mod: m, score: score(m, profile) }))
     .filter((x) => x.score > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, profile.maxMods)
+    .slice(0, limit)
     .map(({ mod, score: s }) => ({ mod, score: s, reason: reason(mod, profile) }));
 
   return { results, profile, profileSummary: summarize(profile) };
 }
 
-export function recommend(answers: QuizAnswers, mods: Mod[]): Recommendation {
-  return recommendWithProfile(buildProfile(answers), mods);
+export function recommend(answers: QuizAnswers, mods: Mod[], limit?: number): Recommendation {
+  return recommendWithProfile(buildProfile(answers), mods, limit);
 }
 
 /**
@@ -58,7 +58,7 @@ export function recommend(answers: QuizAnswers, mods: Mod[]): Recommendation {
  * ("solar panels") returns only the mods that genuinely match — no padding to a
  * fixed count — while a rich description still fills a loadout.
  */
-export function recommendFromQuery(text: string, mods: Mod[]): Recommendation {
+export function recommendFromQuery(text: string, mods: Mod[], limit?: number): Recommendation {
   const { profile } = parseIntent(text);
   const terms = expandTerms(text);
 
@@ -73,8 +73,9 @@ export function recommendFromQuery(text: string, mods: Mod[]): Recommendation {
     .filter((x) => x.lexS > 0 || x.tagS >= 0.5)
     .sort((a, b) => b.rel - a.rel || (b.mod.downloads ?? 0) - (a.mod.downloads ?? 0));
 
-  // Don't invent filler: take only real matches, capped by the size preference.
-  const cap = Math.min(scored.length, Math.max(8, profile.maxMods));
+  // Don't invent filler: take only real matches, capped by the size preference
+  // (or a larger candidate `limit` when the caller will post-filter by buildability).
+  const cap = Math.min(scored.length, limit ?? Math.max(8, profile.maxMods));
   const results = scored
     .slice(0, cap)
     .map(({ mod, rel }) => ({ mod, score: rel, reason: reason(mod, profile) }));

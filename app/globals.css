@@ -196,6 +196,12 @@ nav.links a:hover{color:var(--ink);}
 .compat{font-size:13px;padding:10px 14px;margin:12px 0 4px;border:2px solid;font-weight:600;line-height:1.45;}
 .compat-ok{color:var(--grass);border-color:var(--grass-dk);background:rgba(116,192,67,.08);}
 .compat-warn{color:var(--gold);border-color:#7a6a1e;background:rgba(252,252,84,.07);}
+.excluded{font-size:13px;margin:10px 0 4px;border:2px solid #7a6a1e;background:rgba(252,252,84,.06);padding:10px 14px;}
+.excluded>summary{color:var(--gold);font-weight:600;cursor:pointer;line-height:1.45;}
+.excluded ul{margin:10px 0 6px;padding-left:18px;color:#d8d2e6;}
+.excluded li{margin:5px 0;line-height:1.4;}
+.excluded a{color:var(--aqua);}
+.excluded-tip{color:var(--mute);font-size:12.5px;margin-top:8px;}
 .tip.r-common  .title{color:var(--ink);}
 .tip.r-uncommon .title{color:var(--gold);}
 .tip.r-rare    .title{color:var(--aqua);}

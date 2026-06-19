@@ -176,6 +176,47 @@ async function resolveVersionById(versionId: string): Promise<MrVersion | null> 
   }
 }
 
+export interface BuildableReport {
+  /** Mods that have a real primary jar for this loader + game version. */
+  buildable: Mod[];
+  /** Mods with no deliverable file, each with a short reason. */
+  excluded: { mod: Mod; reason: string }[];
+}
+
+/**
+ * Pre-flight: which of these mods can actually ship in a pack for this loader +
+ * MC version? Uses the SAME concrete per-version Modrinth resolution the builder
+ * uses (and shares its response cache), so what the results page shows equals
+ * what the .mrpack contains — no silent drops. Per-mod only; the dependency
+ * closure is still validated at build time.
+ */
+export async function resolveBuildable(mods: Mod[], loader: Loader, mc: string): Promise<BuildableReport> {
+  const loaderVersion = await resolveLoaderVersion(loader, mc);
+  const loaderLabel = loader.charAt(0).toUpperCase() + loader.slice(1);
+  if (!loaderVersion) {
+    return { buildable: [], excluded: mods.map((mod) => ({ mod, reason: `no ${loaderLabel} build for Minecraft ${mc}` })) };
+  }
+
+  const buildable: Mod[] = [];
+  const excluded: { mod: Mod; reason: string }[] = [];
+  let queue = [...mods];
+  while (queue.length > 0) {
+    const batch = queue.splice(0, 5); // bounded concurrency, kind to rate limits
+    const settled = await Promise.all(
+      batch.map(async (mod) => {
+        const v = await resolveVersionByProject(mod.modrinthSlug ?? mod.id, loader, mc);
+        const file = v ? fileEntryFromVersion(v) : null;
+        return { mod, ok: Boolean(file) };
+      })
+    );
+    for (const { mod, ok } of settled) {
+      if (ok) buildable.push(mod);
+      else excluded.push({ mod, reason: `no ${loaderLabel} ${mc} file on Modrinth` });
+    }
+  }
+  return { buildable, excluded };
+}
+
 export interface MrpackResult {
   blob: Blob;
   included: Mod[];

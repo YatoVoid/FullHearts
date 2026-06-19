@@ -121,6 +121,18 @@ describe("recommend", () => {
     for (const r of rec.results) expect(r.reason.length).toBeGreaterThan(0);
   });
 
+  it("over-fetches more candidates than maxMods when given a limit", () => {
+    // size:small => maxMods 10; default cap would trim, but an explicit limit
+    // lets the results page rank extra candidates to backfill buildable ones.
+    const big = Array.from({ length: 30 }, (_, i) =>
+      mod({ id: `b${i}`, name: `B${i}`, curatedTags: { building: 1 }, downloads: i })
+    );
+    const capped = recommend({ playstyle: ["build"], size: ["small"] }, big);
+    const over = recommend({ playstyle: ["build"], size: ["small"] }, big, 25);
+    expect(capped.results.length).toBe(10);
+    expect(over.results.length).toBe(25);
+  });
+
   it("orders higher-affinity mods first", () => {
     const rec = recommend({ playstyle: ["build"] }, catalog);
     expect(rec.results[0].mod.id).toBe("supp");

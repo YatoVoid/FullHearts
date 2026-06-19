@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { fileEntryFromVersion, buildIndex, buildMrpack } from "@/lib/modpack/mrpack";
+import { fileEntryFromVersion, buildIndex, buildMrpack, resolveBuildable } from "@/lib/modpack/mrpack";
 import type { Mod } from "@/lib/sources/types";
 
 function file(filename: string) {
@@ -154,6 +154,30 @@ describe("buildMrpack dependency closure", () => {
     }));
     const { included } = await buildMrpack({ name: "t", mods: [modStub("fabbeta")], loader: "fabric", mcVersion: "1.21.1" });
     expect(included.map((m) => m.id)).toEqual(["fabbeta"]);
+  });
+
+  it("resolveBuildable splits mods by whether a real loader+mc file exists", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/project/buildok/version")) return jsonRes([{ id: "v1", project_id: "OK", files: [file("ok.jar")], dependencies: [] }]);
+      return jsonRes([]); // "buildno" has no matching version
+    }));
+
+    const { buildable, excluded } = await resolveBuildable(
+      [modStub("buildok"), modStub("buildno")], "fabric", "1.21.1"
+    );
+
+    expect(buildable.map((m) => m.id)).toEqual(["buildok"]);
+    expect(excluded.map((e) => e.mod.id)).toEqual(["buildno"]);
+    expect(excluded[0].reason).toMatch(/Fabric 1\.21\.1/);
+  });
+
+  it("resolveBuildable excludes everything when the loader has no build for that MC", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => jsonRes([])));
+    // 1.19.2 isn't in the pinned Forge map -> no loader version -> all excluded.
+    const { buildable, excluded } = await resolveBuildable([modStub("anything")], "forge", "1.19.2");
+    expect(buildable).toHaveLength(0);
+    expect(excluded.map((e) => e.mod.id)).toEqual(["anything"]);
   });
 
   it("reports mods with no compatible file as skipped", async () => {
