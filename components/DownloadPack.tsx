@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Loader, Mod } from "@/lib/sources/types";
 import { buildMrpack, MrpackError } from "@/lib/modpack/mrpack";
-import ServerCta from "@/components/ServerCta";
 
 function safeName(name: string): string {
   return name.replace(/[^\w \-]/g, "").trim() || "fullhearts";
@@ -27,7 +26,6 @@ export default function DownloadPack({
 }) {
   const [state, setState] = useState<"idle" | "building">("idle");
   const [msg, setMsg] = useState("");
-  const [done, setDone] = useState(false);
   const [pct, setPct] = useState(0);
   const [label, setLabel] = useState("");
   const floor = useRef(0); // real phase progress; the bar creeps but never drops below it
@@ -77,7 +75,6 @@ export default function DownloadPack({
           ? ` Removed ${removedConflicts.length} conflicting mod(s) so it'll launch: ${removedConflicts.map((c) => `${c.name} (${c.reason})`).join("; ")}.`
           : "";
       setMsg(`Packed ${included.length} mods${deps}. Import the file into Modrinth App, Prism, or ATLauncher.${left}${conflicts}`);
-      setDone(true);
     } catch (e) {
       setMsg(e instanceof MrpackError ? e.message : "Couldn't build the modpack. Please try again.");
     } finally {

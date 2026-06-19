@@ -4,9 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { Mod } from "@/lib/sources/types";
 import { loadPool } from "@/lib/catalog/clientPool";
+import { fetchModsBySlugs } from "@/lib/sources/modrinth";
 import { checkCompatibility, compatibilitySummary } from "@/lib/recommend/compatibility";
 import DownloadPack from "@/components/DownloadPack";
-import ServerCta from "@/components/ServerCta";
 import {
   listCollections,
   createCollection,
@@ -134,6 +134,28 @@ export default function Collections() {
       cancelled = true;
     };
   }, []);
+
+  // Resolve collection mods the curated pool doesn't carry (added via live
+  // search) straight from Modrinth, so they're packed and compatibility-checked
+  // instead of silently vanishing from the loadout.
+  useEffect(() => {
+    const allIds = new Set(collections.flatMap((c) => c.modIds));
+    const missing = [...allIds].filter((id) => !byId[id]);
+    if (missing.length === 0) return;
+    let cancelled = false;
+    fetchModsBySlugs(missing).then((mods) => {
+      if (cancelled || mods.length === 0) return;
+      setById((prev) => ({ ...prev, ...Object.fromEntries(mods.map((m) => [m.id, m])) }));
+      setNames((prev) => ({ ...prev, ...Object.fromEntries(mods.map((m) => [m.id, m.name])) }));
+      setLinks((prev) => ({
+        ...prev,
+        ...Object.fromEntries(
+          mods.map((m) => [m.id, m.links.modrinth || m.links.curseforge]).filter((e): e is [string, string] => Boolean(e[1]))
+        )
+      }));
+    });
+    return () => { cancelled = true; };
+  }, [collections, byId]);
 
   function openAll(c: Collection) {
     for (const id of c.modIds) {
@@ -293,7 +315,6 @@ export default function Collections() {
           ))
         )}
 
-        {collections.length > 0 && <ServerCta />}
       </main>
 
       {upTarget && (

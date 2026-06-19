@@ -6,7 +6,9 @@ import type { Mod } from "@/lib/sources/types";
 import { TAG_LABELS, type Tag } from "@/lib/curation/tags";
 import { useCollectionTarget } from "@/lib/storage/useCollectionTarget";
 import { loadPool } from "@/lib/catalog/clientPool";
+import { fetchModsBySlugs } from "@/lib/sources/modrinth";
 import { type ModFilter, DEFAULT_FILTER, loadFilter, saveFilter, matchesFilter, versionOptions } from "@/lib/catalog/filter";
+import { checkCompatibility } from "@/lib/recommend/compatibility";
 import { HEART_SRC } from "@/lib/asset";
 import Footer from "@/components/Footer";
 import ModCard from "@/components/ModCard";
@@ -49,11 +51,64 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
   }, []);
 
   function changeFilter(f: ModFilter) {
+    if (targetMods.length > 0) {
+      const report = checkCompatibility(targetMods);
+      if (report.ok) {
+        if (report.commonLoaders.length > 0 && (f.loader === "all" || !report.commonLoaders.includes(f.loader))) {
+          window.alert("This collection requires a matching mod loader. Please stay on the collection's loader.");
+          return;
+        }
+        if (report.commonVersions.length > 0 && (f.version === "all" || !report.commonVersions.includes(f.version))) {
+          window.alert("This collection requires a matching Minecraft version. Please stay on the collection's version.");
+          return;
+        }
+      }
+    }
     setFilter(f);
     saveFilter(f);
   }
 
   const versions = useMemo(() => versionOptions(mods), [mods]);
+
+  const target = collections.find((c) => c.id === targetId);
+
+  // Resolve target collection mods missing from the curated pool (added via live
+  // search) so the add-guard blocks incompatible additions.
+  const [extraTargetMods, setExtraTargetMods] = useState<Record<string, Mod>>({});
+  useEffect(() => {
+    if (!target) return;
+    const missing = target.modIds.filter((id) => !mods.some((m) => m.id === id) && !extraTargetMods[id]);
+    if (missing.length === 0) return;
+    let cancelled = false;
+    fetchModsBySlugs(missing).then((ms) => {
+      if (!cancelled && ms.length) setExtraTargetMods((prev) => ({ ...prev, ...Object.fromEntries(ms.map((m) => [m.id, m])) }));
+    });
+    return () => { cancelled = true; };
+  }, [target, mods, extraTargetMods]);
+
+  const targetMods = useMemo(
+    () => target ? target.modIds.map((id) => mods.find((m) => m.id === id) ?? extraTargetMods[id]).filter((m): m is Mod => Boolean(m)) : [],
+    [mods, target, extraTargetMods]
+  );
+
+  useEffect(() => {
+    if (targetMods.length === 0) return;
+    const report = checkCompatibility(targetMods);
+    if (!report.ok || report.commonLoaders.length === 0 || report.commonVersions.length === 0) return;
+    const desiredLoader = report.commonLoaders[0];
+    const desiredVersion = report.commonVersions[0];
+    if (filter.loader !== desiredLoader || filter.version !== desiredVersion) {
+      setFilter({ loader: desiredLoader, version: desiredVersion });
+    }
+  }, [targetMods, filter.loader, filter.version]);
+
+  const isCompatibleWithTarget = useMemo(
+    () => {
+      if (targetMods.length === 0) return (_: Mod) => true;
+      return (mod: Mod) => checkCompatibility([...targetMods, mod]).ok;
+    },
+    [targetMods]
+  );
 
   const inTag = useMemo(
     () =>
@@ -101,7 +156,14 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
             ) : (
               <div className="grid">
                 {inTag.map((mod, i) => (
-                  <ModCard key={mod.id} mod={mod} i={i} added={added.has(mod.id)} onAdd={addToTarget} />
+                  <ModCard
+                    key={mod.id}
+                    mod={mod}
+                    i={i}
+                    added={added.has(mod.id)}
+                    disabled={!added.has(mod.id) && !isCompatibleWithTarget(mod)}
+                    onAdd={addToTarget}
+                  />
                 ))}
               </div>
             )}

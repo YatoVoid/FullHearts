@@ -241,6 +241,43 @@ export async function searchModrinthQuery(
   }
 }
 
+/** Full Mod from a Modrinth project (for collection mods not in the curated
+ *  pool — e.g. ones a user added via live search). */
+function projectToMod(p: MrProject & { description?: string }): Mod {
+  const loaders = p.loaders.filter((l): l is Loader => (KNOWN_LOADERS as string[]).includes(l));
+  return {
+    id: p.slug,
+    name: p.title,
+    summary: p.description ?? "",
+    curatedTags: {},
+    reasonTemplate: "",
+    modrinthSlug: p.slug,
+    loaders,
+    gameVersions: p.game_versions ?? [],
+    dependencies: [],
+    links: { modrinth: `https://modrinth.com/mod/${p.slug}` },
+    downloads: p.downloads,
+    iconUrl: p.icon_url
+  };
+}
+
+/**
+ * Resolve specific slugs/ids to full Mod objects. Used to fill in collection
+ * mods the curated pool doesn't carry, so compatibility checks and the .mrpack
+ * see their real loaders/versions instead of silently dropping them.
+ * Best-effort: returns whatever resolves (slugs are accepted as ids).
+ */
+export async function fetchModsBySlugs(slugs: string[]): Promise<Mod[]> {
+  const ids = [...new Set(slugs)].filter(Boolean);
+  if (ids.length === 0) return [];
+  try {
+    const projects = await mrFetch<(MrProject & { description?: string })[]>(`/projects?ids=${idsParam(ids)}`);
+    return projects.map(projectToMod);
+  } catch {
+    return [];
+  }
+}
+
 export const modrinthSource: ModSource = {
   name: "modrinth",
   async enrich(mods: CuratedMod[]): Promise<Map<string, Enrichment>> {

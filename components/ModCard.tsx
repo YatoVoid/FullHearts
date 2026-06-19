@@ -7,13 +7,16 @@ export default function ModCard({
   mod,
   i,
   added,
+  disabled,
   onAdd
 }: {
   mod: Mod;
   i: number;
   added: boolean;
+  disabled?: boolean;
   onAdd: (id: string) => void;
 }) {
+  const isDisabled = added || disabled;
   return (
     <article className={`tip ${RARITY[i % RARITY.length]}`}>
       <div className="row1">
@@ -29,7 +32,8 @@ export default function ModCard({
           type="button"
           className={`add-btn${added ? " added" : ""}`}
           onClick={() => onAdd(mod.id)}
-          disabled={added}
+          disabled={isDisabled}
+          title={isDisabled && !added ? "Does not match this collection's loader/version." : undefined}
         >
           {added ? "Added ✓" : "+ Add"}
         </button>

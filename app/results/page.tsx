@@ -13,6 +13,7 @@ import DownloadPack from "@/components/DownloadPack";
 import { ensureCollection, addMod } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
 import { loadPool, isDegraded } from "@/lib/catalog/clientPool";
+import { checkCompatibility } from "@/lib/recommend/compatibility";
 import { HEART_SRC } from "@/lib/asset";
 import Footer from "@/components/Footer";
 import ServerCta from "@/components/ServerCta";
@@ -68,6 +69,16 @@ export default function Results() {
 
   function addToCollection(modId: string) {
     const collection = ensureCollection(DEFAULT_COLLECTION);
+    const mods = results.map((r) => r.mod);
+    const targetMods = mods.filter((m) => collection && m.id !== modId && m.id !== undefined).filter((m) => m.id && collection.modIds.includes(m.id));
+    const modToAdd = results.find((r) => r.mod.id === modId)?.mod;
+    if (modToAdd && targetMods.length > 0) {
+      const report = checkCompatibility([...targetMods, modToAdd]);
+      if (!report.ok) {
+        window.alert("This mod does not match the loader/version of your collection. Add only matching mods.");
+        return;
+      }
+    }
     addMod(collection.id, modId);
     setLastCollectionId(collection.id);
     setAdded((prev) => new Set(prev).add(modId));
@@ -75,7 +86,13 @@ export default function Results() {
 
   function addAll() {
     const collection = ensureCollection(DEFAULT_COLLECTION);
-    for (const { mod } of results) addMod(collection.id, mod.id);
+    const mods = results.map((r) => r.mod);
+    for (const { mod } of results) {
+      const targetMods = mods.filter((m) => m.id !== mod.id && collection.modIds.includes(m.id));
+      if (checkCompatibility([...targetMods, mod]).ok) {
+        addMod(collection.id, mod.id);
+      }
+    }
     setLastCollectionId(collection.id);
     setAdded(new Set(results.map((r) => r.mod.id)));
   }

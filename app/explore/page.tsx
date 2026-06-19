@@ -6,9 +6,10 @@ import type { Mod } from "@/lib/sources/types";
 import { TAGS, TAG_LABELS, type Tag } from "@/lib/curation/tags";
 import { useCollectionTarget } from "@/lib/storage/useCollectionTarget";
 import { loadPool } from "@/lib/catalog/clientPool";
-import { searchModrinthQuery } from "@/lib/sources/modrinth";
+import { searchModrinthQuery, fetchModsBySlugs } from "@/lib/sources/modrinth";
 import { isHighQuality } from "@/lib/catalog/quality";
 import { type ModFilter, DEFAULT_FILTER, loadFilter, saveFilter, matchesFilter, versionOptions } from "@/lib/catalog/filter";
+import { checkCompatibility } from "@/lib/recommend/compatibility";
 import { HEART_SRC } from "@/lib/asset";
 import Footer from "@/components/Footer";
 import AdSlot from "@/components/AdSlot";
@@ -87,11 +88,6 @@ export default function Explore() {
     return () => { cancelled = true; };
   }, []);
 
-  function changeFilter(f: ModFilter) {
-    setFilter(f);
-    saveFilter(f);
-  }
-
   const versions = useMemo(() => versionOptions(mods), [mods]);
   // Only mods that work with the chosen loader + version feed the whole page.
   const pool = useMemo(() => mods.filter((m) => matchesFilter(m, filter)), [mods, filter]);
@@ -145,8 +141,81 @@ export default function Explore() {
     }
   }
 
+  const target = collections.find((c) => c.id === targetId);
+
+  // The target collection may hold mods not in the curated pool (added via live
+  // search). Resolve those from Modrinth so the add-guard sees their real
+  // loader/version and blocks incompatible additions.
+  const [extraTargetMods, setExtraTargetMods] = useState<Record<string, Mod>>({});
+  useEffect(() => {
+    if (!target) return;
+    const missing = target.modIds.filter((id) => !mods.some((m) => m.id === id) && !extraTargetMods[id]);
+    if (missing.length === 0) return;
+    let cancelled = false;
+    fetchModsBySlugs(missing).then((ms) => {
+      if (!cancelled && ms.length) setExtraTargetMods((prev) => ({ ...prev, ...Object.fromEntries(ms.map((m) => [m.id, m])) }));
+    });
+    return () => { cancelled = true; };
+  }, [target, mods, extraTargetMods]);
+
+  const targetMods = useMemo(
+    () => target ? target.modIds.map((id) => mods.find((m) => m.id === id) ?? extraTargetMods[id]).filter((m): m is Mod => Boolean(m)) : [],
+    [mods, target, extraTargetMods]
+  );
+
+  const targetCompatibility = useMemo(
+    () => (targetMods.length > 0 ? checkCompatibility(targetMods) : null),
+    [targetMods]
+  );
+
+  useEffect(() => {
+    if (!targetCompatibility || !targetCompatibility.ok) return;
+    if (targetCompatibility.commonLoaders.length === 0 || targetCompatibility.commonVersions.length === 0) return;
+    const desiredLoader = targetCompatibility.commonLoaders[0];
+    const desiredVersion = targetCompatibility.commonVersions[0];
+    if (filter.loader !== desiredLoader || filter.version !== desiredVersion) {
+      setFilter({ loader: desiredLoader, version: desiredVersion });
+    }
+  }, [targetCompatibility, filter.loader, filter.version]);
+
+  function changeFilter(f: ModFilter) {
+    if (targetCompatibility && targetCompatibility.ok) {
+      if (
+        targetCompatibility.commonLoaders.length > 0 &&
+        (f.loader === "all" || !targetCompatibility.commonLoaders.includes(f.loader))
+      ) {
+        window.alert("This collection requires a matching mod loader. Please stay on the collection's loader.");
+        return;
+      }
+      if (
+        targetCompatibility.commonVersions.length > 0 &&
+        (f.version === "all" || !targetCompatibility.commonVersions.includes(f.version))
+      ) {
+        window.alert("This collection requires a matching Minecraft version. Please stay on the collection's version.");
+        return;
+      }
+    }
+    setFilter(f);
+    saveFilter(f);
+  }
+
+  const isCompatibleWithTarget = useMemo(
+    () => {
+      if (targetMods.length === 0) return (_: Mod) => true;
+      return (mod: Mod) => checkCompatibility([...targetMods, mod]).ok;
+    },
+    [targetMods]
+  );
+
   const card = (mod: Mod, i: number) => (
-    <ModCard key={mod.id} mod={mod} i={i} added={added.has(mod.id)} onAdd={addToTarget} />
+    <ModCard
+      key={mod.id}
+      mod={mod}
+      i={i}
+      added={added.has(mod.id)}
+      disabled={!added.has(mod.id) && !isCompatibleWithTarget(mod)}
+      onAdd={addToTarget}
+    />
   );
 
   return (
