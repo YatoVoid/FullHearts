@@ -19,6 +19,16 @@ export interface ManifestInfo {
   provides: string[];
   /** Mandatory dependencies, minus the platform (minecraft/loader/java). */
   requires: { id: string; range: string }[];
+  /** The Minecraft version range the jar declares it supports (the ground truth
+   *  Modrinth's game-version tags often disagree with). Empty/undefined = unstated. */
+  mcRange?: string;
+}
+
+/** Pull a "minecraft" dependency range out of a Fabric/Quilt depends map. */
+function mcFromDepends(depends: Record<string, unknown>): string | undefined {
+  const r = depends.minecraft;
+  if (Array.isArray(r)) return r.join(" || ");
+  return typeof r === "string" ? r : undefined;
 }
 
 // Not mods — ignore as dependencies (they're the runtime, not something to ship).
@@ -40,7 +50,7 @@ export function parseFabric(text: string): ManifestInfo | null {
     if (NON_MOD.has(norm(id))) continue;
     requires.push({ id: norm(id), range: Array.isArray(range) ? range.join(" || ") : String(range ?? "*") });
   }
-  return { version: String(j.version ?? ""), provides, requires };
+  return { version: String(j.version ?? ""), provides, requires, mcRange: mcFromDepends(depends) };
 }
 
 export function parseQuilt(text: string): ManifestInfo | null {
@@ -51,13 +61,17 @@ export function parseQuilt(text: string): ManifestInfo | null {
   const provides = [ql.id, ...(Array.isArray(ql.provides) ? ql.provides.map((p) => (typeof p === "object" && p ? (p as { id?: string }).id : p)) : [])]
     .filter(Boolean).map(norm);
   const requires: { id: string; range: string }[] = [];
+  let mcRange: string | undefined;
   for (const d of Array.isArray(ql.depends) ? ql.depends : []) {
     const dep = typeof d === "string" ? { id: d, versions: "*" } : (d as { id?: string; versions?: unknown; optional?: boolean });
     if (dep.optional) continue;
-    if (!dep.id || NON_MOD.has(norm(dep.id))) continue;
-    requires.push({ id: norm(dep.id), range: typeof dep.versions === "string" ? dep.versions : "*" });
+    if (!dep.id) continue;
+    const range = typeof dep.versions === "string" ? dep.versions : "*";
+    if (norm(dep.id) === "minecraft") { mcRange = range; continue; }
+    if (NON_MOD.has(norm(dep.id))) continue;
+    requires.push({ id: norm(dep.id), range });
   }
-  return { version: String(ql.version ?? ""), provides, requires };
+  return { version: String(ql.version ?? ""), provides, requires, mcRange };
 }
 
 /**
@@ -72,10 +86,14 @@ export function parseForge(text: string, manifestMf = ""): ManifestInfo {
   const requires: { id: string; range: string }[] = [];
   let section: "mods" | "deps" | "other" = "other";
   let cur: { modId?: string; mandatory?: boolean; versionRange?: string } | null = null;
+  let mcRange: string | undefined;
 
   const flush = () => {
-    if (section === "deps" && cur?.modId && cur.mandatory !== false && !NON_MOD.has(norm(cur.modId))) {
-      requires.push({ id: norm(cur.modId), range: cur.versionRange ?? "*" });
+    if (section === "deps" && cur?.modId) {
+      if (norm(cur.modId) === "minecraft" && cur.versionRange) mcRange = cur.versionRange;
+      else if (cur.mandatory !== false && !NON_MOD.has(norm(cur.modId))) {
+        requires.push({ id: norm(cur.modId), range: cur.versionRange ?? "*" });
+      }
     }
     cur = null;
   };
@@ -104,7 +122,7 @@ export function parseForge(text: string, manifestMf = ""): ManifestInfo {
     const m = manifestMf.match(/Implementation-Version:\s*(.+)/i);
     if (m) version = m[1].trim();
   }
-  return { version, provides, requires };
+  return { version, provides, requires, mcRange };
 }
 
 /** Inflate just the manifest entries from a jar's bytes and parse them. */

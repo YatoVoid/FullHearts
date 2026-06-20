@@ -604,8 +604,17 @@ export async function buildMrpack(opts: {
     // best-effort
   }
 
+  // Drop mods whose jar manifest says they DON'T support the target Minecraft
+  // version, even though Modrinth tagged them compatible (e.g. Twigs / Fisherman's
+  // Haven showing up in a 1.21.1 pack when their mods.toml caps at 1.20.x).
+  const mcIncompatible = new Set<string>();
+  for (const [pid, info] of manifestByProject) {
+    if (info.mcRange && !satisfies(opts.mcVersion, info.mcRange)) mcIncompatible.add(pid);
+  }
+
   // Drop any selected mod that (transitively) requires something unresolved —
-  // a missing dependency, or one whose version range can't be satisfied.
+  // a missing dependency, one whose version range can't be satisfied, or one
+  // that doesn't support this Minecraft version.
   const reqChildren = new Map<string, string[]>();
   for (const [p, c] of requiredEdges) {
     const arr = reqChildren.get(p);
@@ -618,9 +627,9 @@ export async function buildMrpack(opts: {
     const stack = [root];
     while (stack.length) {
       const node = stack.pop()!;
-      if (rangeBrokenDependents.has(node)) return true;
+      if (rangeBrokenDependents.has(node) || mcIncompatible.has(node)) return true;
       for (const c of reqChildren.get(node) ?? []) {
-        if (unresolvedRequired.has(c) || rangeBrokenDependents.has(c)) return true;
+        if (unresolvedRequired.has(c) || rangeBrokenDependents.has(c) || mcIncompatible.has(c)) return true;
         if (!seen.has(c)) { seen.add(c); stack.push(c); }
       }
     }
@@ -629,6 +638,9 @@ export async function buildMrpack(opts: {
   for (const pid of selectedProjects) {
     if (isBroken(pid)) { dropped.add(pid); skipped.push(modByProject.get(pid)!); }
   }
+  // Exclude the MC-incompatible jars themselves (they may be dependencies, not
+  // selected mods) so they never ship.
+  for (const pid of mcIncompatible) dropped.add(pid);
 
   // Resolve declared mod-vs-mod incompatibilities by dropping one side of each
   // conflicting pair (both must be present to be a real conflict).

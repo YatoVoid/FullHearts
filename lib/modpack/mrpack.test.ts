@@ -230,6 +230,31 @@ describe("buildMrpack dependency closure", () => {
     expect(skipped.map((m) => m.id)).toEqual(["estrogen"]);
   });
 
+  it("drops a mod whose jar manifest doesn't support the target Minecraft version", async () => {
+    // Modrinth tags Twigs as 1.21.1-compatible, but its manifest caps at 1.20.x.
+    const twigs = { id: "vT", project_id: "TWIGS", version_type: "release", files: [file("twigs.jar")], dependencies: [] };
+    const good = { id: "vG", project_id: "G", version_type: "release", files: [file("good.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/project/twigs/version")) return jsonRes([twigs]);
+      if (url.includes("/project/good/version")) return jsonRes([good]);
+      return jsonRes([]);
+    }));
+    const manifests: Record<string, unknown> = {
+      TWIGS: { version: "3.0", provides: ["twigs"], requires: [], mcRange: "[1.20,1.21)" },
+      G: { version: "1.0", provides: ["g"], requires: [] }
+    };
+    const inspectJars = async (jobs: { key: string; url: string }[]) =>
+      Object.fromEntries(jobs.map((j) => [j.key, manifests[j.key] ?? null]));
+
+    const { included, skipped } = await buildMrpack({
+      name: "t", mods: [modStub("twigs"), modStub("good")], loader: "fabric", mcVersion: "1.21.1", inspectJars: inspectJars as never
+    });
+
+    expect(included.map((m) => m.id)).toEqual(["good"]);
+    expect(skipped.map((m) => m.id)).toEqual(["twigs"]);
+  });
+
   it("resolveBuildable splits mods by whether a real loader+mc file exists", async () => {
     vi.stubGlobal("fetch", vi.fn(async (url: string) => {
       if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
