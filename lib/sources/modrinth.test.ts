@@ -4,7 +4,8 @@ import {
   normalizeDependencies,
   pickLatestVersionId,
   resolveDependencyNames,
-  normalizeSearchHit
+  normalizeSearchHit,
+  isLibraryHit
 } from "@/lib/sources/modrinth";
 import projectsFixture from "@/lib/sources/__fixtures__/modrinth-projects.json";
 import versionFixtureJson from "@/lib/sources/__fixtures__/modrinth-version.json";
@@ -13,6 +14,17 @@ import searchFixture from "@/lib/sources/__fixtures__/modrinth-search.json";
 // JSON imports widen literal unions (e.g. dependency_type) to string; pin it
 // back to the shape normalizeDependencies expects.
 const versionFixture = versionFixtureJson as Parameters<typeof normalizeDependencies>[0];
+
+describe("isLibraryHit", () => {
+  const hit = (categories: string[]) => ({ slug: "x", title: "X", description: "", categories, versions: [] });
+  it("flags library/framework projects", () => {
+    expect(isLibraryHit(hit(["library", "forge"]))).toBe(true);
+  });
+  it("passes real content mods", () => {
+    expect(isLibraryHit(hit(["adventure", "forge"]))).toBe(false);
+    expect(isLibraryHit(hit([]))).toBe(false);
+  });
+});
 
 describe("modrinth normalization", () => {
   it("normalizes a project into Enrichment fields", () => {

@@ -140,6 +140,17 @@ export interface MrSearchHit {
   icon_url?: string;
 }
 
+// Modrinth categories that mark a project as a framework/library, not something
+// a player picks. These must NEVER be recommended — they arrive automatically as
+// dependencies when something needs them. (Recommending them gave the wrong
+// "Prism", crowded packs with CustomSkinLoader/Tritium, etc.)
+const LIBRARY_CATEGORIES = new Set(["library"]);
+
+/** True when a Modrinth hit is a library/framework rather than player content. */
+export function isLibraryHit(hit: MrSearchHit): boolean {
+  return (hit.categories ?? []).some((c) => LIBRARY_CATEGORIES.has(c));
+}
+
 /** Normalize a search hit into a fully-formed, auto-tagged Mod. */
 export function normalizeSearchHit(hit: MrSearchHit): Mod {
   const loaders = hit.categories.filter((c): c is Loader =>
@@ -210,6 +221,7 @@ export async function searchMods(opts: SearchOpts = {}): Promise<Mod[]> {
   for (const hits of batches) {
     for (const hit of hits) {
       if (bySlug.has(hit.slug)) continue;
+      if (isLibraryHit(hit)) continue; // libraries arrive as deps, never as picks
       const mod = normalizeSearchHit(hit);
       if (Object.keys(mod.curatedTags).length === 0) continue; // skip untaggable
       bySlug.set(hit.slug, mod);
