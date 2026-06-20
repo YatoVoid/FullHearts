@@ -31,17 +31,41 @@ export function summarize(profile: Profile): string {
 }
 
 /**
+ * Dedupe key from a mod's display name: lowercase, drop a bracketed/parenthetical
+ * suffix and all non-alphanumerics. Collapses the THREE different mods all named
+ * "Dynamic Lights", and "Fullbright" vs "Fullbright [Permanent Night Vision]",
+ * to one — two mods doing the same thing fight over the same config/registry.
+ */
+function nameKey(name: string): string {
+  return name.toLowerCase().replace(/[[(].*$/, "").replace(/[^a-z0-9]/g, "");
+}
+
+/** Keep only the first (highest-ranked) mod for each display-name key. */
+function dedupeByName<T extends { mod: Mod }>(items: T[]): T[] {
+  const seen = new Set<string>();
+  const out: T[] = [];
+  for (const it of items) {
+    const k = nameKey(it.mod.name);
+    if (k && seen.has(k)) continue;
+    if (k) seen.add(k);
+    out.push(it);
+  }
+  return out;
+}
+
+/**
  * Rank mods for a set of quiz answers. Pure: no I/O. Applies hard filters,
- * scores, drops non-positive matches, and returns the top N (N = maxMods),
- * each carrying its generated reason. Required dependencies are surfaced
- * per-mod via `mod.dependencies` (shown, not auto-resolved, per spec).
+ * scores, drops non-positive matches, dedupes near-duplicate mods by name, and
+ * returns the top N (N = maxMods), each carrying its generated reason.
  */
 export function recommendWithProfile(profile: Profile, mods: Mod[], limit = profile.maxMods): Recommendation {
-  const results = mods
+  const ranked = mods
     .filter((m) => passesHardFilters(m, profile))
     .map((m) => ({ mod: m, score: score(m, profile) }))
     .filter((x) => x.score > 0)
-    .sort((a, b) => b.score - a.score)
+    .sort((a, b) => b.score - a.score);
+
+  const results = dedupeByName(ranked)
     .slice(0, limit)
     .map(({ mod, score: s }) => ({ mod, score: s, reason: reason(mod, profile) }));
 
@@ -75,8 +99,9 @@ export function recommendFromQuery(text: string, mods: Mod[], limit?: number): R
 
   // Don't invent filler: take only real matches, capped by the size preference
   // (or a larger candidate `limit` when the caller will post-filter by buildability).
-  const cap = Math.min(scored.length, limit ?? Math.max(8, profile.maxMods));
-  const results = scored
+  const deduped = dedupeByName(scored);
+  const cap = Math.min(deduped.length, limit ?? Math.max(8, profile.maxMods));
+  const results = deduped
     .slice(0, cap)
     .map(({ mod, rel }) => ({ mod, score: rel, reason: reason(mod, profile) }));
 

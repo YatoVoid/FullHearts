@@ -93,6 +93,17 @@ describe("score & hard filters", () => {
     expect(passesHardFilters(bad, forgeProfile)).toBe(false);
   });
 
+  it("dedupes mods that share a display name (3 different 'Dynamic Lights')", () => {
+    const a = mod({ id: "dynamic-lights", name: "Dynamic Lights", modrinthSlug: "dynamic-lights", loaders: ["forge"], gameVersions: ["1.20.1"], curatedTags: { building: 1 }, downloads: 9000 });
+    const b = mod({ id: "dynamic-torches", name: "Dynamic Lights", modrinthSlug: "dynamic-torches", loaders: ["forge"], gameVersions: ["1.20.1"], curatedTags: { building: 1 }, downloads: 100 });
+    const full = mod({ id: "fullbright-forge", name: "Fullbright", modrinthSlug: "fullbright-forge", loaders: ["forge"], gameVersions: ["1.20.1"], curatedTags: { building: 1 }, downloads: 8000 });
+    const fullNv = mod({ id: "fullbright-multiplayer", name: "Fullbright [Permanent Night Vision]", modrinthSlug: "fullbright-multiplayer", loaders: ["forge"], gameVersions: ["1.20.1"], curatedTags: { building: 1 }, downloads: 50 });
+    const rec = recommend({ playstyle: ["build"], loader: ["forge"], version: ["1.20.1"], size: ["large"], hardware: [] }, [a, b, full, fullNv]);
+    const names = rec.results.map((r) => r.mod.name);
+    expect(names.filter((n) => n === "Dynamic Lights").length).toBe(1);
+    expect(names.filter((n) => n.startsWith("Fullbright")).length).toBe(1);
+  });
+
   it("blocks a mod only on the versions it crashes on", () => {
     const on1211 = buildProfile({ playstyle: ["build"], loader: ["forge"], version: ["1.21.1"], size: ["small"], hardware: [] });
     const on1201 = buildProfile({ playstyle: ["build"], loader: ["forge"], version: ["1.20.1"], size: ["small"], hardware: [] });
