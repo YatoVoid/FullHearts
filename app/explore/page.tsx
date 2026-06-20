@@ -7,6 +7,7 @@ import { TAGS, TAG_LABELS, type Tag } from "@/lib/curation/tags";
 import { useCollectionTarget } from "@/lib/storage/useCollectionTarget";
 import { loadPool } from "@/lib/catalog/clientPool";
 import { searchModrinthQuery, fetchModsBySlugs } from "@/lib/sources/modrinth";
+import { modBuildsFor } from "@/lib/modpack/mrpack";
 import { isHighQuality } from "@/lib/catalog/quality";
 import { type ModFilter, DEFAULT_FILTER, loadFilter, saveFilter, matchesFilter, versionOptions } from "@/lib/catalog/filter";
 import { HEART_SRC } from "@/lib/asset";
@@ -66,6 +67,8 @@ export default function Explore() {
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const { collections, targetId, selectTarget, createAndSelect, addToTarget, removeFromTarget, added } = useCollectionTarget();
   const [showTarget, setShowTarget] = useState(false);
+  const [addBusy, setAddBusy] = useState<string | null>(null);
+  const [addError, setAddError] = useState("");
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<ModFilter>(DEFAULT_FILTER);
   const [live, setLive] = useState<Mod[]>([]);
@@ -189,10 +192,27 @@ export default function Explore() {
   const isCompatibleWithTarget = (mod: Mod) =>
     !lock || (mod.loaders.includes(lock.loader) && mod.gameVersions.includes(lock.version));
 
-  function handleAdd(modId: string) {
-    // Pin the collection's loadout from the current filter on the first add.
-    const loadout = filter.loader !== "all" && filter.version !== "all" ? { loader: filter.loader, version: filter.version } : undefined;
-    addToTarget(modId, loadout);
+  async function handleAdd(modId: string) {
+    const loaderSel = lock?.loader ?? (filter.loader !== "all" ? filter.loader : undefined);
+    const versionSel = lock?.version ?? (filter.version !== "all" ? filter.version : undefined);
+    // VERIFY the mod actually has a jar for this exact loader + version before it
+    // can enter the collection — Modrinth's project tags lie (a "Forge 1.21.1"
+    // mod may only have a NeoForge 1.21.1 build), and the user must never end up
+    // with mods that won't run.
+    if (loaderSel && versionSel) {
+      const mod = [...mods, ...live, ...Object.values(extraTargetMods)].find((m) => m.id === modId);
+      if (mod) {
+        setAddError("");
+        setAddBusy(modId);
+        const ok = await modBuildsFor(mod, loaderSel, versionSel);
+        setAddBusy(null);
+        if (!ok) {
+          setAddError(`${mod.name} has no ${loaderSel.charAt(0).toUpperCase() + loaderSel.slice(1)} ${versionSel} build — not added.`);
+          return;
+        }
+      }
+    }
+    addToTarget(modId, loaderSel && versionSel ? { loader: loaderSel, version: versionSel } : undefined);
   }
 
   const card = (mod: Mod, i: number) => (
@@ -201,7 +221,7 @@ export default function Explore() {
       mod={mod}
       i={i}
       added={added.has(mod.id)}
-      disabled={needsChoice || (!added.has(mod.id) && !isCompatibleWithTarget(mod))}
+      disabled={needsChoice || addBusy === mod.id || (!added.has(mod.id) && !isCompatibleWithTarget(mod))}
       onAdd={handleAdd}
       onRemove={removeFromTarget}
     />
@@ -236,6 +256,8 @@ export default function Explore() {
         {status === "ready" && (
           <>
             <CollectionPicker collections={collections} targetId={targetId} onSelect={selectTarget} onCreate={(n) => createAndSelect(n)} />
+            {addBusy && <p className="add-feedback checking" role="status">Checking this mod builds for your loadout…</p>}
+            {addError && <p className="add-feedback err" role="alert">{addError}</p>}
             {target && target.modIds.length > 0 && (
               <div className="target-mods">
                 <button type="button" className="btn-ghost target-mods-toggle" onClick={() => setShowTarget((s) => !s)}>

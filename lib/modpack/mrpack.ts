@@ -314,6 +314,18 @@ async function resolveVersionById(versionId: string): Promise<MrVersion | null> 
   }
 }
 
+/**
+ * Does this mod have a REAL, deliverable jar for the loader + MC version? This is
+ * the per-build truth Modrinth's project-level loader/version tags can't give (a
+ * mod tagged "forge" + "1.21.1" may have a Forge build on 1.20.1 and a 1.21.1
+ * build on NeoForge, with no Forge-1.21.1 jar). Used to stop the collection from
+ * accepting a mod that won't actually run on the chosen loader + version.
+ */
+export async function modBuildsFor(mod: Mod, loader: Loader, mc: string): Promise<boolean> {
+  const v = await resolveVersionByProject(mod.modrinthSlug ?? mod.id, loader, mc);
+  return Boolean(v && fileEntryFromVersion(v));
+}
+
 export interface BuildableReport {
   /** Mods that have a real primary jar for this loader + game version. */
   buildable: Mod[];

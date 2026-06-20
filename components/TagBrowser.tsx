@@ -7,6 +7,7 @@ import { TAG_LABELS, type Tag } from "@/lib/curation/tags";
 import { useCollectionTarget } from "@/lib/storage/useCollectionTarget";
 import { loadPool } from "@/lib/catalog/clientPool";
 import { fetchModsBySlugs } from "@/lib/sources/modrinth";
+import { modBuildsFor } from "@/lib/modpack/mrpack";
 import { type ModFilter, DEFAULT_FILTER, loadFilter, saveFilter, matchesFilter, versionOptions } from "@/lib/catalog/filter";
 import { HEART_SRC } from "@/lib/asset";
 import Footer from "@/components/Footer";
@@ -31,6 +32,8 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
   const [mods, setMods] = useState<Mod[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const { collections, targetId, selectTarget, createAndSelect, addToTarget, removeFromTarget, added } = useCollectionTarget();
+  const [addBusy, setAddBusy] = useState<string | null>(null);
+  const [addError, setAddError] = useState("");
   const [filter, setFilter] = useState<ModFilter>(DEFAULT_FILTER);
 
   useEffect(() => {
@@ -94,9 +97,24 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
   const isCompatibleWithTarget = (mod: Mod) =>
     !lock || (mod.loaders.includes(lock.loader) && mod.gameVersions.includes(lock.version));
 
-  function handleAdd(modId: string) {
-    const loadout = filter.loader !== "all" && filter.version !== "all" ? { loader: filter.loader, version: filter.version } : undefined;
-    addToTarget(modId, loadout);
+  async function handleAdd(modId: string) {
+    const loaderSel = lock?.loader ?? (filter.loader !== "all" ? filter.loader : undefined);
+    const versionSel = lock?.version ?? (filter.version !== "all" ? filter.version : undefined);
+    // Verify a real jar exists for this loader+version before adding (project tags lie).
+    if (loaderSel && versionSel) {
+      const mod = [...mods, ...Object.values(extraTargetMods)].find((m) => m.id === modId);
+      if (mod) {
+        setAddError("");
+        setAddBusy(modId);
+        const ok = await modBuildsFor(mod, loaderSel, versionSel);
+        setAddBusy(null);
+        if (!ok) {
+          setAddError(`${mod.name} has no ${loaderSel.charAt(0).toUpperCase() + loaderSel.slice(1)} ${versionSel} build — not added.`);
+          return;
+        }
+      }
+    }
+    addToTarget(modId, loaderSel && versionSel ? { loader: loaderSel, version: versionSel } : undefined);
   }
 
   const inTag = useMemo(
@@ -149,6 +167,8 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
               needLoader={needsChoice && filter.loader === "all"}
               needVersion={needsChoice && filter.version === "all"}
             />
+            {addBusy && <p className="add-feedback checking" role="status">Checking this mod builds for your loadout…</p>}
+            {addError && <p className="add-feedback err" role="alert">{addError}</p>}
             <div className="row-head">
               <h2>{TAG_LABELS[tag]}</h2>
               <span className="count">{inTag.length} mods</span>
@@ -163,7 +183,7 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
                     mod={mod}
                     i={i}
                     added={added.has(mod.id)}
-                    disabled={needsChoice || (!added.has(mod.id) && !isCompatibleWithTarget(mod))}
+                    disabled={needsChoice || addBusy === mod.id || (!added.has(mod.id) && !isCompatibleWithTarget(mod))}
                     onAdd={handleAdd}
                     onRemove={removeFromTarget}
                   />
