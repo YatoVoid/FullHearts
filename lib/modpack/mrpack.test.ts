@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { fileEntryFromVersion, buildIndex, buildMrpack, resolveBuildable } from "@/lib/modpack/mrpack";
+import { fileEntryFromVersion, buildIndex, buildMrpack, resolveBuildable, jarFilenameMcMismatch } from "@/lib/modpack/mrpack";
 import type { Mod } from "@/lib/sources/types";
 
 function file(filename: string) {
@@ -37,6 +37,18 @@ describe("fileEntryFromVersion", () => {
 
   it("returns null for non-jar files", () => {
     expect(fileEntryFromVersion({ files: [{ url: "u", filename: "x.zip", primary: true, size: 1, hashes: { sha1: "a", sha512: "b" } }] })).toBeNull();
+  });
+});
+
+describe("jarFilenameMcMismatch", () => {
+  const v = (filename: string) => ({ files: [{ url: "u", filename, primary: true, size: 1, hashes: { sha1: "a", sha512: "b" } }] });
+  it("flags a jar whose +mcversion build-metadata differs from the pack", () => {
+    expect(jarFilenameMcMismatch(v("hide-item-frame-forge-1.4.2+1.20.6.jar"), "1.21.1")).toBe("1.20.6");
+    expect(jarFilenameMcMismatch(v("simple-datapacks-2.7-forge+1.20.6.jar"), "1.21.1")).toBe("1.20.6");
+  });
+  it("passes a matching or unmarked jar", () => {
+    expect(jarFilenameMcMismatch(v("create-0.5.1+1.20.1.jar"), "1.20.1")).toBeNull();
+    expect(jarFilenameMcMismatch(v("sodium-fabric-0.5.3.jar"), "1.21.1")).toBeNull();
   });
 });
 

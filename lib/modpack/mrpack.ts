@@ -124,6 +124,21 @@ export function fileEntryFromVersion(v: { files: MrVersionFile[] }): MrpackFile 
   };
 }
 
+/**
+ * A jar's filename often carries the EXACT Minecraft version it was built for as
+ * semver build-metadata, e.g. "hide-item-frame-forge-1.4.2+1.20.6.jar" or
+ * "simple-datapacks-2.7-forge+1.20.6.jar". Modrinth lets authors tag that one
+ * 1.20.6 jar as supporting 1.21.1 too — and it then crashes on launch. When the
+ * filename pins a DIFFERENT MC version than the pack's, treat the jar as built
+ * for the wrong version. Pure. Returns the mismatched version, or null.
+ */
+export function jarFilenameMcMismatch(v: { files: MrVersionFile[] }, mc: string): string | null {
+  const f = v.files.find((x) => x.primary) ?? v.files[0];
+  if (!f) return null;
+  const m = f.filename.match(/\+(1\.\d{1,2}(?:\.\d{1,2})?)/); // "+<mcversion>" build metadata
+  return m && m[1] !== mc ? m[1] : null;
+}
+
 /** Build the modrinth.index.json object. Pure. */
 export function buildIndex(opts: {
   name: string;
@@ -734,6 +749,11 @@ export async function buildMrpack(opts: {
   for (const [pid, info] of manifestByProject) {
     if (info.mcRange && !satisfies(opts.mcVersion, info.mcRange)) mcIncompatible.add(pid);
     if (info.loaderRange && !satisfies(loaderVersion, info.loaderRange)) mcIncompatible.add(pid);
+  }
+  // Filename build-metadata pins a different MC version than the pack (a 1.20.6
+  // jar tagged for 1.21.1) — built for the wrong version, will crash.
+  for (const [pid, v] of resolvedByProject) {
+    if (jarFilenameMcMismatch(v, opts.mcVersion)) mcIncompatible.add(pid);
   }
 
   // Drop any selected mod that (transitively) requires something unresolved —
