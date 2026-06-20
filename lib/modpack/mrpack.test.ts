@@ -125,24 +125,23 @@ describe("buildMrpack dependency closure", () => {
     expect(skipped.map((m) => m.id)).toEqual(["needy"]);
   });
 
-  it("skips a Forge mod that only has a beta/SNAPSHOT build (no stable release)", async () => {
-    // tr7zw-style case: a Forge port exists but only as an unstable build that
-    // crashes on launch. We refuse to ship it rather than ship a known-flaky jar.
-    const betaOnly = { id: "vB", project_id: "B", version_type: "beta", files: [file("snapshot.jar")], dependencies: [] };
-    const stable = { id: "vG", project_id: "G", version_type: "release", files: [file("stable.jar")], dependencies: [] };
+  it("allows a Forge beta build, but refuses an alpha (too experimental)", async () => {
+    // Beta builds of native Forge content mods (BOP, cozy mods, Create addons)
+    // are usually fine, so we ship them. Alpha stays refused on Forge.
+    const betaMod = { id: "vB", project_id: "B", version_type: "beta", files: [file("beta.jar")], dependencies: [] };
+    const alphaMod = { id: "vA", project_id: "A", version_type: "alpha", files: [file("alpha.jar")], dependencies: [] };
     vi.stubGlobal("fetch", vi.fn(async (url: string) => {
-      if (url.includes("52.1.14") || url.includes("forge")) { /* loader version is pinned, no fetch */ }
-      if (url.includes("/project/betamod/version")) return jsonRes([betaOnly]);
-      if (url.includes("/project/stablemod/version")) return jsonRes([stable]);
+      if (url.includes("/project/betamod/version")) return jsonRes([betaMod]);
+      if (url.includes("/project/alphamod/version")) return jsonRes([alphaMod]);
       return jsonRes([]);
     }));
 
     const { included, skipped } = await buildMrpack({
-      name: "t", mods: [modStub("betamod"), modStub("stablemod")], loader: "forge", mcVersion: "1.21.1"
+      name: "t", mods: [modStub("betamod"), modStub("alphamod")], loader: "forge", mcVersion: "1.21.1"
     });
 
-    expect(included.map((m) => m.id)).toEqual(["stablemod"]);
-    expect(skipped.map((m) => m.id)).toEqual(["betamod"]);
+    expect(included.map((m) => m.id)).toEqual(["betamod"]);
+    expect(skipped.map((m) => m.id)).toEqual(["alphamod"]);
   });
 
   it("still allows a beta build on Fabric (native target, lower risk)", async () => {

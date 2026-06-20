@@ -188,15 +188,16 @@ async function resolveVersionByProject(idOrSlug: string, loader: Loader, mc: str
   try {
     const versions = (await fetchJSON(url)) as MrVersion[];
     if (!Array.isArray(versions) || versions.length === 0) return null;
-    // Prefer the newest STABLE release (versions are date-desc). Bleeding-edge
-    // betas (e.g. a Sodium beta) are a common source of mod-vs-mod breakage.
+    // Prefer the newest STABLE release (versions are date-desc).
     const release = versions.find((v) => v.version_type === "release");
     if (release) return release;
-    // On Forge/NeoForge, mods ported from Fabric often only ship unstable
-    // SNAPSHOT/beta builds that crash on launch (e.g. tr7zw's TRender). Refuse to
-    // ship a non-release build there rather than ship a known-flaky port; the mod
-    // is then skipped/reported. Fabric & Quilt are native targets, so a beta is
-    // lower-risk and we fall back to it.
+    // No release: accept the newest BETA. Tons of legit, popular content mods
+    // (Biomes O' Plenty, Create addons, Farmer's-Delight add-ons, cozy mods) only
+    // ship beta builds on Forge yet run fine — excluding them all gutted themed
+    // packs. We still refuse ALPHA on Forge/NeoForge (genuinely experimental, the
+    // crash-prone SNAPSHOT ports); Fabric/Quilt fall back to anything as before.
+    const beta = versions.find((v) => v.version_type === "beta");
+    if (beta) return beta;
     if (loader === "forge" || loader === "neoforge") return null;
     return versions[0];
   } catch {

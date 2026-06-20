@@ -7,6 +7,7 @@ import type { QuizAnswers } from "@/lib/curation/questions";
 import { buildProfile, type Profile } from "@/lib/recommend/profile";
 import { recommend, recommendFromQuery, type RankedMod, type Recommendation } from "@/lib/recommend/index";
 import { pickLucky } from "@/lib/recommend/lucky";
+import { isContentMod, backgroundCap } from "@/lib/recommend/classify";
 import { QUERY_STORAGE_KEY, parseIntent } from "@/lib/recommend/intent";
 import { recommendedVersion, type Coverage } from "@/lib/catalog/coverage";
 import snapshotCoverage from "@/lib/catalog/coverage.snapshot.json";
@@ -63,7 +64,6 @@ function loadQuery(): string | null {
 export default function Results() {
   const [status, setStatus] = useState<Status>("loading");
   const [results, setResults] = useState<RankedMod[]>([]);
-  const [excluded, setExcluded] = useState<{ mod: Mod; reason: string }[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [summary, setSummary] = useState("");
   const [degraded, setDegraded] = useState(false);
@@ -178,44 +178,41 @@ export default function Results() {
           // Live data is down — can't verify buildability, so show the ranked
           // candidates as-is (old behavior) rather than excluding everything.
           setResults(rec.results.slice(0, max));
-          setExcluded([]);
           setStatus(rec.results.length > 0 ? "ready" : "empty");
           return;
         }
 
-        // Run the FULL build validation (the same one the download uses:
-        // dependency closure + jar-manifest cross-check + version-range
-        // reconciliation) on a candidate superset, so the loadout we show ==
-        // exactly what downloads. Front-loading it here means the .mrpack
-        // download is instant (cached) and never surprises with a left-out mod.
-        const candidates = rec.results.slice(0, max + RESOLVE_BUFFER);
-        const loaderLabel = rec.profile.loader.charAt(0).toUpperCase() + rec.profile.loader.slice(1);
-        const { included, skipped } = await buildMrpack({
+        // Split candidates into CONTENT (game-changing) and BACKGROUND (perf,
+        // visuals, UI, QoL, libraries). The size limit counts CONTENT mods; a
+        // small bounded set of background mods rides on top, so a "cozy builder"
+        // pack is full of cozy/building mods, not 20 FPS/texture/fix mods.
+        const contentCands = rec.results.filter((c) => isContentMod(c.mod));
+        const bgCands = rec.results.filter((c) => !isContentMod(c.mod));
+        const bgCap = backgroundCap(max);
+        const contentSlice = contentCands.slice(0, max + RESOLVE_BUFFER);
+        const bgSlice = bgCands.slice(0, bgCap + 10);
+
+        // FULL build validation (same one the download uses) on the superset, so
+        // the loadout shown == exactly what downloads (cached, instant later).
+        const { included } = await buildMrpack({
           name: "Full Hearts loadout",
-          mods: candidates.map((c) => c.mod),
+          mods: [...contentSlice, ...bgSlice].map((c) => c.mod),
           loader: rec.profile.loader,
           mcVersion: rec.profile.gameVersion,
           onProgress: (pct, label) => { if (!cancelled) setBuildProgress((prev) => ({ pct: Math.max(prev.pct, pct), label })); }
         });
         if (cancelled) return;
-        // Walk candidates in rank order, taking buildable ones until the loadout
-        // is full. Only mods that FAILED while we were still filling genuinely
-        // "competed for a slot" — everything past that point is unused buffer and
-        // shouldn't be reported as "left out" (that list was alarmingly long).
         const okIds = new Set(included.map((m) => m.id));
-        const finalResults: RankedMod[] = [];
-        const displaced: Mod[] = [];
-        for (const c of candidates) {
-          if (finalResults.length >= max) break;
-          if (okIds.has(c.mod.id)) finalResults.push(c);
-          else displaced.push(c.mod);
-        }
-        const ex = displaced.map((m) => ({
-          mod: m,
-          reason: `no stable ${loaderLabel} ${rec.profile.gameVersion} build, or a required dependency wasn't available`
-        }));
+        const fill = (cands: RankedMod[], n: number) => {
+          const out: RankedMod[] = [];
+          for (const c of cands) {
+            if (out.length >= n) break;
+            if (okIds.has(c.mod.id)) out.push(c);
+          }
+          return out;
+        };
+        const finalResults = [...fill(contentSlice, max), ...fill(bgSlice, bgCap)];
         setResults(finalResults);
-        setExcluded(ex);
         setStatus(finalResults.length > 0 ? "ready" : "empty");
       } catch {
         if (!cancelled) setStatus("error");
@@ -253,25 +250,6 @@ export default function Results() {
             <div className="compat compat-ok">
               ✓ {results.length} mods verified for {profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1)} {profile.gameVersion} — every one builds.
             </div>
-          )}
-          {status === "ready" && profile && excluded.length > 0 && (
-            <details className="excluded">
-              <summary>
-                We skipped {excluded.length} match{excluded.length === 1 ? "" : "es"} with no clean {profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1)} {profile.gameVersion} build and filled your pack with ones that work. Tap to see them.
-              </summary>
-              <ul>
-                {excluded.slice(0, 8).map(({ mod }) => (
-                  <li key={mod.id}>
-                    <b>{mod.name}</b>
-                    {mod.links.modrinth && (
-                      <> · <a href={mod.links.modrinth} target="_blank" rel="noopener noreferrer">check on Modrinth</a></>
-                    )}
-                  </li>
-                ))}
-                {excluded.length > 8 && <li>…and {excluded.length - 8} more.</li>}
-              </ul>
-              <p className="excluded-tip">These aren&apos;t in your pack and your pack is complete without them. To get them, try a different loader or Minecraft version.</p>
-            </details>
           )}
           {status === "ready" && profile && (
             <DownloadPack
