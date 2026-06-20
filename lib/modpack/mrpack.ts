@@ -1,19 +1,62 @@
 import { zipSync, strToU8 } from "fflate";
 import type { Loader, Mod } from "@/lib/sources/types";
-import type { ManifestInfo } from "@/lib/modpack/manifest";
+import { extractManifestDeps, type ManifestInfo } from "@/lib/modpack/manifest";
 import { satisfies } from "@/lib/modpack/range";
+import { searchModrinthQuery } from "@/lib/sources/modrinth";
 
 /** Reads jar manifests via the server route (keyed by immutable jar URL). */
 export type JarInspector = (jobs: { key: string; url: string }[]) => Promise<Record<string, ManifestInfo | null>>;
 
+// Per-session cache of client-read manifests (immutable jar URLs).
+const clientManifestCache = new Map<string, ManifestInfo | null>();
+
+/** Read one jar's manifest directly in the browser. The Modrinth CDN allows
+ *  cross-origin reads, so this works with no backend — at the cost of the user
+ *  downloading the jar. */
+async function readJarClient(url: string): Promise<ManifestInfo | null> {
+  if (clientManifestCache.has(url)) return clientManifestCache.get(url)!;
+  let info: ManifestInfo | null = null;
+  try {
+    const r = await fetch(url);
+    if (r.ok) info = extractManifestDeps(new Uint8Array(await r.arrayBuffer()));
+  } catch {
+    info = null;
+  }
+  clientManifestCache.set(url, info);
+  return info;
+}
+
+/**
+ * Read jar manifests. Prefers the server route (one shared, cached download for
+ * everyone, no user bandwidth). When that route is unavailable — e.g. a fully
+ * static deploy with no API — it falls back to reading jars directly in the
+ * browser, so dependency discovery, version-range reconciliation and the MC
+ * version check keep working everywhere instead of silently switching off.
+ */
 const defaultInspector: JarInspector = async (jobs) => {
-  const r = await fetch("/api/manifest-deps", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ jobs })
-  });
-  if (!r.ok) return {};
-  return (await r.json()) as Record<string, ManifestInfo | null>;
+  let server: Record<string, ManifestInfo | null> = {};
+  try {
+    const r = await fetch("/api/manifest-deps", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jobs })
+    });
+    if (r.ok) server = (await r.json()) as Record<string, ManifestInfo | null>;
+  } catch {
+    // route missing/unreachable — fall through to client-side reads
+  }
+
+  const out: Record<string, ManifestInfo | null> = {};
+  const missing = jobs.filter((j) => !(j.key in server));
+  for (const j of jobs) if (j.key in server) out[j.key] = server[j.key];
+
+  let q = [...missing];
+  while (q.length) {
+    const batch = q.splice(0, 6); // bounded concurrency, kind to the CDN
+    const settled = await Promise.all(batch.map(async (j) => [j.key, await readJarClient(j.url)] as const));
+    for (const [k, v] of settled) out[k] = v;
+  }
+  return out;
 };
 
 /**
@@ -499,6 +542,24 @@ export async function buildMrpack(opts: {
     for (const cand of [modid, modid.replace(/_/g, "-"), modid.replace(/-/g, "_")]) {
       const v = await resolveVersionByProject(cand, opts.loader, opts.mcVersion);
       if (v) return v;
+    }
+    // The modid often differs from the Modrinth slug (e.g. modid "prism" lives at
+    // slug "prism-lib"). Search Modrinth for it and accept a top hit whose
+    // slug/title clearly matches, then resolve that project.
+    try {
+      const hits = await searchModrinthQuery(modid, { loader: opts.loader, version: opts.mcVersion, limit: 5 });
+      const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+      const target = norm(modid);
+      for (const h of hits) {
+        const slug = norm(h.modrinthSlug ?? h.id);
+        const title = norm(h.name);
+        if (slug.includes(target) || target.includes(slug) || title === target) {
+          const v = await resolveVersionByProject(h.modrinthSlug ?? h.id, opts.loader, opts.mcVersion);
+          if (v) return v;
+        }
+      }
+    } catch {
+      // best-effort
     }
     return null;
   }
