@@ -273,8 +273,9 @@ describe("buildMrpack dependency closure", () => {
 
   it("resolveBuildable excludes everything when the loader has no build for that MC", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => jsonRes([])));
-    // 1.19.2 isn't in the pinned Forge map -> no loader version -> all excluded.
-    const { buildable, excluded } = await resolveBuildable([modStub("anything")], "forge", "1.19.2");
+    // 1.7.10 isn't pinned and the (stubbed) live lookup finds nothing -> no loader
+    // version -> all excluded.
+    const { buildable, excluded } = await resolveBuildable([modStub("anything")], "forge", "1.7.10");
     expect(buildable).toHaveLength(0);
     expect(excluded.map((e) => e.mod.id)).toEqual(["anything"]);
   });

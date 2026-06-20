@@ -5,15 +5,19 @@
 const raw = process.env.NEXT_PUBLIC_BASE_PATH;
 const basePath = raw === undefined ? "" : raw;
 
-// Static export is now OPT-IN (set NEXT_STATIC_EXPORT=1). A static export has NO
-// API routes, which disables the server-side jar-manifest cache (/api/manifest-deps)
-// and loader-version lookup — so the default build is a normal Node server that
-// keeps those routes. Use `NEXT_STATIC_EXPORT=1 next build` only for a no-backend
-// host like GitHub Pages (the client-side fallback still keeps things working there).
-const staticExport = process.env.NEXT_STATIC_EXPORT === "1";
+// Static HTML export by default — the whole site is served by nginx as plain
+// files, no Node runtime needed. Everything still works without the API routes:
+//   - loader versions are fully PINNED (lib/modpack/mrpack.ts), so Forge/NeoForge
+//     packs build with no /api/loader-version call;
+//   - jar manifests are read CLIENT-SIDE (Modrinth's CDN allows cross-origin
+//     reads), so dependency/version/MC checks run without /api/manifest-deps.
+// Set NEXT_NODE_SERVER=1 to build for a Node host instead (`next start`), which
+// turns the API routes back on and moves manifest reading server-side (one
+// shared, cached download instead of per-visitor).
+const nodeServer = process.env.NEXT_NODE_SERVER === "1";
 
 const nextConfig = {
-  ...(staticExport ? { output: "export" } : {}),
+  ...(nodeServer ? {} : { output: "export" }),
   images: { unoptimized: true },
   trailingSlash: true,
   basePath,

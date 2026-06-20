@@ -171,17 +171,27 @@ async function fetchJSON(url: string): Promise<unknown> {
   throw new Error(`${url} -> rate limited`);
 }
 
-// Forge/NeoForge version metadata isn't browser-CORS-accessible, so we ship a
-// known-good version per MC version. The loader version only needs to be valid
-// for that MC (loaders are stable across minor builds); bump these over time.
+// Pinned known-good loader builds for EVERY MC version we offer, so a fully
+// static deploy (no API route) still builds Forge/NeoForge packs — the values
+// were fetched from the official Forge/NeoForge maven metadata (newest per MC).
+// The loader version only needs to be valid for that MC; bump these over time.
 const FORGE_VERSIONS: Record<string, string> = {
   "1.21.1": "52.1.14",
   "1.21": "51.0.33",
-  "1.20.1": "47.4.20"
+  "1.20.6": "50.2.8",
+  "1.20.4": "49.2.7",
+  "1.20.1": "47.4.20",
+  "1.19.4": "45.4.3",
+  "1.19.2": "43.5.2",
+  "1.18.2": "40.3.12",
+  "1.16.5": "36.2.42",
+  "1.12.2": "14.23.5.2864"
 };
 const NEOFORGE_VERSIONS: Record<string, string> = {
   "1.21.1": "21.1.233",
-  "1.21": "21.0.167"
+  "1.21": "21.0.167",
+  "1.20.6": "20.6.139",
+  "1.20.4": "20.4.251"
 };
 
 /** Forge/NeoForge loader version live from our server route (CORS-blocked client

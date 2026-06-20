@@ -114,9 +114,9 @@ export default function Quiz() {
   type DisplayOption = { id: string; label: string; note?: string; recommended?: boolean };
   let displayOptions: DisplayOption[];
   if (question.id === "version") {
-    // NeoForge only exists for 1.20.1+, even though Modrinth tags some older mods
-    // with it — don't offer versions it can't actually build.
-    const NEOFORGE_OK = new Set(["1.21.1", "1.21", "1.20.4", "1.20.1"]);
+    // NeoForge only ships for these MC versions (its 1.20.x line starts at 1.20.2),
+    // even though Modrinth tags some older mods with it — don't offer the rest.
+    const NEOFORGE_OK = new Set(["1.21.1", "1.21", "1.20.6", "1.20.4"]);
     const withCounts = question.options
       .filter((o) => chosenLoader !== "neoforge" || NEOFORGE_OK.has(o.gameVersion ?? ""))
       .map((o) => ({
