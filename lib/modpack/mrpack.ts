@@ -677,29 +677,49 @@ export async function buildMrpack(opts: {
     rangesByProvider.set(providerPid, list);
   }
 
+  // A version is loader-OK if it doesn't pin a loader newer than the one we ship
+  // for this MC (e.g. a "1.21.1" jar requiring Forge 53, which only exists on 1.21.3).
+  const loaderOk = (info?: ManifestInfo | null) => !info?.loaderRange || satisfies(loaderVersion, info.loaderRange);
+  const loaderDeadProviders = new Set<string>();
+
   report(86, "Reconciling dependency versions…");
   try {
     for (const [providerPid, reqs] of rangesByProvider) {
-      const cur = manifestByProject.get(providerPid)?.version ?? "";
-      if (cur && reqs.every((r) => satisfies(cur, r.range))) continue;
+      const curInfo = manifestByProject.get(providerPid);
+      const cur = curInfo?.version ?? "";
+      // Already good: loader-compatible AND satisfies every dependent's range.
+      if (cur && loaderOk(curInfo) && reqs.every((r) => satisfies(cur, r.range))) continue;
       const v0 = resolvedByProject.get(providerPid);
       if (!v0) continue;
       const probe = (await listVersionsByProject(v0.project_id, opts.loader, opts.mcVersion)).slice(0, 12);
-      let swapped: MrVersion | null = null;
-      if (probe.length) {
-        const infos = await inspect(probe.map((v) => ({ key: v.id, url: jarUrl(v) ?? "" })).filter((j) => j.url), opts.loader);
-        for (const v of probe) { // newest first
-          const ver = infos[v.id]?.version ?? "";
-          if (ver && reqs.every((r) => satisfies(ver, r.range)) && fileEntryFromVersion(v)) { swapped = v; break; }
-        }
+      const infos = probe.length
+        ? await inspect(probe.map((v) => ({ key: v.id, url: jarUrl(v) ?? "" })).filter((j) => j.url), opts.loader)
+        : {};
+      // Loader compatibility is a HARD constraint (a loader-incompatible jar won't
+      // even load). Prefer the newest version that is loader-OK AND satisfies all
+      // dependents; otherwise fall back to the newest loader-OK version and drop
+      // the dependents it can't satisfy.
+      let best: { v: MrVersion; info?: ManifestInfo | null } | null = null;
+      let bestLoaderOk: { v: MrVersion; info?: ManifestInfo | null } | null = null;
+      for (const v of probe) { // newest first
+        const info = infos[v.id];
+        if (!fileEntryFromVersion(v) || !loaderOk(info)) continue;
+        if (!bestLoaderOk) bestLoaderOk = { v, info };
+        const ver = info?.version ?? "";
+        if (ver && reqs.every((r) => satisfies(ver, r.range))) { best = { v, info }; break; }
       }
-      if (swapped) {
-        resolvedByProject.set(providerPid, swapped);
-        const info = (await inspect([{ key: providerPid, url: jarUrl(swapped) ?? "" }], opts.loader))[providerPid];
-        if (info) manifestByProject.set(providerPid, info);
-      } else {
-        const ver = manifestByProject.get(providerPid)?.version ?? "";
+      const chosen = best ?? bestLoaderOk;
+      if (chosen) {
+        resolvedByProject.set(providerPid, chosen.v);
+        if (chosen.info) manifestByProject.set(providerPid, chosen.info);
+        const ver = chosen.info?.version ?? "";
         for (const r of reqs) if (ver && !satisfies(ver, r.range)) rangeBrokenDependents.add(r.parent);
+      } else if (!loaderOk(curInfo)) {
+        // No loader-compatible version exists at all — the dep can't ship.
+        loaderDeadProviders.add(providerPid);
+        for (const r of reqs) rangeBrokenDependents.add(r.parent);
+      } else {
+        for (const r of reqs) if (cur && !satisfies(cur, r.range)) rangeBrokenDependents.add(r.parent);
       }
     }
   } catch {
@@ -708,10 +728,12 @@ export async function buildMrpack(opts: {
 
   // Drop mods whose jar manifest says they DON'T support the target Minecraft
   // version, even though Modrinth tagged them compatible (e.g. Twigs / Fisherman's
-  // Haven showing up in a 1.21.1 pack when their mods.toml caps at 1.20.x).
-  const mcIncompatible = new Set<string>();
+  // Haven showing up in a 1.21.1 pack when their mods.toml caps at 1.20.x), OR
+  // that require a newer loader than the MC version ships (Forge 53 on 1.21.1).
+  const mcIncompatible = new Set<string>(loaderDeadProviders);
   for (const [pid, info] of manifestByProject) {
     if (info.mcRange && !satisfies(opts.mcVersion, info.mcRange)) mcIncompatible.add(pid);
+    if (info.loaderRange && !satisfies(loaderVersion, info.loaderRange)) mcIncompatible.add(pid);
   }
 
   // Drop any selected mod that (transitively) requires something unresolved —

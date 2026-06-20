@@ -23,6 +23,10 @@ export interface ManifestInfo {
   /** The Minecraft version range the jar declares it supports (the ground truth
    *  Modrinth's game-version tags often disagree with). Empty/undefined = unstated. */
   mcRange?: string;
+  /** The loader (forge/neoforge) version range the jar requires — catches jars
+   *  that need a newer loader than the MC version actually ships (e.g. a "1.21.1"
+   *  jar that needs Forge 53, which only exists on 1.21.3). */
+  loaderRange?: string;
 }
 
 /** Pull a "minecraft" dependency range out of a Fabric/Quilt depends map. */
@@ -88,12 +92,15 @@ export function parseForge(text: string, manifestMf = ""): ManifestInfo {
   let section: "mods" | "deps" | "other" = "other";
   let cur: { modId?: string; mandatory?: boolean; versionRange?: string } | null = null;
   let mcRange: string | undefined;
+  let loaderRange: string | undefined;
 
   const flush = () => {
     if (section === "deps" && cur?.modId) {
-      if (norm(cur.modId) === "minecraft" && cur.versionRange) mcRange = cur.versionRange;
-      else if (cur.mandatory !== false && !NON_MOD.has(norm(cur.modId))) {
-        requires.push({ id: norm(cur.modId), range: cur.versionRange ?? "*" });
+      const id = norm(cur.modId);
+      if (id === "minecraft" && cur.versionRange) mcRange = cur.versionRange;
+      else if ((id === "forge" || id === "neoforge") && cur.versionRange) loaderRange = cur.versionRange;
+      else if (cur.mandatory !== false && !NON_MOD.has(id)) {
+        requires.push({ id, range: cur.versionRange ?? "*" });
       }
     }
     cur = null;
@@ -123,7 +130,7 @@ export function parseForge(text: string, manifestMf = ""): ManifestInfo {
     const m = manifestMf.match(/Implementation-Version:\s*(.+)/i);
     if (m) version = m[1].trim();
   }
-  return { version, provides, requires, mcRange };
+  return { version, provides, requires, mcRange, loaderRange };
 }
 
 /**

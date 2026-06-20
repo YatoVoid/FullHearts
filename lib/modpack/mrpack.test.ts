@@ -227,6 +227,38 @@ describe("buildMrpack dependency closure", () => {
     expect(skipped).toHaveLength(0);
   });
 
+  it("swaps a dependency to a LOADER-compatible version and drops the dependent that needs the loader-broken one", async () => {
+    // prism 1.0.11 needs Forge 53 (we ship 52); prism 1.0.9 needs Forge 51 (ok).
+    // legendary-tooltips needs prism>=1.0.11 (only the loader-dead build) -> dropped.
+    // item-borders needs prism>=1.0.7 -> kept, with prism downgraded to 1.0.9.
+    const lt = { id: "vLT", project_id: "LT", version_type: "release", files: [file("lt.jar")], dependencies: [{ project_id: "PR", version_id: null, dependency_type: "required" }] };
+    const ib = { id: "vIB", project_id: "IB", version_type: "release", files: [file("ib.jar")], dependencies: [{ project_id: "PR", version_id: null, dependency_type: "required" }] };
+    const p11 = { id: "vP11", project_id: "PR", version_type: "release", files: [file("prism-1.0.11.jar")], dependencies: [] };
+    const p09 = { id: "vP09", project_id: "PR", version_type: "release", files: [file("prism-1.0.9.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("/project/legendary-tooltips/version")) return jsonRes([lt]);
+      if (url.includes("/project/item-borders/version")) return jsonRes([ib]);
+      if (url.includes("/project/PR/version")) return jsonRes([p11, p09]); // newest first
+      return jsonRes([]);
+    }));
+    const manifests: Record<string, unknown> = {
+      LT: { version: "1.5.5", provides: ["legendarytooltips"], requires: [{ id: "prism", range: "[1.0.11,)" }] },
+      IB: { version: "1.3", provides: ["itemborders"], requires: [{ id: "prism", range: "[1.0.7,)" }] },
+      PR: { version: "1.0.11", provides: ["prism"], requires: [], loaderRange: "[53,)" },
+      vP11: { version: "1.0.11", provides: ["prism"], requires: [], loaderRange: "[53,)" },
+      vP09: { version: "1.0.9", provides: ["prism"], requires: [], loaderRange: "[51,)" }
+    };
+    const inspectJars = async (jobs: { key: string; url: string }[]) =>
+      Object.fromEntries(jobs.map((j) => [j.key, manifests[j.key] ?? null]));
+
+    const { included, skipped } = await buildMrpack({
+      name: "t", mods: [modStub("legendary-tooltips"), modStub("item-borders")], loader: "forge", mcVersion: "1.21.1", inspectJars: inspectJars as never
+    });
+
+    expect(included.map((m) => m.id)).toEqual(["item-borders"]);
+    expect(skipped.map((m) => m.id)).toContain("legendary-tooltips");
+  });
+
   it("drops the dependent when no dependency version satisfies its range", async () => {
     const est = { id: "vE", project_id: "EST", version_type: "release", files: [file("estrogen.jar")], dependencies: [{ project_id: "CREATE", version_id: null, dependency_type: "required" }] };
     const create6 = { id: "vC6", project_id: "CREATE", version_type: "release", files: [file("create-6.jar")], dependencies: [] };
