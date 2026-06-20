@@ -8,6 +8,8 @@ export interface Option {
   id: string;
   label: string;
   tags?: Partial<Record<Tag, number>>;
+  /** In a multi question, selecting this clears all others (and vice versa). */
+  exclusive?: boolean;
   loader?: Loader;
   gameVersion?: string;
   maxMods?: number;
@@ -57,7 +59,7 @@ export const QUESTIONS: Question[] = [
       { id: "fps", label: "Smooth, high FPS", tags: { performance: 1, "low-end": 0.5 } },
       { id: "pretty", label: "Beautiful visuals & lighting", tags: { visual: 1 } },
       { id: "info", label: "Helpful on-screen info", tags: { interface: 1 } },
-      { id: "vanilla", label: "Keep it close to vanilla", tags: { qol: 0.5, "low-grind": 0.4 } }
+      { id: "vanilla", label: "Keep it close to vanilla", tags: { qol: 0.5, "low-grind": 0.4 }, exclusive: true }
     ]
   },
   {
@@ -77,7 +79,8 @@ export const QUESTIONS: Question[] = [
     prompt: "What should the world itself have more of?",
     help: "Pick any that appeal, or skip.",
     options: [
-      { id: "structures", label: "New structures & dungeons", tags: { structures: 1, exploration: 0.5 } },
+      { id: "structures", label: "New structures & ruins", tags: { structures: 1, exploration: 0.5 } },
+      { id: "dungeons", label: "Dungeons & combat content", tags: { structures: 0.6, combat: 0.8, rpg: 0.5 } },
       { id: "biomes", label: "Richer biomes & terrain", tags: { biome: 1, exploration: 0.4 } },
       { id: "creatures", label: "More creatures & mobs", tags: { mobs: 1, combat: 0.3 } },
       { id: "bosses", label: "Bosses & big challenges", tags: { combat: 0.8, rpg: 0.5, structures: 0.4 } },
@@ -94,7 +97,7 @@ export const QUESTIONS: Question[] = [
       { id: "skills", label: "Skills, classes & leveling", tags: { rpg: 1 } },
       { id: "machines", label: "Machines & power systems", tags: { tech: 1, automation: 0.7 } },
       { id: "spells", label: "Spellbooks & arcane gear", tags: { magic: 1, rpg: 0.3 } },
-      { id: "gear-skip", label: "No strong preference", tags: {} }
+      { id: "gear-skip", label: "No strong preference", tags: {}, exclusive: true }
     ]
   },
   {
@@ -107,7 +110,7 @@ export const QUESTIONS: Question[] = [
       { id: "qol", label: "Quality-of-life tweaks (recipes, tooltips, info)", tags: { qol: 1, interface: 0.6 } },
       { id: "storage", label: "Better storage & inventory", tags: { qol: 1 } },
       { id: "maps", label: "Maps & waypoints", tags: { interface: 1, exploration: 0.4 } },
-      { id: "extras-skip", label: "No strong preference", tags: {} }
+      { id: "extras-skip", label: "No strong preference", tags: {}, exclusive: true }
     ]
   },
   {

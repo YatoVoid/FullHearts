@@ -156,9 +156,20 @@ export default function Quiz() {
         if (question.kind === "single") {
           return { ...prev, [question.id]: [optionId] };
         }
-        const next = current.includes(optionId)
+        const opts = question.options;
+        const toggled = opts.find((o) => o.id === optionId);
+        const exclusiveIds = new Set(opts.filter((o) => o.exclusive).map((o) => o.id));
+        // Turning ON an exclusive option replaces the whole answer with just it.
+        if (toggled?.exclusive && !current.includes(optionId)) {
+          return { ...prev, [question.id]: [optionId] };
+        }
+        let next = current.includes(optionId)
           ? current.filter((id) => id !== optionId)
           : [...current, optionId];
+        // Turning ON a normal option drops any selected exclusive option.
+        if (!toggled?.exclusive && !current.includes(optionId)) {
+          next = next.filter((id) => !exclusiveIds.has(id));
+        }
         return { ...prev, [question.id]: next };
       });
     },
