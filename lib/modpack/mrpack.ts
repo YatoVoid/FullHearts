@@ -3,6 +3,7 @@ import type { Loader, Mod } from "@/lib/sources/types";
 import { extractManifestDeps, type ManifestInfo } from "@/lib/modpack/manifest";
 import { satisfies } from "@/lib/modpack/range";
 import { searchModrinthQuery } from "@/lib/sources/modrinth";
+import { isBlockedDep } from "@/lib/curation/blocklist";
 
 /** Reads jar manifests (keyed by immutable jar URL) for a given loader. */
 export type JarInspector = (jobs: { key: string; url: string }[], loader?: Loader) => Promise<Record<string, ManifestInfo | null>>;
@@ -365,7 +366,8 @@ export async function resolveBuildable(mods: Mod[], loader: Loader, mc: string):
       if (item.kind === "mod") modProject.set(item.mod, v?.project_id ?? null);
       if (!v) continue;
       if (resolved.has(v.project_id)) continue;
-      resolved.set(v.project_id, Boolean(fileEntryFromVersion(v)));
+      // Known-broken dependency library: mark unbuildable so dependents are excluded.
+      resolved.set(v.project_id, !isBlockedDep(v.project_id, loader, mc) && Boolean(fileEntryFromVersion(v)));
       for (const dep of v.dependencies ?? []) {
         if (dep.dependency_type !== "required") continue;
         if (dep.project_id) {
@@ -528,6 +530,12 @@ export async function buildMrpack(opts: {
       const next: WorkItem[] = [];
       for (const { item, version } of settled) {
         if (!version) {
+          if (item.kind === "mod") skipped.push(item.mod);
+          continue;
+        }
+        // Known-broken library on this loader/version: refuse it, so any mod that
+        // requires it drops too (unresolved required dep) instead of crashing.
+        if (isBlockedDep(version.project_id, opts.loader, opts.mcVersion)) {
           if (item.kind === "mod") skipped.push(item.mod);
           continue;
         }

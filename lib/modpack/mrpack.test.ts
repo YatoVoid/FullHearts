@@ -89,6 +89,26 @@ describe("buildMrpack dependency closure", () => {
     expect(depCount).toBe(1); // fabric-api pulled in; optional architectury skipped
   });
 
+  it("drops a mod that requires a known-broken dependency library (Factory API on 1.21.1)", async () => {
+    // nkTZHOLD = Factory API; blocked on forge 1.21.1. better-furnaces requires it.
+    const bf = { id: "vBF", project_id: "BF", version_type: "release", files: [file("better-furnaces.jar")], dependencies: [{ project_id: "nkTZHOLD", version_id: null, dependency_type: "required" }] };
+    const fapi = { id: "vFA", project_id: "nkTZHOLD", version_type: "release", files: [file("factory-api.jar")], dependencies: [] };
+    const fine = { id: "vOK", project_id: "OK", version_type: "release", files: [file("fine.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("/project/better-furnaces/version")) return jsonRes([bf]);
+      if (url.includes("/project/nkTZHOLD/version")) return jsonRes([fapi]);
+      if (url.includes("/project/fine/version")) return jsonRes([fine]);
+      return jsonRes([]);
+    }));
+
+    const { included, skipped } = await buildMrpack({
+      name: "t", mods: [modStub("better-furnaces"), modStub("fine")], loader: "forge", mcVersion: "1.21.1"
+    });
+
+    expect(included.map((m) => m.id)).toEqual(["fine"]);
+    expect(skipped.map((m) => m.id)).toContain("better-furnaces");
+  });
+
   it("force-pulls a known manifest-only dependency (chipped-express -> chipped)", async () => {
     // chipped-express declares NO Modrinth deps; chipped is only in its manifest.
     // The FORCE_DEPS map guarantees chipped is pulled regardless.

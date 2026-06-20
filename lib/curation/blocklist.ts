@@ -33,11 +33,32 @@ const BLOCKED: Record<string, BlockRule> = {
   "runelic": { loaders: ["forge", "neoforge"], versions: ["1.21.1", "1.21"] }
 };
 
-/** True if this mod is known to crash on the given loader + (optional) version. */
-export function isBlocked(mod: Mod, loader: Loader, version?: string): boolean {
-  const slug = (mod.modrinthSlug ?? mod.id).toLowerCase();
-  const rule = BLOCKED[slug];
+/**
+ * Broken LIBRARY projects pulled in as dependencies, keyed by Modrinth PROJECT
+ * ID (the dependency closure resolves deps by id, not slug). When one of these is
+ * required on a blocked loader/version, the .mrpack builder drops it — and any mod
+ * that requires it — instead of shipping a pack that crashes at startup.
+ */
+const BLOCKED_DEPS: Record<string, BlockRule> = {
+  // Factory API 2.2.8 — its bundled MixinExtras jar-in-jar makes Forge's
+  // JarInJarDependencyLocator throw an NPE on 1.21.1, crashing at launch. Pulled
+  // in by Better Furnaces Reforged and others.
+  nkTZHOLD: { loaders: ["forge", "neoforge"], versions: ["1.21.1"] }
+};
+
+function matches(rule: BlockRule | undefined, loader: Loader, version?: string): boolean {
   if (!rule || !rule.loaders.includes(loader)) return false;
   if (rule.versions && version && !rule.versions.includes(version)) return false;
   return true;
+}
+
+/** True if this mod is known to crash on the given loader + (optional) version. */
+export function isBlocked(mod: Mod, loader: Loader, version?: string): boolean {
+  const slug = (mod.modrinthSlug ?? mod.id).toLowerCase();
+  return matches(BLOCKED[slug], loader, version);
+}
+
+/** True if a dependency PROJECT (by Modrinth id) is known-broken here. */
+export function isBlockedDep(projectId: string, loader: Loader, version?: string): boolean {
+  return matches(BLOCKED_DEPS[projectId], loader, version);
 }
