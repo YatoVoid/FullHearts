@@ -72,6 +72,9 @@ export default function Results() {
   // The collection this save session is targeting. null until the user first
   // saves (then we ask new-vs-existing and remember the choice for this page).
   const [targetId, setTargetId] = useState<string | null>(null);
+  // A save waiting on the "which collection?" modal, plus the new-loadout name field.
+  const [pendingSave, setPendingSave] = useState<{ kind: "all" } | { kind: "mod"; modId: string } | null>(null);
+  const [newName, setNewName] = useState("");
 
   // Creep the validation bar up a hair each tick so it always looks alive.
   useEffect(() => {
@@ -92,74 +95,56 @@ export default function Results() {
     }
   }
 
-  // Resolve which collection to save into. On the first save of this session,
-  // if collections with mods already exist, ask: new collection (default) or
-  // add to an existing one — so retaking the quiz doesn't silently append to
-  // the most-recent loadout. The choice is remembered for the rest of the page.
-  function resolveTarget(): Collection | null {
+  // Pin the loadout's loader+version + remember the target for this page.
+  function commitTarget(collection: Collection) {
+    if (profile) setLoadout(collection.id, profile.loader, profile.gameVersion);
+    setTargetId(collection.id);
+    setLastCollectionId(collection.id);
+  }
+
+  // The target collection if we can pick it without asking: the already-chosen one
+  // for this page, or a fresh default when no collection has mods yet. Returns null
+  // when we should open the "which collection?" modal.
+  function targetWithoutPrompt(): Collection | null {
     if (targetId) {
       const existing = listCollections().find((c) => c.id === targetId);
       if (existing) return existing;
     }
-
     const withMods = listCollections().filter((c) => c.modIds.length > 0);
-    let collection: Collection;
-    if (withMods.length > 0) {
-      const list = withMods.map((c, i) => `${i + 1}. ${c.name} (${c.modIds.length})`).join("\n");
-      const answer = window.prompt(
-        `Save to which collection?\n\nEnter a number to add to an existing loadout, or leave blank to create a NEW one.\n\n${list}`,
-        ""
-      );
-      if (answer === null) return null; // cancelled
-      const pick = parseInt(answer.trim(), 10);
-      if (answer.trim() !== "" && !Number.isNaN(pick) && pick >= 1 && pick <= withMods.length) {
-        collection = withMods[pick - 1];
-      } else {
-        const name = window.prompt("Name your new collection:", nextDefaultName());
-        if (name === null) return null; // cancelled
-        collection = createCollection(name.trim() || nextDefaultName());
+    return withMods.length === 0 ? ensureCollection(DEFAULT_COLLECTION) : null;
+  }
+
+  // Actually write the save into a resolved collection.
+  function performSave(collection: Collection, action: { kind: "all" } | { kind: "mod"; modId: string }) {
+    commitTarget(collection);
+    const mods = results.map((r) => r.mod);
+    if (action.kind === "all") {
+      for (const { mod } of results) {
+        const targetMods = mods.filter((m) => m.id !== mod.id && collection.modIds.includes(m.id));
+        if (checkCompatibility([...targetMods, mod]).ok) addMod(collection.id, mod.id);
       }
+      setAdded(new Set(results.map((r) => r.mod.id)));
     } else {
-      collection = ensureCollection(DEFAULT_COLLECTION);
+      const { modId } = action;
+      const targetMods = mods.filter((m) => m.id !== modId && collection.modIds.includes(m.id));
+      const modToAdd = results.find((r) => r.mod.id === modId)?.mod;
+      if (modToAdd && targetMods.length > 0 && !checkCompatibility([...targetMods, modToAdd]).ok) return;
+      addMod(collection.id, modId);
+      setAdded((prev) => new Set(prev).add(modId));
     }
-
-    if (profile) setLoadout(collection.id, profile.loader, profile.gameVersion);
-    setTargetId(collection.id);
-    setLastCollectionId(collection.id);
-    return collection;
   }
 
-  function addToCollection(modId: string) {
-    const collection = resolveTarget();
-    if (!collection) return;
-    const mods = results.map((r) => r.mod);
-    const targetMods = mods.filter((m) => collection && m.id !== modId && m.id !== undefined).filter((m) => m.id && collection.modIds.includes(m.id));
-    const modToAdd = results.find((r) => r.mod.id === modId)?.mod;
-    if (modToAdd && targetMods.length > 0) {
-      const report = checkCompatibility([...targetMods, modToAdd]);
-      if (!report.ok) {
-        window.alert("This mod does not match the loader/version of your collection. Add only matching mods.");
-        return;
-      }
-    }
-    addMod(collection.id, modId);
-    setLastCollectionId(collection.id);
-    setAdded((prev) => new Set(prev).add(modId));
+  // Save entry point: go straight through when the target is unambiguous, else
+  // open the styled modal so retaking the quiz doesn't silently append.
+  function requestSave(action: { kind: "all" } | { kind: "mod"; modId: string }) {
+    const direct = targetWithoutPrompt();
+    if (direct) { performSave(direct, action); return; }
+    setNewName(nextDefaultName());
+    setPendingSave(action);
   }
 
-  function addAll() {
-    const collection = resolveTarget();
-    if (!collection) return;
-    const mods = results.map((r) => r.mod);
-    for (const { mod } of results) {
-      const targetMods = mods.filter((m) => m.id !== mod.id && collection.modIds.includes(m.id));
-      if (checkCompatibility([...targetMods, mod]).ok) {
-        addMod(collection.id, mod.id);
-      }
-    }
-    setLastCollectionId(collection.id);
-    setAdded(new Set(results.map((r) => r.mod.id)));
-  }
+  const addAll = () => requestSave({ kind: "all" });
+  const addToCollection = (modId: string) => requestSave({ kind: "mod", modId });
 
   // Open every mod's page in a new tab. Browsers may ask to allow multiple
   // popups the first time — that's expected for a deliberate "open all".
@@ -407,6 +392,43 @@ export default function Results() {
           </>
         )}
       </main>
+
+      {pendingSave && (() => {
+        const saveAction = pendingSave;
+        const withMods = listCollections().filter((c) => c.modIds.length > 0);
+        return (
+          <div className="cmodal-overlay" role="dialog" aria-modal="true" aria-label="Save to which loadout" onClick={() => setPendingSave(null)}>
+            <div className="cmodal" onClick={(e) => e.stopPropagation()}>
+              <h3>Save to which loadout?</h3>
+              <p className="cmodal-sub">Add these mods to one you&apos;ve already built, or start a fresh loadout.</p>
+              <ul className="cmodal-list">
+                {withMods.map((c) => (
+                  <li key={c.id}>
+                    <button type="button" className="cmodal-row" onClick={() => { performSave(c, saveAction); setPendingSave(null); }}>
+                      <span className="cmodal-row-name">{c.name}</span>
+                      <span className="cmodal-row-count">{c.modIds.length} mod{c.modIds.length === 1 ? "" : "s"}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <div className="cmodal-new">
+                <input
+                  className="cmodal-input"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  aria-label="New loadout name"
+                  placeholder="New loadout name"
+                  onKeyDown={(e) => { if (e.key === "Enter") { performSave(createCollection(newName.trim() || nextDefaultName()), saveAction); setPendingSave(null); } }}
+                />
+                <button type="button" className="btn-primary" onClick={() => { performSave(createCollection(newName.trim() || nextDefaultName()), saveAction); setPendingSave(null); }}>
+                  ＋ New loadout
+                </button>
+              </div>
+              <button type="button" className="cmodal-cancel" onClick={() => setPendingSave(null)}>Cancel</button>
+            </div>
+          </div>
+        );
+      })()}
 
       <Footer />
     </>
