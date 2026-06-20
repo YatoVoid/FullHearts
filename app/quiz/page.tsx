@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { QUESTIONS, type QuizAnswers } from "@/lib/curation/questions";
 import { HEART_SRC } from "@/lib/asset";
-import { recommendedVersion, sizeOptionsFor, type Coverage } from "@/lib/catalog/coverage";
+import { recommendedVersionAcrossLoaders, recommendedLoader, bestLoaderCount, sizeOptionsFor, type Coverage } from "@/lib/catalog/coverage";
 import snapshotCoverage from "@/lib/catalog/coverage.snapshot.json";
 import type { Loader } from "@/lib/sources/types";
 
@@ -96,27 +96,20 @@ export default function Quiz() {
   }
   const chosenVersion = versionById[answers.version?.[0] ?? ""] ?? "1.20.1";
 
-  const recVersion = recommendedVersion(coverage, chosenLoader);
-
-  // Decorate the version and size steps with live availability. Other steps render
-  // their static options unchanged. Size ids stay aligned so buildProfile is intact.
+  // Decorate the version, loader and size steps with real availability. Version is
+  // asked before the loader, so it shows each version's BEST-loader potential and
+  // recommends the best version overall; the loader step then shows per-loader
+  // counts for the chosen version and recommends the one with the most mods.
   type DisplayOption = { id: string; label: string; note?: string; recommended?: boolean };
   let displayOptions: DisplayOption[];
   if (question.id === "version") {
-    // NeoForge only ships for these MC versions (its 1.20.x line starts at 1.20.2),
-    // even though Modrinth tags some older mods with it — don't offer the rest.
-    const NEOFORGE_OK = new Set(["1.21.1", "1.21", "1.20.6", "1.20.4"]);
-    const withCounts = question.options
-      .filter((o) => chosenLoader !== "neoforge" || NEOFORGE_OK.has(o.gameVersion ?? ""))
-      .map((o) => ({
-        id: o.id,
-        label: o.label,
-        count: coverage[chosenLoader]?.[o.gameVersion ?? ""] ?? 0,
-        gameVersion: o.gameVersion
-      }));
-    // Keep newest-first order, but hide versions with too few mods to bother with
-    // (an empty/near-empty old version isn't worth offering). Fall back gracefully
-    // if counts haven't loaded or the threshold would hide everything.
+    const recV = recommendedVersionAcrossLoaders(coverage);
+    const withCounts = question.options.map((o) => ({
+      id: o.id,
+      label: o.label,
+      count: bestLoaderCount(coverage, o.gameVersion ?? ""),
+      gameVersion: o.gameVersion
+    }));
     const MIN = 8;
     const enough = withCounts.filter((o) => o.count >= MIN);
     const some = withCounts.filter((o) => o.count > 0);
@@ -125,7 +118,15 @@ export default function Quiz() {
       id: o.id,
       label: o.label,
       note: `${o.count} mods`,
-      recommended: o.gameVersion === recVersion
+      recommended: o.gameVersion === recV
+    }));
+  } else if (question.id === "loader") {
+    const recL = recommendedLoader(coverage, chosenVersion);
+    displayOptions = question.options.map((o) => ({
+      id: o.id,
+      label: o.label,
+      note: `${coverage[o.id as Loader]?.[chosenVersion] ?? 0} mods`,
+      recommended: o.id === recL
     }));
   } else if (question.id === "size") {
     const count = coverage[chosenLoader]?.[chosenVersion] ?? 0;
@@ -239,10 +240,9 @@ export default function Quiz() {
 
         <h2>{question.prompt}</h2>
         {question.help && <p className="help">{question.help}</p>}
-        {question.id === "version" && (
+        {question.id === "loader" && (
           <p className="help">
-            Recommended for {chosenLoader.charAt(0).toUpperCase() + chosenLoader.slice(1)}:{" "}
-            {recVersion} (biggest mod selection).
+            For Minecraft {chosenVersion}, {recommendedLoader(coverage, chosenVersion) === "neoforge" ? "NeoForge" : recommendedLoader(coverage, chosenVersion).charAt(0).toUpperCase() + recommendedLoader(coverage, chosenVersion).slice(1)} has the most mods.
           </p>
         )}
 

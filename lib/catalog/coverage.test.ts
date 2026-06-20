@@ -2,6 +2,7 @@
 import { describe, it, expect } from "vitest";
 import {
   computeCoverage, recommendedVersion, recommendedSize, sizeOptionsFor,
+  recommendedLoader, recommendedVersionAcrossLoaders, bestLoaderCount,
   LOADERS, VERSIONS
 } from "@/lib/catalog/coverage";
 import type { Mod } from "@/lib/sources/types";
@@ -42,6 +43,27 @@ describe("recommendedVersion", () => {
     expect(recommendedVersion({ forge: { "1.21.1": 283, "1.21": 215, "1.20.1": 319 } }, "forge")).toBe("1.21.1");
     // a newer version far below the peak is skipped for the well-stocked older one
     expect(recommendedVersion({ forge: { "1.21.1": 50, "1.21": 60, "1.20.1": 300 } }, "forge")).toBe("1.20.1");
+  });
+});
+
+describe("recommendedLoader", () => {
+  // Real shape: NeoForge wins 1.21.1, Forge wins 1.20.1.
+  const cov = {
+    forge: { "1.21.1": 98, "1.20.1": 302 },
+    neoforge: { "1.21.1": 293, "1.20.1": 137 },
+    fabric: { "1.21.1": 281, "1.20.1": 200 },
+    quilt: { "1.21.1": 93, "1.20.1": 143 }
+  };
+  it("recommends the loader with the most real builds for the version", () => {
+    expect(recommendedLoader(cov, "1.21.1")).toBe("neoforge");
+    expect(recommendedLoader(cov, "1.20.1")).toBe("forge");
+  });
+  it("bestLoaderCount returns the top loader's count", () => {
+    expect(bestLoaderCount(cov, "1.21.1")).toBe(293);
+    expect(bestLoaderCount(cov, "1.20.1")).toBe(302);
+  });
+  it("recommendedVersionAcrossLoaders prefers the newest near-peak version", () => {
+    expect(recommendedVersionAcrossLoaders(cov, ["1.21.1", "1.20.1"])).toBe("1.21.1");
   });
 });
 

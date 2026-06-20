@@ -124,24 +124,12 @@ export const QUESTIONS: Question[] = [
     ]
   },
   {
-    id: "loader",
-    kind: "single",
-    prompt: "Which mod loader do you use?",
-    help: "Most modded servers use Forge. Not sure? Forge is the safest pick.",
-    options: [
-      { id: "forge", label: "Forge (most popular)", loader: "forge" },
-      { id: "neoforge", label: "NeoForge", loader: "neoforge" },
-      { id: "fabric", label: "Fabric", loader: "fabric" },
-      { id: "quilt", label: "Quilt", loader: "quilt" }
-    ]
-  },
-  {
     id: "version",
     kind: "single",
-    // Option id === the version string; the quiz shows only versions with mods
-    // for the chosen loader (built dynamically from coverage), recommending the
-    // one with the most. This static list is the full candidate set + fallback.
+    // Asked BEFORE the loader so we can then recommend the loader that actually
+    // has the most mods for the chosen version. Option id === the version string.
     prompt: "Which Minecraft version?",
+    help: "Pick first — we'll then recommend the mod loader with the most mods for it.",
     options: [
       { id: "1.21.1", label: "1.21.1", gameVersion: "1.21.1" },
       { id: "1.21", label: "1.21", gameVersion: "1.21" },
@@ -153,6 +141,20 @@ export const QUESTIONS: Question[] = [
       { id: "1.18.2", label: "1.18.2", gameVersion: "1.18.2" },
       { id: "1.16.5", label: "1.16.5", gameVersion: "1.16.5" },
       { id: "1.12.2", label: "1.12.2", gameVersion: "1.12.2" }
+    ]
+  },
+  {
+    id: "loader",
+    kind: "single",
+    // Recommended loader is computed from the chosen version (most real builds):
+    // 1.21.x -> NeoForge, older -> Forge, etc.
+    prompt: "Which mod loader do you use?",
+    help: "Modern versions (1.21+) use NeoForge; older versions are richest on Forge. We flag the one with the most mods for your version.",
+    options: [
+      { id: "forge", label: "Forge", loader: "forge" },
+      { id: "neoforge", label: "NeoForge", loader: "neoforge" },
+      { id: "fabric", label: "Fabric", loader: "fabric" },
+      { id: "quilt", label: "Quilt", loader: "quilt" }
     ]
   },
   {

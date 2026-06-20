@@ -74,6 +74,39 @@ export function recommendedVersion(
   return versions[0];
 }
 
+/** The most mods any single loader offers for a version (its "potential"). */
+export function bestLoaderCount(coverage: Coverage, version: string, loaders: Loader[] = LOADERS): number {
+  let best = 0;
+  for (const L of loaders) best = Math.max(best, coverage[L]?.[version] ?? 0);
+  return best;
+}
+
+/** The loader with the most real builds for a version (ties -> LOADERS order:
+ *  forge, neoforge, fabric, quilt). This is what makes 1.21.1 recommend NeoForge
+ *  and 1.20.1 recommend Forge — whichever actually has the mods. */
+export function recommendedLoader(coverage: Coverage, version: string, loaders: Loader[] = LOADERS): Loader {
+  let best = loaders[0];
+  let bestN = -1;
+  for (const L of loaders) {
+    const n = coverage[L]?.[version] ?? 0;
+    if (n > bestN) { bestN = n; best = L; }
+  }
+  return best;
+}
+
+/**
+ * The version to recommend BEFORE a loader is chosen: newest version whose
+ * best-loader count is within PEAK_RATIO of the best-stocked version overall.
+ */
+export function recommendedVersionAcrossLoaders(coverage: Coverage, versions: string[] = VERSIONS): string {
+  let peak = 0;
+  for (const v of versions) peak = Math.max(peak, bestLoaderCount(coverage, v));
+  if (peak === 0) return versions[0];
+  const floor = peak * PEAK_RATIO;
+  for (const v of versions) if (bestLoaderCount(coverage, v) >= floor) return v;
+  return versions[0];
+}
+
 /** A sensible recommended loadout size for the available count (one of the tiers). */
 export function recommendedSize(count: number): number {
   const target = clamp(Math.round(count * 0.5), 10, 60);
