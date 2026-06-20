@@ -84,7 +84,7 @@ export const QUESTIONS: Question[] = [
       { id: "biomes", label: "Richer biomes & terrain", tags: { biome: 1, exploration: 0.4 } },
       { id: "creatures", label: "More creatures & mobs", tags: { mobs: 1, combat: 0.3 } },
       { id: "bosses", label: "Bosses & big challenges", tags: { combat: 0.8, rpg: 0.5, structures: 0.4 } },
-      { id: "world-skip", label: "No strong preference", tags: {} }
+      { id: "world-skip", label: "No strong preference", tags: {}, exclusive: true }
     ]
   },
   {
