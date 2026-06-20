@@ -6,7 +6,7 @@ import { writeFileSync } from "node:fs";
 const API = "https://api.modrinth.com/v2";
 const UA = "FullHearts/0.1 (github.com/YatoVoid/FullHearts)";
 const LOADERS = ["forge", "neoforge", "fabric", "quilt"];
-const VERSIONS = ["1.21.1", "1.21", "1.20.4", "1.20.1", "1.19.2", "1.18.2", "1.16.5"];
+const VERSIONS = ["1.21.1", "1.21", "1.20.6", "1.20.4", "1.20.1", "1.19.4", "1.19.2", "1.18.2", "1.16.5", "1.12.2"];
 const FACETS = [null, "optimization", "worldgen", "magic", "technology", "adventure", "mobs", "food", "utility", "decoration"];
 
 async function searchOne(category) {

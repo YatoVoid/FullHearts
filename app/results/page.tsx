@@ -8,6 +8,8 @@ import { buildProfile, type Profile } from "@/lib/recommend/profile";
 import { recommend, recommendFromQuery, type RankedMod, type Recommendation } from "@/lib/recommend/index";
 import { pickLucky } from "@/lib/recommend/lucky";
 import { QUERY_STORAGE_KEY, parseIntent } from "@/lib/recommend/intent";
+import { recommendedVersion, type Coverage } from "@/lib/catalog/coverage";
+import snapshotCoverage from "@/lib/catalog/coverage.snapshot.json";
 import { buildMrpack } from "@/lib/modpack/mrpack";
 import DownloadPack from "@/components/DownloadPack";
 import { ensureCollection, addMod, setLoadout } from "@/lib/storage/collections";
@@ -140,6 +142,11 @@ export default function Results() {
       if (query) {
         setDescribeQuery(query);
         poolProfile = parseIntent(query).profile;
+        // If the user didn't name a Minecraft version, default to the recommended
+        // one for their loader (newest version with a near-peak, stable mod set).
+        if (!/\b1\.\d{1,2}(\.\d{1,2})?\b/.test(query)) {
+          poolProfile.gameVersion = recommendedVersion(snapshotCoverage as Coverage, poolProfile.loader);
+        }
         compute = (mods) => recommendFromQuery(query, mods, CANDIDATE_LIMIT);
       }
     } else {

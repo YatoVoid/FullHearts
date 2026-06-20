@@ -37,6 +37,12 @@ describe("recommendedVersion", () => {
     expect(recommendedVersion({ forge: { "1.21.1": 4, "1.21": 4, "1.20.1": 4 } }, "forge")).toBe("1.21.1");
     expect(recommendedVersion({}, "quilt")).toBe(VERSIONS[0]);
   });
+  it("prefers a NEWER version when it is within range of the peak", () => {
+    // 1.20.1 has the most, but 1.21.1 (283/319 ≈ 89%) clears the bar -> newest wins
+    expect(recommendedVersion({ forge: { "1.21.1": 283, "1.21": 215, "1.20.1": 319 } }, "forge")).toBe("1.21.1");
+    // a newer version far below the peak is skipped for the well-stocked older one
+    expect(recommendedVersion({ forge: { "1.21.1": 50, "1.21": 60, "1.20.1": 300 } }, "forge")).toBe("1.20.1");
+  });
 });
 
 describe("recommendedSize", () => {

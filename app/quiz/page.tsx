@@ -125,10 +125,13 @@ export default function Quiz() {
         count: coverage[chosenLoader]?.[o.gameVersion ?? ""] ?? 0,
         gameVersion: o.gameVersion
       }));
-    // Show only versions that actually have mods for this loader, richest first;
-    // if counts haven't loaded yet, keep the full static list in its given order.
-    const haveCounts = withCounts.some((o) => o.count > 0);
-    const shown = haveCounts ? withCounts.filter((o) => o.count > 0).sort((a, b) => b.count - a.count) : withCounts;
+    // Keep newest-first order, but hide versions with too few mods to bother with
+    // (an empty/near-empty old version isn't worth offering). Fall back gracefully
+    // if counts haven't loaded or the threshold would hide everything.
+    const MIN = 8;
+    const enough = withCounts.filter((o) => o.count >= MIN);
+    const some = withCounts.filter((o) => o.count > 0);
+    const shown = enough.length > 0 ? enough : some.length > 0 ? some : withCounts;
     displayOptions = shown.map((o) => ({
       id: o.id,
       label: o.label,

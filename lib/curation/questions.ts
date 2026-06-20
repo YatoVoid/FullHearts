@@ -142,11 +142,14 @@ export const QUESTIONS: Question[] = [
     options: [
       { id: "1.21.1", label: "1.21.1", gameVersion: "1.21.1" },
       { id: "1.21", label: "1.21", gameVersion: "1.21" },
+      { id: "1.20.6", label: "1.20.6", gameVersion: "1.20.6" },
       { id: "1.20.4", label: "1.20.4", gameVersion: "1.20.4" },
       { id: "1.20.1", label: "1.20.1", gameVersion: "1.20.1" },
+      { id: "1.19.4", label: "1.19.4", gameVersion: "1.19.4" },
       { id: "1.19.2", label: "1.19.2", gameVersion: "1.19.2" },
       { id: "1.18.2", label: "1.18.2", gameVersion: "1.18.2" },
-      { id: "1.16.5", label: "1.16.5", gameVersion: "1.16.5" }
+      { id: "1.16.5", label: "1.16.5", gameVersion: "1.16.5" },
+      { id: "1.12.2", label: "1.12.2", gameVersion: "1.12.2" }
     ]
   },
   {
