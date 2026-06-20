@@ -250,11 +250,14 @@ export default function Collections() {
                 const resolved = c.modIds.map((id) => byId[id]).filter((m): m is Mod => Boolean(m));
                 if (resolved.length === 0) return null;
                 const report = checkCompatibility(resolved);
+                // Prefer the loadout the user explicitly chose; only fall back to
+                // deriving from the mods for older collections that never stored it.
                 const loader =
+                  c.loader ??
                   report.commonLoaders.find((l) => l === "fabric") ??
                   report.commonLoaders.find((l) => l === "quilt") ??
                   report.commonLoaders[0];
-                const mcVersion = report.commonVersions[0];
+                const mcVersion = c.gameVersion ?? report.commonVersions[0];
                 const canPack = report.ok && Boolean(loader) && Boolean(mcVersion);
                 return (
                   <>

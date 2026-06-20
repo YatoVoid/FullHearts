@@ -8,7 +8,8 @@ import {
   deleteCollection,
   addMod,
   removeMod,
-  ensureCollection
+  ensureCollection,
+  setLoadout
 } from "@/lib/storage/collections";
 
 beforeEach(() => {
@@ -21,6 +22,15 @@ describe("collections CRUD", () => {
     expect(c.id).toBeTruthy();
     expect(c.modIds).toEqual(["sodium"]);
     expect(listCollections().map((x) => x.id)).toContain(c.id);
+  });
+
+  it("pins the loadout once and never re-derives it", () => {
+    const c = createCollection("L");
+    setLoadout(c.id, "forge", "1.21.1");
+    expect(getCollection(c.id)).toMatchObject({ loader: "forge", gameVersion: "1.21.1" });
+    // a later call must NOT overwrite the user's explicit first choice
+    setLoadout(c.id, "fabric", "1.8.8");
+    expect(getCollection(c.id)).toMatchObject({ loader: "forge", gameVersion: "1.21.1" });
   });
 
   it("dedupes modIds on create and add", () => {

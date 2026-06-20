@@ -8,7 +8,6 @@ import { useCollectionTarget } from "@/lib/storage/useCollectionTarget";
 import { loadPool } from "@/lib/catalog/clientPool";
 import { fetchModsBySlugs } from "@/lib/sources/modrinth";
 import { type ModFilter, DEFAULT_FILTER, loadFilter, saveFilter, matchesFilter, versionOptions } from "@/lib/catalog/filter";
-import { checkCompatibility } from "@/lib/recommend/compatibility";
 import { HEART_SRC } from "@/lib/asset";
 import Footer from "@/components/Footer";
 import ModCard from "@/components/ModCard";
@@ -31,7 +30,7 @@ const HEART = (
 export default function TagBrowser({ tag }: { tag: Tag }) {
   const [mods, setMods] = useState<Mod[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-  const { collections, targetId, selectTarget, createAndSelect, addToTarget, added } = useCollectionTarget();
+  const { collections, targetId, selectTarget, createAndSelect, addToTarget, removeFromTarget, added } = useCollectionTarget();
   const [filter, setFilter] = useState<ModFilter>(DEFAULT_FILTER);
 
   useEffect(() => {
@@ -79,12 +78,9 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
     [mods, target, extraTargetMods]
   );
 
-  const lock = useMemo(() => {
-    if (targetMods.length === 0) return null;
-    const report = checkCompatibility(targetMods);
-    if (!report.ok || report.commonLoaders.length === 0 || report.commonVersions.length === 0) return null;
-    return { loader: report.commonLoaders[0], version: report.commonVersions[0] };
-  }, [targetMods]);
+  // Lock to the user's explicitly chosen loader + version (stored on the
+  // collection), never re-derived from the mods.
+  const lock = target?.loader && target?.gameVersion ? { loader: target.loader, version: target.gameVersion } : null;
 
   const needsChoice = Boolean(target) && !lock && (filter.loader === "all" || filter.version === "all");
 
@@ -95,13 +91,13 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
     }
   }, [lock, filter.loader, filter.version]);
 
-  const isCompatibleWithTarget = useMemo(
-    () => {
-      if (targetMods.length === 0) return (_: Mod) => true;
-      return (mod: Mod) => checkCompatibility([...targetMods, mod]).ok;
-    },
-    [targetMods]
-  );
+  const isCompatibleWithTarget = (mod: Mod) =>
+    !lock || (mod.loaders.includes(lock.loader) && mod.gameVersions.includes(lock.version));
+
+  function handleAdd(modId: string) {
+    const loadout = filter.loader !== "all" && filter.version !== "all" ? { loader: filter.loader, version: filter.version } : undefined;
+    addToTarget(modId, loadout);
+  }
 
   const inTag = useMemo(
     () =>
@@ -168,7 +164,8 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
                     i={i}
                     added={added.has(mod.id)}
                     disabled={needsChoice || (!added.has(mod.id) && !isCompatibleWithTarget(mod))}
-                    onAdd={addToTarget}
+                    onAdd={handleAdd}
+                    onRemove={removeFromTarget}
                   />
                 ))}
               </div>

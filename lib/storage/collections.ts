@@ -1,9 +1,15 @@
 import { getStore } from "@/lib/storage/safe";
+import type { Loader } from "@/lib/sources/types";
 
 export interface Collection {
   id: string;
   name: string;
   modIds: string[];
+  /** The loader + Minecraft version this loadout is built for (set on first add).
+   *  This is the user's explicit choice — NOT re-derived from the mods, which
+   *  would wrongly pick a multi-loader mod's first-listed loader/oldest version. */
+  loader?: Loader;
+  gameVersion?: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -80,6 +86,14 @@ export function duplicateCollection(id: string): Collection | undefined {
 
 export function deleteCollection(id: string): void {
   write(read().filter((c) => c.id !== id));
+}
+
+/** Pin the loadout's loader + version (only if not already set). */
+export function setLoadout(id: string, loader: Loader, gameVersion: string): Collection | undefined {
+  return mutate(id, (c) => {
+    if (!c.loader) c.loader = loader;
+    if (!c.gameVersion) c.gameVersion = gameVersion;
+  });
 }
 
 export function addMod(id: string, modId: string): Collection | undefined {

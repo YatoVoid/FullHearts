@@ -9,7 +9,6 @@ import { loadPool } from "@/lib/catalog/clientPool";
 import { searchModrinthQuery, fetchModsBySlugs } from "@/lib/sources/modrinth";
 import { isHighQuality } from "@/lib/catalog/quality";
 import { type ModFilter, DEFAULT_FILTER, loadFilter, saveFilter, matchesFilter, versionOptions } from "@/lib/catalog/filter";
-import { checkCompatibility } from "@/lib/recommend/compatibility";
 import { HEART_SRC } from "@/lib/asset";
 import Footer from "@/components/Footer";
 import AdSlot from "@/components/AdSlot";
@@ -65,7 +64,8 @@ function buildSections(mods: Mod[]): Section[] {
 export default function Explore() {
   const [mods, setMods] = useState<Mod[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-  const { collections, targetId, selectTarget, createAndSelect, addToTarget, added } = useCollectionTarget();
+  const { collections, targetId, selectTarget, createAndSelect, addToTarget, removeFromTarget, added } = useCollectionTarget();
+  const [showTarget, setShowTarget] = useState(false);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<ModFilter>(DEFAULT_FILTER);
   const [live, setLive] = useState<Mod[]>([]);
@@ -163,17 +163,9 @@ export default function Explore() {
     [mods, target, extraTargetMods]
   );
 
-  const targetCompatibility = useMemo(
-    () => (targetMods.length > 0 ? checkCompatibility(targetMods) : null),
-    [targetMods]
-  );
-
-  // A non-empty, compatible collection LOCKS the loader + version to its mods.
-  const lock = useMemo(() => {
-    if (!targetCompatibility || !targetCompatibility.ok) return null;
-    if (targetCompatibility.commonLoaders.length === 0 || targetCompatibility.commonVersions.length === 0) return null;
-    return { loader: targetCompatibility.commonLoaders[0], version: targetCompatibility.commonVersions[0] };
-  }, [targetCompatibility]);
+  // The collection LOCKS to the loader + version the user explicitly chose
+  // (stored on the collection), never re-derived from the mods themselves.
+  const lock = target?.loader && target?.gameVersion ? { loader: target.loader, version: target.gameVersion } : null;
 
   // Adding to a collection with no chosen loader/version yet: the user must pick
   // one first (adding under "All" is meaningless — which version is it for?).
@@ -193,13 +185,15 @@ export default function Explore() {
     saveFilter(f);
   }
 
-  const isCompatibleWithTarget = useMemo(
-    () => {
-      if (targetMods.length === 0) return (_: Mod) => true;
-      return (mod: Mod) => checkCompatibility([...targetMods, mod]).ok;
-    },
-    [targetMods]
-  );
+  // A mod fits the target if it supports the locked loader + version.
+  const isCompatibleWithTarget = (mod: Mod) =>
+    !lock || (mod.loaders.includes(lock.loader) && mod.gameVersions.includes(lock.version));
+
+  function handleAdd(modId: string) {
+    // Pin the collection's loadout from the current filter on the first add.
+    const loadout = filter.loader !== "all" && filter.version !== "all" ? { loader: filter.loader, version: filter.version } : undefined;
+    addToTarget(modId, loadout);
+  }
 
   const card = (mod: Mod, i: number) => (
     <ModCard
@@ -208,7 +202,8 @@ export default function Explore() {
       i={i}
       added={added.has(mod.id)}
       disabled={needsChoice || (!added.has(mod.id) && !isCompatibleWithTarget(mod))}
-      onAdd={addToTarget}
+      onAdd={handleAdd}
+      onRemove={removeFromTarget}
     />
   );
 
@@ -241,6 +236,23 @@ export default function Explore() {
         {status === "ready" && (
           <>
             <CollectionPicker collections={collections} targetId={targetId} onSelect={selectTarget} onCreate={(n) => createAndSelect(n)} />
+            {target && target.modIds.length > 0 && (
+              <div className="target-mods">
+                <button type="button" className="btn-ghost target-mods-toggle" onClick={() => setShowTarget((s) => !s)}>
+                  {showTarget ? "▾ Hide" : "▸ View"} {target.modIds.length} mod{target.modIds.length === 1 ? "" : "s"} in “{target.name}”
+                </button>
+                {showTarget && (
+                  <ul className="target-mods-list">
+                    {targetMods.map((m) => (
+                      <li key={m.id}>
+                        <span>{m.name}</span>
+                        <button type="button" className="x-btn" aria-label={`Remove ${m.name}`} onClick={() => removeFromTarget(m.id)}>×</button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
             {needsChoice && (
               <p className="filter-prompt" role="status">
                 Pick a mod loader and Minecraft version for <b>{target?.name}</b> before adding mods — that&apos;s what the pack is built for.

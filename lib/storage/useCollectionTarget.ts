@@ -7,8 +7,11 @@ import {
   createCollection,
   ensureCollection,
   addMod,
+  removeMod,
+  setLoadout,
   type Collection
 } from "@/lib/storage/collections";
+import type { Loader } from "@/lib/sources/types";
 import { getLastCollectionId, setLastCollectionId } from "@/lib/storage/user";
 
 const DEFAULT_COLLECTION = "My loadout";
@@ -52,8 +55,10 @@ export function useCollectionTarget() {
   }, []);
 
   const addToTarget = useCallback(
-    (modId: string) => {
+    (modId: string, loadout?: { loader: Loader; version: string }) => {
       if (!targetId) return;
+      // Pin the loadout's loader/version on the first add, from the user's pick.
+      if (loadout) setLoadout(targetId, loadout.loader, loadout.version);
       addMod(targetId, modId);
       setLastCollectionId(targetId);
       setAdded((prev) => new Set(prev).add(modId));
@@ -62,5 +67,19 @@ export function useCollectionTarget() {
     [targetId]
   );
 
-  return { collections, targetId, selectTarget, createAndSelect, addToTarget, added };
+  const removeFromTarget = useCallback(
+    (modId: string) => {
+      if (!targetId) return;
+      removeMod(targetId, modId);
+      setAdded((prev) => {
+        const next = new Set(prev);
+        next.delete(modId);
+        return next;
+      });
+      setCollections(listCollections());
+    },
+    [targetId]
+  );
+
+  return { collections, targetId, selectTarget, createAndSelect, addToTarget, removeFromTarget, added };
 }

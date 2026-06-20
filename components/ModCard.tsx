@@ -8,15 +8,17 @@ export default function ModCard({
   i,
   added,
   disabled,
-  onAdd
+  onAdd,
+  onRemove
 }: {
   mod: Mod;
   i: number;
   added: boolean;
   disabled?: boolean;
   onAdd: (id: string) => void;
+  /** When provided, an added mod's button becomes a Remove button on hover. */
+  onRemove?: (id: string) => void;
 }) {
-  const isDisabled = added || disabled;
   return (
     <article className={`tip ${RARITY[i % RARITY.length]}`}>
       <div className="row1">
@@ -28,15 +30,27 @@ export default function ModCard({
       </div>
       <p className="desc">{mod.summary}</p>
       <div className="tip-links">
-        <button
-          type="button"
-          className={`add-btn${added ? " added" : ""}`}
-          onClick={() => onAdd(mod.id)}
-          disabled={isDisabled}
-          title={isDisabled && !added ? "Does not match this collection's loader/version." : undefined}
-        >
-          {added ? "Added ✓" : "+ Add"}
-        </button>
+        {added ? (
+          <button
+            type="button"
+            className="add-btn added"
+            onClick={() => onRemove?.(mod.id)}
+            disabled={!onRemove}
+          >
+            <span className="lbl-added">Added ✓</span>
+            <span className="lbl-remove">Remove ✕</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="add-btn"
+            onClick={() => onAdd(mod.id)}
+            disabled={disabled}
+            title={disabled ? "Does not match this collection's loader/version." : undefined}
+          >
+            + Add
+          </button>
+        )}
         {mod.links.modrinth && (
           <a href={mod.links.modrinth} target="_blank" rel="noopener noreferrer">Modrinth</a>
         )}

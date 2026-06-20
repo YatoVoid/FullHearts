@@ -10,7 +10,7 @@ import { pickLucky } from "@/lib/recommend/lucky";
 import { QUERY_STORAGE_KEY, parseIntent } from "@/lib/recommend/intent";
 import { resolveBuildable } from "@/lib/modpack/mrpack";
 import DownloadPack from "@/components/DownloadPack";
-import { ensureCollection, addMod } from "@/lib/storage/collections";
+import { ensureCollection, addMod, setLoadout } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
 import { loadPool, isDegraded } from "@/lib/catalog/clientPool";
 import { checkCompatibility } from "@/lib/recommend/compatibility";
@@ -69,6 +69,7 @@ export default function Results() {
 
   function addToCollection(modId: string) {
     const collection = ensureCollection(DEFAULT_COLLECTION);
+    if (profile) setLoadout(collection.id, profile.loader, profile.gameVersion);
     const mods = results.map((r) => r.mod);
     const targetMods = mods.filter((m) => collection && m.id !== modId && m.id !== undefined).filter((m) => m.id && collection.modIds.includes(m.id));
     const modToAdd = results.find((r) => r.mod.id === modId)?.mod;
@@ -86,6 +87,7 @@ export default function Results() {
 
   function addAll() {
     const collection = ensureCollection(DEFAULT_COLLECTION);
+    if (profile) setLoadout(collection.id, profile.loader, profile.gameVersion);
     const mods = results.map((r) => r.mod);
     for (const { mod } of results) {
       const targetMods = mods.filter((m) => m.id !== mod.id && collection.modIds.includes(m.id));
