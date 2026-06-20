@@ -4,25 +4,27 @@ import { extractManifestDeps, type ManifestInfo } from "@/lib/modpack/manifest";
 import { satisfies } from "@/lib/modpack/range";
 import { searchModrinthQuery } from "@/lib/sources/modrinth";
 
-/** Reads jar manifests via the server route (keyed by immutable jar URL). */
-export type JarInspector = (jobs: { key: string; url: string }[]) => Promise<Record<string, ManifestInfo | null>>;
+/** Reads jar manifests (keyed by immutable jar URL) for a given loader. */
+export type JarInspector = (jobs: { key: string; url: string }[], loader?: Loader) => Promise<Record<string, ManifestInfo | null>>;
 
-// Per-session cache of client-read manifests (immutable jar URLs).
+// Per-session cache of client-read manifests, keyed by loader + immutable jar URL
+// (a multi-loader jar parses to different deps per loader).
 const clientManifestCache = new Map<string, ManifestInfo | null>();
 
-/** Read one jar's manifest directly in the browser. The Modrinth CDN allows
- *  cross-origin reads, so this works with no backend — at the cost of the user
- *  downloading the jar. */
-async function readJarClient(url: string): Promise<ManifestInfo | null> {
-  if (clientManifestCache.has(url)) return clientManifestCache.get(url)!;
+/** Read one jar's manifest directly in the browser, for the target loader. The
+ *  Modrinth CDN allows cross-origin reads, so this works with no backend — at the
+ *  cost of the user downloading the jar. */
+async function readJarClient(url: string, loader?: Loader): Promise<ManifestInfo | null> {
+  const cacheKey = `${loader ?? ""}:${url}`;
+  if (clientManifestCache.has(cacheKey)) return clientManifestCache.get(cacheKey)!;
   let info: ManifestInfo | null = null;
   try {
     const r = await fetch(url);
-    if (r.ok) info = extractManifestDeps(new Uint8Array(await r.arrayBuffer()));
+    if (r.ok) info = extractManifestDeps(new Uint8Array(await r.arrayBuffer()), loader);
   } catch {
     info = null;
   }
-  clientManifestCache.set(url, info);
+  clientManifestCache.set(cacheKey, info);
   return info;
 }
 
@@ -33,13 +35,13 @@ async function readJarClient(url: string): Promise<ManifestInfo | null> {
  * browser, so dependency discovery, version-range reconciliation and the MC
  * version check keep working everywhere instead of silently switching off.
  */
-const defaultInspector: JarInspector = async (jobs) => {
+const defaultInspector: JarInspector = async (jobs, loader) => {
   let server: Record<string, ManifestInfo | null> = {};
   try {
     const r = await fetch("/api/manifest-deps", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jobs })
+      body: JSON.stringify({ jobs, loader })
     });
     if (r.ok) server = (await r.json()) as Record<string, ManifestInfo | null>;
   } catch {
@@ -53,7 +55,7 @@ const defaultInspector: JarInspector = async (jobs) => {
   let q = [...missing];
   while (q.length) {
     const batch = q.splice(0, 6); // bounded concurrency, kind to the CDN
-    const settled = await Promise.all(batch.map(async (j) => [j.key, await readJarClient(j.url)] as const));
+    const settled = await Promise.all(batch.map(async (j) => [j.key, await readJarClient(j.url, loader)] as const));
     for (const [k, v] of settled) out[k] = v;
   }
   return out;
@@ -539,7 +541,7 @@ export async function buildMrpack(opts: {
     }
     if (jobs.length === 0) return;
     let data: Record<string, ManifestInfo | null> = {};
-    try { data = await inspect(jobs); } catch { return; }
+    try { data = await inspect(jobs, opts.loader); } catch { return; }
     for (const [pid, info] of Object.entries(data)) {
       if (!info) continue;
       manifestByProject.set(pid, info);
@@ -656,7 +658,7 @@ export async function buildMrpack(opts: {
       const probe = (await listVersionsByProject(v0.project_id, opts.loader, opts.mcVersion)).slice(0, 12);
       let swapped: MrVersion | null = null;
       if (probe.length) {
-        const infos = await inspect(probe.map((v) => ({ key: v.id, url: jarUrl(v) ?? "" })).filter((j) => j.url));
+        const infos = await inspect(probe.map((v) => ({ key: v.id, url: jarUrl(v) ?? "" })).filter((j) => j.url), opts.loader);
         for (const v of probe) { // newest first
           const ver = infos[v.id]?.version ?? "";
           if (ver && reqs.every((r) => satisfies(ver, r.range)) && fileEntryFromVersion(v)) { swapped = v; break; }
@@ -664,7 +666,7 @@ export async function buildMrpack(opts: {
       }
       if (swapped) {
         resolvedByProject.set(providerPid, swapped);
-        const info = (await inspect([{ key: providerPid, url: jarUrl(swapped) ?? "" }]))[providerPid];
+        const info = (await inspect([{ key: providerPid, url: jarUrl(swapped) ?? "" }], opts.loader))[providerPid];
         if (info) manifestByProject.set(providerPid, info);
       } else {
         const ver = manifestByProject.get(providerPid)?.version ?? "";

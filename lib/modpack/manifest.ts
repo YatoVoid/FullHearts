@@ -1,4 +1,5 @@
 import { unzipSync } from "fflate";
+import type { Loader } from "@/lib/sources/types";
 
 /**
  * Reads a mod jar's manifest to get the TRUE dependency picture Modrinth's API
@@ -125,8 +126,15 @@ export function parseForge(text: string, manifestMf = ""): ManifestInfo {
   return { version, provides, requires, mcRange };
 }
 
-/** Inflate just the manifest entries from a jar's bytes and parse them. */
-export function extractManifestDeps(bytes: Uint8Array): ManifestInfo | null {
+/**
+ * Inflate the manifest entries from a jar and parse them for the loader we're
+ * building. Multi-loader "universal" jars carry fabric.mod.json AND mods.toml
+ * (and neoforge.mods.toml) at once, and a mod's dependencies can differ per
+ * loader — so we MUST read the manifest matching the target loader, not just the
+ * first one found. (Reading a Forge mod's fabric.mod.json missed its Forge-only
+ * `chipped` dependency, which then never got installed.)
+ */
+export function extractManifestDeps(bytes: Uint8Array, loader?: Loader): ManifestInfo | null {
   let files: Record<string, Uint8Array>;
   try {
     files = unzipSync(bytes, {
@@ -140,11 +148,22 @@ export function extractManifestDeps(bytes: Uint8Array): ManifestInfo | null {
     const k = Object.keys(files).find((n) => re.test(n));
     return k ? dec.decode(files[k]) : "";
   };
-  const fab = text(/(^|\/)fabric\.mod\.json$/i);
-  if (fab) return parseFabric(fab);
-  const quilt = text(/(^|\/)quilt\.mod\.json$/i);
-  if (quilt) { const q = parseQuilt(quilt); if (q) return q; }
-  const toml = text(/META-INF\/(neoforge\.)?mods\.toml$/i);
-  if (toml) return parseForge(toml, text(/META-INF\/MANIFEST\.MF$/i));
+  const fabric = () => { const t = text(/(^|\/)fabric\.mod\.json$/i); return t ? parseFabric(t) : null; };
+  const quilt = () => { const t = text(/(^|\/)quilt\.mod\.json$/i); return t ? parseQuilt(t) : null; };
+  const forgeToml = () => { const t = text(/META-INF\/mods\.toml$/i); return t ? parseForge(t, text(/META-INF\/MANIFEST\.MF$/i)) : null; };
+  const neoToml = () => { const t = text(/META-INF\/neoforge\.mods\.toml$/i); return t ? parseForge(t, text(/META-INF\/MANIFEST\.MF$/i)) : null; };
+
+  // Read the manifest for the target loader first; fall back to the others so a
+  // single-manifest jar still parses.
+  const order =
+    loader === "forge" ? [forgeToml, neoToml, quilt, fabric]
+    : loader === "neoforge" ? [neoToml, forgeToml, quilt, fabric]
+    : loader === "quilt" ? [quilt, fabric, forgeToml, neoToml]
+    : loader === "fabric" ? [fabric, quilt, forgeToml, neoToml]
+    : [fabric, quilt, forgeToml, neoToml]; // unspecified: legacy order
+  for (const read of order) {
+    const r = read();
+    if (r) return r;
+  }
   return null;
 }

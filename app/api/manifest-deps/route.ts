@@ -1,4 +1,5 @@
 import { extractManifestDeps, type ManifestInfo } from "@/lib/modpack/manifest";
+import type { Loader } from "@/lib/sources/types";
 import { rateLimited, clientIp } from "@/lib/rate-limit";
 
 /**
@@ -9,7 +10,8 @@ import { rateLimited, clientIp } from "@/lib/rate-limit";
  * once, ever.
  */
 
-// jar url -> parsed manifest (or null when it has none / failed). Immutable url.
+// "loader:jar-url" -> parsed manifest (or null). Keyed by loader too because a
+// multi-loader jar parses to different deps per loader. Immutable url.
 const cache = new Map<string, ManifestInfo | null>();
 
 // A full pack build makes ~8-12 calls here, so 200/hr is ~15-20 builds/hour:
@@ -20,16 +22,17 @@ const LIMIT = 200;
 // Modrinth's CDN. Anything else is rejected at the boundary.
 const ALLOWED = /^https:\/\/cdn\.modrinth\.com\//;
 
-async function inspect(url: string): Promise<ManifestInfo | null> {
-  if (cache.has(url)) return cache.get(url)!;
+async function inspect(url: string, loader?: Loader): Promise<ManifestInfo | null> {
+  const key = `${loader ?? ""}:${url}`;
+  if (cache.has(key)) return cache.get(key)!;
   let info: ManifestInfo | null = null;
   try {
     const r = await fetch(url);
-    if (r.ok) info = extractManifestDeps(new Uint8Array(await r.arrayBuffer()));
+    if (r.ok) info = extractManifestDeps(new Uint8Array(await r.arrayBuffer()), loader);
   } catch {
     info = null;
   }
-  cache.set(url, info);
+  cache.set(key, info);
   return info;
 }
 
@@ -43,9 +46,12 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   let jobs: { key: string; url: string }[];
+  let loader: Loader | undefined;
   try {
-    const body = (await req.json()) as { jobs?: unknown };
+    const body = (await req.json()) as { jobs?: unknown; loader?: unknown };
     jobs = Array.isArray(body.jobs) ? (body.jobs as { key: string; url: string }[]) : [];
+    const L = typeof body.loader === "string" ? body.loader : undefined;
+    loader = (["forge", "neoforge", "fabric", "quilt"] as const).includes(L as Loader) ? (L as Loader) : undefined;
   } catch {
     return Response.json({ error: "bad request" }, { status: 400 });
   }
@@ -55,7 +61,7 @@ export async function POST(req: Request): Promise<Response> {
   let queue = [...jobs];
   while (queue.length) {
     const batch = queue.splice(0, 6); // bounded concurrency, kind to the CDN
-    const settled = await Promise.all(batch.map(async (j) => [j.key, await inspect(j.url)] as const));
+    const settled = await Promise.all(batch.map(async (j) => [j.key, await inspect(j.url, loader)] as const));
     for (const [k, v] of settled) out[k] = v;
   }
   return Response.json(out);

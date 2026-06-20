@@ -69,6 +69,18 @@ describe("extractManifestDeps (real jar bytes)", () => {
   it("returns null for a jar with no recognizable manifest", () => {
     expect(extractManifestDeps(zipSync({ "foo.txt": strToU8("hi") }))).toBeNull();
   });
+
+  it("reads the LOADER's manifest from a multi-loader jar (chipped-express case)", () => {
+    // Universal jar: fabric.mod.json declares no deps, but the Forge mods.toml
+    // requires "chipped". A Forge build must read the toml, not the fabric json.
+    const jar = zipSync({
+      "fabric.mod.json": strToU8(JSON.stringify({ id: "chipped_express", version: "1.0", depends: { minecraft: "*" } })),
+      "META-INF/mods.toml": strToU8(`[[mods]]\nmodId="chipped_express"\nversion="1.0"\n[[dependencies.chipped_express]]\nmodId="chipped"\nmandatory=true\nversionRange="[1.0.0,)"\n`)
+    });
+    expect(extractManifestDeps(jar, "forge")!.requires).toEqual([{ id: "chipped", range: "[1.0.0,)" }]);
+    // Fabric build of the same jar sees the fabric manifest (no chipped dep).
+    expect(extractManifestDeps(jar, "fabric")!.requires).toEqual([]);
+  });
 });
 
 describe("parseQuilt", () => {
