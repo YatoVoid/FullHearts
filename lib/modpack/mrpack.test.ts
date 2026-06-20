@@ -77,6 +77,26 @@ describe("buildMrpack dependency closure", () => {
     expect(depCount).toBe(1); // fabric-api pulled in; optional architectury skipped
   });
 
+  it("force-pulls a known manifest-only dependency (chipped-express -> chipped)", async () => {
+    // chipped-express declares NO Modrinth deps; chipped is only in its manifest.
+    // The FORCE_DEPS map guarantees chipped is pulled regardless.
+    const ce = { id: "vCE", project_id: "CE", version_type: "release", files: [file("chipped-express.jar")], dependencies: [] };
+    const chipped = { id: "vCH", project_id: "CH", version_type: "release", files: [file("chipped.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/project/chipped-express/version")) return jsonRes([ce]);
+      if (url.includes("/project/chipped/version")) return jsonRes([chipped]);
+      return jsonRes([]);
+    }));
+
+    const { included, depCount } = await buildMrpack({
+      name: "t", mods: [modStub("chipped-express")], loader: "fabric", mcVersion: "1.20.1"
+    });
+
+    expect(included.map((m) => m.id)).toEqual(["chipped-express"]);
+    expect(depCount).toBe(1); // chipped force-pulled as a dependency
+  });
+
   it("drops one side of a declared mod-vs-mod incompatibility", async () => {
     const lamb = { id: "vL", project_id: "LAMB", version_type: "release", files: [file("lamb.jar")], dependencies: [{ project_id: "SODIUMDL", version_id: null, dependency_type: "incompatible" }] };
     const sodiumdl = { id: "vS", project_id: "SODIUMDL", version_type: "release", files: [file("sodiumdl.jar")], dependencies: [] };

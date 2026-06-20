@@ -196,6 +196,21 @@ const NEOFORGE_VERSIONS: Record<string, string> = {
   "1.20.4": "20.4.251"
 };
 
+// Dependencies that are notoriously NOT auto-discoverable from Modrinth metadata
+// (no declared dep) and easy to miss — keyed by the dependent's Modrinth slug,
+// valued by the dependency's Modrinth slug. Force-pulled whenever the dependent
+// is in the pack. Grow this as new "X is not installed" cases are found.
+const FORCE_DEPS: Record<string, string[]> = {
+  "chipped-express": ["chipped"],
+  "legendary-tooltips": ["prism-lib"],
+  "item-borders": ["prism-lib"]
+};
+
+// A manifest modid whose Modrinth slug differs (so slug-guessing can't find it).
+const MODID_TO_SLUG: Record<string, string> = {
+  prism: "prism-lib"
+};
+
 /** Forge/NeoForge loader version live from our server route (CORS-blocked client
  *  side, so it can't be fetched directly). Used for any MC version not in the
  *  pinned map. */
@@ -468,6 +483,19 @@ export async function buildMrpack(opts: {
 
   let queue: WorkItem[] = opts.mods.map((mod) => ({ kind: "mod", mod }));
 
+  // Bulletproof a few dependencies that mods declare ONLY in their jar manifest
+  // (Modrinth lists none) or via a modid whose slug differs — so they're always
+  // pulled. Resolved like any other project, i.e. at the right build for the
+  // chosen loader + Minecraft version, "no matter the version". Add to this map
+  // as new always-missing deps surface.
+  for (const mod of opts.mods) {
+    const slug = (mod.modrinthSlug ?? mod.id).toLowerCase();
+    for (const dep of FORCE_DEPS[slug] ?? []) {
+      const key = `p:${dep}`;
+      if (!requested.has(key)) { requested.add(key); queue.push({ kind: "project", id: dep }); }
+    }
+  }
+
   async function resolve(item: WorkItem): Promise<MrVersion | null> {
     if (item.kind === "mod") return resolveVersionByProject(item.mod.modrinthSlug ?? item.mod.id, opts.loader, opts.mcVersion);
     if (item.kind === "project") return resolveVersionByProject(item.id, opts.loader, opts.mcVersion);
@@ -551,7 +579,8 @@ export async function buildMrpack(opts: {
 
   // Map a manifest modid to a Modrinth version, trying _/- slug variants.
   async function resolveModId(modid: string): Promise<MrVersion | null> {
-    for (const cand of [modid, modid.replace(/_/g, "-"), modid.replace(/-/g, "_")]) {
+    const aliased = MODID_TO_SLUG[modid.toLowerCase()];
+    for (const cand of [aliased, modid, modid.replace(/_/g, "-"), modid.replace(/-/g, "_")].filter((c): c is string => Boolean(c))) {
       const v = await resolveVersionByProject(cand, opts.loader, opts.mcVersion);
       if (v) return v;
     }
