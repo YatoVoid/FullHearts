@@ -76,13 +76,15 @@ export default function Results() {
   const [pendingSave, setPendingSave] = useState<{ kind: "all" } | { kind: "mod"; modId: string } | null>(null);
   const [newName, setNewName] = useState("");
 
-  // Creep the validation bar up a hair each tick so it always looks alive.
+  // Creep the validation bar up a hair each tick so it always looks alive, and
+  // count elapsed seconds so the user can see it's genuinely working (not stuck).
+  const [elapsed, setElapsed] = useState(0);
   useEffect(() => {
     if (status !== "loading") return;
-    const t = setInterval(() => {
-      setBuildProgress((p) => (p.pct >= 96 ? p : { ...p, pct: p.pct + 0.4 }));
-    }, 240);
-    return () => clearInterval(t);
+    setElapsed(0);
+    const bar = setInterval(() => setBuildProgress((p) => (p.pct >= 96 ? p : { ...p, pct: p.pct + 0.4 })), 240);
+    const clock = setInterval(() => setElapsed((s) => s + 1), 1000);
+    return () => { clearInterval(bar); clearInterval(clock); };
   }, [status]);
 
   // A sensible, non-colliding default name for a brand-new loadout.
@@ -312,11 +314,13 @@ export default function Results() {
         {status === "loading" && (
           <div className="results-building" role="status" aria-live="polite">
             <div className="quiz-progress" aria-hidden="true"><i style={{ width: `${Math.max(6, buildProgress.pct)}%` }} /></div>
+            <p className="results-building-head">
+              <span className="building-label">{buildProgress.label || "Building your loadout"}<span className="building-dots" aria-hidden="true" /></span>
+              <span className="building-meter">{Math.round(buildProgress.pct)}% · {elapsed}s</span>
+            </p>
             <p className="results-state">
-              {buildProgress.label || "Building your loadout…"}
-              <br />
               We&apos;re cross-checking every mod and its dependencies for {profile?.loader ? profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1) : "your loader"}{" "}
-              {profile?.gameVersion ?? ""} so your pack installs clean the first time.
+              {profile?.gameVersion ?? ""} so your pack installs clean the first time. Big packs can take a minute — keep this tab open while it runs.
             </p>
           </div>
         )}
