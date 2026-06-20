@@ -224,6 +224,11 @@ export default function Results() {
     };
   }, []);
 
+  // Content mods are what the user asked for (the size limit); the rest are
+  // "essentials" (performance/visual/QoL/library) that ride along.
+  const contentCount = results.filter((r) => isContentMod(r.mod)).length;
+  const essentialCount = results.length - contentCount;
+
   return (
     <>
       <header className="nav">
@@ -248,7 +253,7 @@ export default function Results() {
           {status === "ready" && <div className="summary">{summary}</div>}
           {status === "ready" && profile && !degraded && (
             <div className="compat compat-ok">
-              ✓ {results.length} mods verified for {profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1)} {profile.gameVersion} — every one builds.
+              ✓ {contentCount} mods{essentialCount > 0 ? ` + ${essentialCount} essentials` : ""} for {profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1)} {profile.gameVersion}. Every one builds.
             </div>
           )}
           {status === "ready" && profile && (
