@@ -13,7 +13,7 @@ import { recommendedVersion, type Coverage } from "@/lib/catalog/coverage";
 import snapshotCoverage from "@/lib/catalog/coverage.snapshot.json";
 import { buildMrpack } from "@/lib/modpack/mrpack";
 import DownloadPack from "@/components/DownloadPack";
-import { ensureCollection, addMod, setLoadout } from "@/lib/storage/collections";
+import { ensureCollection, createCollection, listCollections, addMod, setLoadout, type Collection } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
 import { loadPool, isDegraded } from "@/lib/catalog/clientPool";
 import { checkCompatibility } from "@/lib/recommend/compatibility";
@@ -69,6 +69,9 @@ export default function Results() {
   const [degraded, setDegraded] = useState(false);
   const [added, setAdded] = useState<Set<string>>(new Set());
   const [buildProgress, setBuildProgress] = useState({ pct: 0, label: "" });
+  // The collection this save session is targeting. null until the user first
+  // saves (then we ask new-vs-existing and remember the choice for this page).
+  const [targetId, setTargetId] = useState<string | null>(null);
 
   // Creep the validation bar up a hair each tick so it always looks alive.
   useEffect(() => {
@@ -79,9 +82,56 @@ export default function Results() {
     return () => clearInterval(t);
   }, [status]);
 
-  function addToCollection(modId: string) {
-    const collection = ensureCollection(DEFAULT_COLLECTION);
+  // A sensible, non-colliding default name for a brand-new loadout.
+  function nextDefaultName(): string {
+    const names = new Set(listCollections().map((c) => c.name));
+    if (!names.has(DEFAULT_COLLECTION)) return DEFAULT_COLLECTION;
+    for (let n = 2; ; n++) {
+      const candidate = `${DEFAULT_COLLECTION} ${n}`;
+      if (!names.has(candidate)) return candidate;
+    }
+  }
+
+  // Resolve which collection to save into. On the first save of this session,
+  // if collections with mods already exist, ask: new collection (default) or
+  // add to an existing one — so retaking the quiz doesn't silently append to
+  // the most-recent loadout. The choice is remembered for the rest of the page.
+  function resolveTarget(): Collection | null {
+    if (targetId) {
+      const existing = listCollections().find((c) => c.id === targetId);
+      if (existing) return existing;
+    }
+
+    const withMods = listCollections().filter((c) => c.modIds.length > 0);
+    let collection: Collection;
+    if (withMods.length > 0) {
+      const list = withMods.map((c, i) => `${i + 1}. ${c.name} (${c.modIds.length})`).join("\n");
+      const answer = window.prompt(
+        `Save to which collection?\n\nEnter a number to add to an existing loadout, or leave blank to create a NEW one.\n\n${list}`,
+        ""
+      );
+      if (answer === null) return null; // cancelled
+      const pick = parseInt(answer.trim(), 10);
+      if (answer.trim() !== "" && !Number.isNaN(pick) && pick >= 1 && pick <= withMods.length) {
+        collection = withMods[pick - 1];
+      } else {
+        const name = window.prompt("Name your new collection:", nextDefaultName());
+        if (name === null) return null; // cancelled
+        collection = createCollection(name.trim() || nextDefaultName());
+      }
+    } else {
+      collection = ensureCollection(DEFAULT_COLLECTION);
+    }
+
     if (profile) setLoadout(collection.id, profile.loader, profile.gameVersion);
+    setTargetId(collection.id);
+    setLastCollectionId(collection.id);
+    return collection;
+  }
+
+  function addToCollection(modId: string) {
+    const collection = resolveTarget();
+    if (!collection) return;
     const mods = results.map((r) => r.mod);
     const targetMods = mods.filter((m) => collection && m.id !== modId && m.id !== undefined).filter((m) => m.id && collection.modIds.includes(m.id));
     const modToAdd = results.find((r) => r.mod.id === modId)?.mod;
@@ -98,8 +148,8 @@ export default function Results() {
   }
 
   function addAll() {
-    const collection = ensureCollection(DEFAULT_COLLECTION);
-    if (profile) setLoadout(collection.id, profile.loader, profile.gameVersion);
+    const collection = resolveTarget();
+    if (!collection) return;
     const mods = results.map((r) => r.mod);
     for (const { mod } of results) {
       const targetMods = mods.filter((m) => m.id !== mod.id && collection.modIds.includes(m.id));
