@@ -191,14 +191,22 @@ export default function Results() {
           onProgress: (pct, label) => { if (!cancelled) setBuildProgress((prev) => ({ pct: Math.max(prev.pct, pct), label })); }
         });
         if (cancelled) return;
+        // Walk candidates in rank order, taking buildable ones until the loadout
+        // is full. Only mods that FAILED while we were still filling genuinely
+        // "competed for a slot" — everything past that point is unused buffer and
+        // shouldn't be reported as "left out" (that list was alarmingly long).
         const okIds = new Set(included.map((m) => m.id));
-        const finalResults = candidates.filter((c) => okIds.has(c.mod.id)).slice(0, max);
-        const finalIds = new Set(finalResults.map((c) => c.mod.id));
-        // Report only mods that genuinely couldn't build (not ones merely over
-        // the size limit, which build fine and just didn't make the cut).
-        const ex = skipped
-          .filter((m) => !finalIds.has(m.id))
-          .map((m) => ({ mod: m, reason: `no stable ${loaderLabel} ${rec.profile.gameVersion} build, or a required dependency wasn't available` }));
+        const finalResults: RankedMod[] = [];
+        const displaced: Mod[] = [];
+        for (const c of candidates) {
+          if (finalResults.length >= max) break;
+          if (okIds.has(c.mod.id)) finalResults.push(c);
+          else displaced.push(c.mod);
+        }
+        const ex = displaced.map((m) => ({
+          mod: m,
+          reason: `no stable ${loaderLabel} ${rec.profile.gameVersion} build, or a required dependency wasn't available`
+        }));
         setResults(finalResults);
         setExcluded(ex);
         setStatus(finalResults.length > 0 ? "ready" : "empty");
@@ -242,19 +250,20 @@ export default function Results() {
           {status === "ready" && profile && excluded.length > 0 && (
             <details className="excluded">
               <summary>
-                ⚠ {excluded.length} mod{excluded.length === 1 ? "" : "s"} left out (no {profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1)} {profile.gameVersion} build) — tap to review before downloading
+                We skipped {excluded.length} match{excluded.length === 1 ? "" : "es"} with no clean {profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1)} {profile.gameVersion} build and filled your pack with ones that work. Tap to see them.
               </summary>
               <ul>
-                {excluded.map(({ mod, reason }) => (
+                {excluded.slice(0, 8).map(({ mod }) => (
                   <li key={mod.id}>
-                    <b>{mod.name}</b> — {reason}
+                    <b>{mod.name}</b>
                     {mod.links.modrinth && (
                       <> · <a href={mod.links.modrinth} target="_blank" rel="noopener noreferrer">check on Modrinth</a></>
                     )}
                   </li>
                 ))}
+                {excluded.length > 8 && <li>…and {excluded.length - 8} more.</li>}
               </ul>
-              <p className="excluded-tip">These aren&apos;t in your pack. To include them, retake the quiz with a different loader or Minecraft version.</p>
+              <p className="excluded-tip">These aren&apos;t in your pack and your pack is complete without them. To get them, try a different loader or Minecraft version.</p>
             </details>
           )}
           {status === "ready" && profile && (

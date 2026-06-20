@@ -104,6 +104,10 @@ export function buildIndex(opts: {
 // that share dependencies) never refetches the same URL.
 const responseCache = new Map<string, unknown>();
 
+// Per-session cache of finished build results, keyed by the pack's identity, so
+// an unchanged collection downloads instantly instead of re-validating.
+const buildResultCache = new Map<string, MrpackResult>();
+
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** Fetch JSON, caching results and backing off once on a 429 to stay a good
@@ -377,6 +381,19 @@ export async function buildMrpack(opts: {
   onProgress?: (pct: number, label: string) => void;
 }): Promise<MrpackResult> {
   const report = opts.onProgress ?? (() => {});
+
+  // Within-session result cache, keyed by exactly what determines the pack
+  // (name + loader + version + the set of mods). Re-downloading an unchanged
+  // collection is then instant; changing a mod yields a new key and rebuilds.
+  // Skip caching when a custom jar inspector is supplied (tests/overrides).
+  const cacheKey = opts.inspectJars
+    ? ""
+    : `${opts.name}|${opts.loader}|${opts.mcVersion}|${opts.mods.map((m) => m.modrinthSlug ?? m.id).slice().sort().join(",")}`;
+  if (cacheKey && buildResultCache.has(cacheKey)) {
+    report(100, "Ready");
+    return buildResultCache.get(cacheKey)!;
+  }
+
   report(6, "Resolving loader + mod versions…");
   const loaderVersion = await resolveLoaderVersion(opts.loader, opts.mcVersion);
   if (!loaderVersion) {
@@ -653,5 +670,7 @@ export async function buildMrpack(opts: {
   const zipped = zipSync({ "modrinth.index.json": strToU8(JSON.stringify(index, null, 2)) });
   const blob = new Blob([zipped], { type: "application/x-modrinth-modpack+zip" });
   const depCount = Math.max(0, files.length - included.length);
-  return { blob, included, skipped, depCount, removedConflicts };
+  const result = { blob, included, skipped, depCount, removedConflicts };
+  if (cacheKey) buildResultCache.set(cacheKey, result);
+  return result;
 }
