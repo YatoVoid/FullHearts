@@ -48,6 +48,6 @@ export function passesHardFilters(mod: Mod, profile: Profile): boolean {
     if (mod.gameVersions.length > 0 && !mod.gameVersions.includes(profile.gameVersion)) return false;
     return true;
   }
-  if (isBlocked(mod, profile.loader)) return false;
+  if (isBlocked(mod, profile.loader, profile.gameVersion)) return false;
   return mod.loaders.includes(profile.loader) && mod.gameVersions.includes(profile.gameVersion);
 }

@@ -92,6 +92,14 @@ describe("score & hard filters", () => {
     const bad = mod({ id: "3dskinlayers", name: "3D Skin Layers", modrinthSlug: "3dskinlayers", loaders: ["forge"], gameVersions: ["1.21.1"] });
     expect(passesHardFilters(bad, forgeProfile)).toBe(false);
   });
+
+  it("blocks a mod only on the versions it crashes on", () => {
+    const on1211 = buildProfile({ playstyle: ["build"], loader: ["forge"], version: ["1.21.1"], size: ["small"], hardware: [] });
+    const on1201 = buildProfile({ playstyle: ["build"], loader: ["forge"], version: ["1.20.1"], size: ["small"], hardware: [] });
+    const runelic = mod({ id: "runelic", name: "Runelic", modrinthSlug: "runelic", loaders: ["forge"], gameVersions: ["1.21.1", "1.20.1"] });
+    expect(passesHardFilters(runelic, on1211)).toBe(false); // crashes on 1.21.1
+    expect(passesHardFilters(runelic, on1201)).toBe(true);  // fine on 1.20.1
+  });
 });
 
 describe("reason", () => {
