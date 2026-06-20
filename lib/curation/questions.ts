@@ -50,10 +50,11 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: "feel",
-    kind: "single",
-    prompt: "What matters most for how the game feels?",
+    kind: "multi",
+    prompt: "What matters for how the game feels?",
+    help: "Pick any — these stack, you don't have to choose just one.",
     options: [
-      { id: "fps", label: "Smooth, high FPS above all", tags: { performance: 1, "low-end": 0.5 } },
+      { id: "fps", label: "Smooth, high FPS", tags: { performance: 1, "low-end": 0.5 } },
       { id: "pretty", label: "Beautiful visuals & lighting", tags: { visual: 1 } },
       { id: "info", label: "Helpful on-screen info", tags: { interface: 1 } },
       { id: "vanilla", label: "Keep it close to vanilla", tags: { qol: 0.5, "low-grind": 0.4 } }
@@ -164,9 +165,11 @@ export const QUESTIONS: Question[] = [
     kind: "single",
     prompt: "How's your computer?",
     options: [
+      // Every tier gets a small performance baseline — optimization mods (Sodium,
+      // Embeddium, FerriteCore…) are near-universal in real packs and stop crashes.
       { id: "lowend", label: "Older or low-end, keep it light", lowEnd: true, tags: { performance: 0.6, "low-end": 1 } },
-      { id: "fine", label: "Runs Minecraft just fine", lowEnd: false },
-      { id: "beefy", label: "Powerful, bring the eye candy", lowEnd: false, tags: { visual: 0.4 } }
+      { id: "fine", label: "Runs Minecraft just fine", lowEnd: false, tags: { performance: 0.3 } },
+      { id: "beefy", label: "Powerful, bring the eye candy", lowEnd: false, tags: { visual: 0.4, performance: 0.2 } }
     ]
   }
 ];

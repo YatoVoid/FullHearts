@@ -8,7 +8,7 @@ import { buildProfile, type Profile } from "@/lib/recommend/profile";
 import { recommend, recommendFromQuery, type RankedMod, type Recommendation } from "@/lib/recommend/index";
 import { pickLucky } from "@/lib/recommend/lucky";
 import { QUERY_STORAGE_KEY, parseIntent } from "@/lib/recommend/intent";
-import { resolveBuildable } from "@/lib/modpack/mrpack";
+import { buildMrpack } from "@/lib/modpack/mrpack";
 import DownloadPack from "@/components/DownloadPack";
 import { ensureCollection, addMod, setLoadout } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
@@ -66,6 +66,16 @@ export default function Results() {
   const [summary, setSummary] = useState("");
   const [degraded, setDegraded] = useState(false);
   const [added, setAdded] = useState<Set<string>>(new Set());
+  const [buildProgress, setBuildProgress] = useState({ pct: 0, label: "" });
+
+  // Creep the validation bar up a hair each tick so it always looks alive.
+  useEffect(() => {
+    if (status !== "loading") return;
+    const t = setInterval(() => {
+      setBuildProgress((p) => (p.pct >= 96 ? p : { ...p, pct: p.pct + 0.4 }));
+    }, 240);
+    return () => clearInterval(t);
+  }, [status]);
 
   function addToCollection(modId: string) {
     const collection = ensureCollection(DEFAULT_COLLECTION);
@@ -166,17 +176,29 @@ export default function Results() {
           return;
         }
 
-        // Resolve, in rank order, which candidates ACTUALLY build for this
-        // loader+version. The loadout shown == the loadout downloaded.
+        // Run the FULL build validation (the same one the download uses:
+        // dependency closure + jar-manifest cross-check + version-range
+        // reconciliation) on a candidate superset, so the loadout we show ==
+        // exactly what downloads. Front-loading it here means the .mrpack
+        // download is instant (cached) and never surprises with a left-out mod.
         const candidates = rec.results.slice(0, max + RESOLVE_BUFFER);
-        const { buildable, excluded: ex } = await resolveBuildable(
-          candidates.map((c) => c.mod),
-          rec.profile.loader,
-          rec.profile.gameVersion
-        );
+        const loaderLabel = rec.profile.loader.charAt(0).toUpperCase() + rec.profile.loader.slice(1);
+        const { included, skipped } = await buildMrpack({
+          name: "Full Hearts loadout",
+          mods: candidates.map((c) => c.mod),
+          loader: rec.profile.loader,
+          mcVersion: rec.profile.gameVersion,
+          onProgress: (pct, label) => { if (!cancelled) setBuildProgress((prev) => ({ pct: Math.max(prev.pct, pct), label })); }
+        });
         if (cancelled) return;
-        const okIds = new Set(buildable.map((m) => m.id));
+        const okIds = new Set(included.map((m) => m.id));
         const finalResults = candidates.filter((c) => okIds.has(c.mod.id)).slice(0, max);
+        const finalIds = new Set(finalResults.map((c) => c.mod.id));
+        // Report only mods that genuinely couldn't build (not ones merely over
+        // the size limit, which build fine and just didn't make the cut).
+        const ex = skipped
+          .filter((m) => !finalIds.has(m.id))
+          .map((m) => ({ mod: m, reason: `no stable ${loaderLabel} ${rec.profile.gameVersion} build, or a required dependency wasn't available` }));
         setResults(finalResults);
         setExcluded(ex);
         setStatus(finalResults.length > 0 ? "ready" : "empty");
@@ -253,7 +275,17 @@ export default function Results() {
           )}
         </div>
 
-        {status === "loading" && <p className="results-state">Building your loadout…</p>}
+        {status === "loading" && (
+          <div className="results-building" role="status" aria-live="polite">
+            <div className="quiz-progress" aria-hidden="true"><i style={{ width: `${Math.max(6, buildProgress.pct)}%` }} /></div>
+            <p className="results-state">
+              {buildProgress.label || "Building your loadout…"}
+              <br />
+              We&apos;re cross-checking every mod and its dependencies for {profile?.loader ? profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1) : "your loader"}{" "}
+              {profile?.gameVersion ?? ""} so your pack installs clean the first time.
+            </p>
+          </div>
+        )}
 
         {status === "no-answers" && (
           <p className="results-state">
