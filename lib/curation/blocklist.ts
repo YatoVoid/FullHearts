@@ -40,7 +40,11 @@ const BLOCKED: Record<string, BlockRule> = {
   // Lib (ArrayIndexOOB) — it needs ~Moonlight 3.0.14, but Moonlight is shared by
   // many mods that want it recent, and Spelunkery's loose range gives no way to
   // pick a version that satisfies everyone. Nothing newer to update to.
-  "spelunkery": { loaders: ["forge", "neoforge"], versions: ["1.21.1", "1.21"] }
+  "spelunkery": { loaders: ["forge", "neoforge"], versions: ["1.21.1", "1.21"] },
+  // Shoulder Surfing Reloaded's legacy FORGE 1.21.x port crashes (mixin/code
+  // mismatch) — its primary, tested build for 1.21.x is NeoForge. Block the Forge
+  // port only; it's fine on NeoForge and on older Forge.
+  "shoulder-surfing-reloaded": { loaders: ["forge"], versions: ["1.21.1", "1.21"] }
 };
 
 /**
