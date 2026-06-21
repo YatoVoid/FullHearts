@@ -484,7 +484,7 @@ function chooseDrop(a: string, b: string, dependedUpon: Set<string>, selected: S
 type WorkItem =
   | { kind: "mod"; mod: Mod }
   | { kind: "project"; id: string }
-  | { kind: "datedProject"; id: string; before?: string } // dep capped to the dependent's era
+  | { kind: "datedProject"; id: string } // dep capped to its dependents' era (see depCeiling)
   | { kind: "version"; id: string }
   | { kind: "resolved"; version: MrVersion }; // already-fetched (a discovered undeclared dep)
 
@@ -532,6 +532,11 @@ export async function buildMrpack(opts: {
   const dependedUpon = new Set<string>();                 // required-dep project ids
   const requiredEdges: [string, string][] = [];           // [parent, requiredChild] project ids
   const incompatEdges: [string, string][] = [];           // [declarer, target] project ids
+  // dep project -> the LATEST publish date among the mods requiring it. Capping a
+  // dependency to this (not the first/oldest dependent) keeps a SHARED library new
+  // enough for the recent mods that share it, while still pairing a single-dependent
+  // private library with its mod's era. ISO dates compare lexicographically.
+  const depCeiling = new Map<string, string>();
 
   let queue: WorkItem[] = opts.mods.map((mod) => ({ kind: "mod", mod }));
 
@@ -552,7 +557,8 @@ export async function buildMrpack(opts: {
   // DEPENDENT's era: a dependency released well after the dependent can't have
   // been built against it (IceAndFire CE 1.1.1 from 2025 + the newest Uranus 2.4.1
   // from 2026 = NoClassDefFoundError). Same-dev paired mods are the usual victims.
-  async function resolveDatedDep(id: string, before?: string): Promise<MrVersion | null> {
+  async function resolveDatedDep(id: string): Promise<MrVersion | null> {
+    const before = depCeiling.get(id);
     if (!before) return resolveVersionByProject(id, opts.loader, opts.mcVersion);
     const versions = await listVersionsByProject(id, opts.loader, opts.mcVersion); // newest first
     return pickEraVersion(versions, before) ?? resolveVersionByProject(id, opts.loader, opts.mcVersion);
@@ -561,7 +567,7 @@ export async function buildMrpack(opts: {
   async function resolve(item: WorkItem): Promise<MrVersion | null> {
     if (item.kind === "mod") return resolveVersionByProject(item.mod.modrinthSlug ?? item.mod.id, opts.loader, opts.mcVersion);
     if (item.kind === "project") return resolveVersionByProject(item.id, opts.loader, opts.mcVersion);
-    if (item.kind === "datedProject") return resolveDatedDep(item.id, item.before);
+    if (item.kind === "datedProject") return resolveDatedDep(item.id);
     if (item.kind === "resolved") return item.version;
     return resolveVersionById(item.id);
   }
@@ -599,9 +605,14 @@ export async function buildMrpack(opts: {
           if (dep.version_id) {
             const key = `v:${dep.version_id}`;
             if (!requested.has(key)) { requested.add(key); next.push({ kind: "version", id: dep.version_id }); }
-          } else if (dep.project_id && !resolvedByProject.has(dep.project_id)) {
-            const key = `p:${dep.project_id}`;
-            if (!requested.has(key)) { requested.add(key); next.push({ kind: "datedProject", id: dep.project_id, before: version.date_published }); }
+          } else if (dep.project_id) {
+            // Track the latest dependent date for this lib (raises a shared lib's cap).
+            const cur = depCeiling.get(dep.project_id);
+            if (version.date_published && (!cur || version.date_published > cur)) depCeiling.set(dep.project_id, version.date_published);
+            if (!resolvedByProject.has(dep.project_id)) {
+              const key = `p:${dep.project_id}`;
+              if (!requested.has(key)) { requested.add(key); next.push({ kind: "datedProject", id: dep.project_id }); }
+            }
           }
         }
       }

@@ -35,7 +35,12 @@ const BLOCKED: Record<string, BlockRule> = {
   // declares "[2,)" — and the ONE Uranus build it actually works with (2.4.0) is
   // indistinguishable from the broken ones (2.3.1 too old, 2.4.1 too new). No
   // metadata signal can resolve it, so excluding it beats shipping a guaranteed crash.
-  "iceandfire-ce": { loaders: ["forge", "neoforge"], versions: ["1.21.1", "1.21"] }
+  "iceandfire-ce": { loaders: ["forge", "neoforge"], versions: ["1.21.1", "1.21"] },
+  // Spelunkery 0.4.3 (its newest 1.21.1 build) crashes with the current Moonlight
+  // Lib (ArrayIndexOOB) — it needs ~Moonlight 3.0.14, but Moonlight is shared by
+  // many mods that want it recent, and Spelunkery's loose range gives no way to
+  // pick a version that satisfies everyone. Nothing newer to update to.
+  "spelunkery": { loaders: ["forge", "neoforge"], versions: ["1.21.1", "1.21"] }
 };
 
 /**
