@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import type { Mod } from "@/lib/sources/types";
+import type { Loader, Mod } from "@/lib/sources/types";
 import { loadPool } from "@/lib/catalog/clientPool";
 import { fetchModsBySlugs } from "@/lib/sources/modrinth";
+import { modBuildsFor } from "@/lib/modpack/mrpack";
+import { VERSIONS } from "@/lib/catalog/coverage";
 import { checkCompatibility, compatibilitySummary } from "@/lib/recommend/compatibility";
 import DownloadPack from "@/components/DownloadPack";
 import ServerCta from "@/components/ServerCta";
@@ -15,6 +17,7 @@ import {
   duplicateCollection,
   deleteCollection,
   removeMod,
+  setLoadout,
   type Collection
 } from "@/lib/storage/collections";
 import { encodeCollection, decodeCollection } from "@/lib/storage/share";
@@ -31,6 +34,19 @@ const HEART = (
     style={{ width: "100%", height: "100%", display: "block", imageRendering: "pixelated" }}
   />
 );
+
+const MIGRATE_LOADERS: Loader[] = ["forge", "neoforge", "fabric", "quilt"];
+const LOADER_LABEL: Record<Loader, string> = { forge: "Forge", neoforge: "NeoForge", fabric: "Fabric", quilt: "Quilt" };
+
+interface MigrateState {
+  collection: Collection;
+  version: string | null;            // chosen target MC version (null = still picking)
+  checking: boolean;
+  results: { loader: Loader; build: Mod[]; miss: Mod[] }[] | null;
+  loader: Loader | null;             // chosen target loader
+  name: string;
+  done: { name: string; migrated: number; dropped: string[] } | null;
+}
 
 function download(filename: string, content: string, type: string) {
   const blob = new Blob([content], { type });
@@ -51,8 +67,45 @@ export default function Collections() {
   const [note, setNote] = useState("");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [upTarget, setUpTarget] = useState<string | null>(null);
+  const [mig, setMig] = useState<MigrateState | null>(null);
 
   const refresh = useCallback(() => setCollections(listCollections()), []);
+
+  // Migrate flow: after the user picks a target version, check every mod in the
+  // collection against all four loaders (real per-build check), so we can
+  // recommend the loader that keeps the most mods. Heavy but bounded; deliberate.
+  async function runMigrateCheck(c: Collection, version: string) {
+    setMig((m) => (m ? { ...m, version, checking: true, results: null, loader: null } : m));
+    let resolved = c.modIds.map((id) => byId[id]).filter((x): x is Mod => Boolean(x));
+    const missing = c.modIds.filter((id) => !byId[id]);
+    if (missing.length) resolved = [...resolved, ...(await fetchModsBySlugs(missing))];
+
+    const results: { loader: Loader; build: Mod[]; miss: Mod[] }[] = [];
+    for (const loader of MIGRATE_LOADERS) {
+      const build: Mod[] = [];
+      const miss: Mod[] = [];
+      let q = [...resolved];
+      while (q.length) {
+        const batch = q.splice(0, 6); // bounded concurrency
+        const settled = await Promise.all(batch.map(async (mod) => ({ mod, ok: await modBuildsFor(mod, loader, version) })));
+        for (const { mod, ok } of settled) (ok ? build : miss).push(mod);
+      }
+      results.push({ loader, build, miss });
+    }
+    const best = results.reduce((a, b) => (b.build.length > a.build.length ? b : a));
+    setMig((m) => (m ? { ...m, checking: false, results, loader: best.loader, name: `${c.name} (${version})` } : m));
+  }
+
+  function confirmMigrate() {
+    if (!mig || !mig.version || !mig.loader || !mig.results) return;
+    const res = mig.results.find((r) => r.loader === mig.loader);
+    if (!res) return;
+    const name = mig.name.trim() || `${mig.collection.name} (${mig.version})`;
+    const created = createCollection(name, res.build.map((m) => m.id));
+    setLoadout(created.id, mig.loader, mig.version);
+    refresh();
+    setMig((m) => (m ? { ...m, done: { name, migrated: res.build.length, dropped: res.miss.map((x) => x.name) } } : m));
+  }
 
   const toggleExpanded = useCallback((id: string) => {
     setExpanded((prev) => {
@@ -309,6 +362,11 @@ export default function Collections() {
 
               <div className="col-actions">
                 {c.modIds.length > 0 && (
+                  <button type="button" className="chip-btn" onClick={() => setMig({ collection: c, version: null, checking: false, results: null, loader: null, name: "", done: null })}>
+                    ⇄ Migrate to another version
+                  </button>
+                )}
+                {c.modIds.length > 0 && (
                   <button type="button" className="chip-btn" onClick={() => openAll(c)}>Open all mod pages</button>
                 )}
                 <button type="button" className="chip-btn" onClick={() => download(`${c.name}.json`, toJSON(c), "application/json")}>Export JSON</button>
@@ -321,6 +379,78 @@ export default function Collections() {
 
         {collections.length > 0 && <ServerCta />}
       </main>
+
+      {mig && (
+        <div className="cmodal-overlay" role="dialog" aria-modal="true" aria-label="Migrate to another version" onClick={() => setMig(null)}>
+          <div className="cmodal migrate-modal" onClick={(e) => e.stopPropagation()}>
+            {mig.done ? (
+              <>
+                <h3>✓ Migrated to {mig.done.name}</h3>
+                <p className="cmodal-sub">
+                  {mig.done.migrated} mod{mig.done.migrated === 1 ? "" : "s"} carried over to {LOADER_LABEL[mig.loader!]} {mig.version}.
+                  {mig.done.dropped.length > 0 && <> {mig.done.dropped.length} couldn&apos;t come along (no build there).</>}
+                </p>
+                {mig.done.dropped.length > 0 && (
+                  <ul className="migrate-dropped">
+                    {mig.done.dropped.map((n) => <li key={n}>{n}</li>)}
+                  </ul>
+                )}
+                <button type="button" className="btn-primary" onClick={() => setMig(null)}>Done</button>
+              </>
+            ) : mig.checking ? (
+              <>
+                <h3>Checking {mig.collection.modIds.length} mods…</h3>
+                <div className="quiz-progress" aria-hidden="true"><i className="migrate-bar" /></div>
+                <p className="cmodal-sub">Testing every mod against each loader on {mig.version} to find where the most of them work.</p>
+              </>
+            ) : !mig.version ? (
+              <>
+                <h3>Migrate “{mig.collection.name}”</h3>
+                <p className="cmodal-sub">
+                  Currently {mig.collection.loader ? `${LOADER_LABEL[mig.collection.loader]} ${mig.collection.gameVersion ?? ""}` : "loader/version unset"}. Pick a Minecraft version to move it to:
+                </p>
+                <ul className="cmodal-list">
+                  {VERSIONS.map((v) => (
+                    <li key={v}>
+                      <button type="button" className="cmodal-row" onClick={() => runMigrateCheck(mig.collection, v)}>
+                        <span className="cmodal-row-name">{v}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <button type="button" className="cmodal-cancel" onClick={() => setMig(null)}>Cancel</button>
+              </>
+            ) : (
+              <>
+                <h3>Move to which loader?</h3>
+                <p className="cmodal-sub">On {mig.version}, here&apos;s how many of your {mig.collection.modIds.length} mods have a build per loader. We recommend the one that keeps the most.</p>
+                <ul className="cmodal-list">
+                  {mig.results!.slice().sort((a, b) => b.build.length - a.build.length).map((r) => (
+                    <li key={r.loader}>
+                      <button
+                        type="button"
+                        className={`cmodal-row${mig.loader === r.loader ? " on" : ""}`}
+                        onClick={() => setMig((m) => (m ? { ...m, loader: r.loader } : m))}
+                      >
+                        <span className="cmodal-row-name">
+                          {LOADER_LABEL[r.loader]}
+                          {r === mig.results!.reduce((a, b) => (b.build.length > a.build.length ? b : a)) && <span className="migrate-rec"> Recommended</span>}
+                        </span>
+                        <span className="cmodal-row-count">{r.build.length} / {r.build.length + r.miss.length} mods</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <div className="cmodal-new">
+                  <input className="cmodal-input" value={mig.name} onChange={(e) => setMig((m) => (m ? { ...m, name: e.target.value } : m))} aria-label="New collection name" placeholder="New collection name" />
+                  <button type="button" className="btn-primary" disabled={!mig.loader} onClick={confirmMigrate}>Migrate</button>
+                </div>
+                <button type="button" className="cmodal-cancel" onClick={() => setMig(null)}>Cancel</button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {upTarget && (
         <button type="button" className="scroll-top" aria-label="Back to this collection" onClick={scrollToCollection}>

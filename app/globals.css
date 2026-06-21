@@ -432,6 +432,16 @@ footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
 .cmodal-new .btn-primary{flex:0 0 auto;font-size:9px;padding:12px 14px;}
 .cmodal-cancel{display:block;margin:6px auto 0;background:none;border:none;color:var(--mute);font-size:12px;text-decoration:underline;cursor:pointer;}
 .cmodal-cancel:hover{color:var(--ink);}
+/* migrate modal extras */
+.migrate-modal{max-width:480px;}
+.cmodal-row.on{border-color:var(--grass);background:#1f1840;}
+.migrate-rec{font-family:var(--pixel);font-size:7px;color:var(--gold);margin-left:8px;letter-spacing:1px;}
+.migrate-dropped{list-style:none;margin:0 0 14px;max-height:160px;overflow-y:auto;border:2px solid #2a2046;background:var(--slot);padding:6px 10px;}
+.migrate-dropped li{font-size:12.5px;color:var(--mute);padding:4px 2px;border-bottom:1px solid #221a3c;}
+.migrate-dropped li:last-child{border-bottom:none;}
+/* indeterminate checking bar */
+.migrate-bar{position:absolute;left:0;top:0;bottom:0;width:35%;background:linear-gradient(var(--grass),var(--grass-dk));box-shadow:inset 0 -3px 0 rgba(0,0,0,.25);animation:migrateslide 1.1s ease-in-out infinite;}
+@keyframes migrateslide{0%{left:-35%;}100%{left:100%;}}
 .explore-search{position:relative;max-width:560px;margin:0 auto 30px;}
 .explore-search-input{width:100%;background:var(--slot);border:2px solid #2a2046;color:var(--ink);font-size:15px;padding:13px 40px 13px 16px;box-shadow:inset 0 2px 0 #0a0718;}
 .explore-search-input:focus{outline:none;border-color:var(--grass);}
