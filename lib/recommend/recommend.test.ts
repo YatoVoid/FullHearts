@@ -60,11 +60,19 @@ describe("score & hard filters", () => {
     expect(score(builder, profile)).toBeGreaterThan(score(fighter, profile));
   });
 
-  it("uses popularity only as a tiebreak", () => {
-    const a = mod({ id: "a", name: "A", curatedTags: { building: 1 }, downloads: 10 });
-    const b = mod({ id: "b", name: "B", curatedTags: { building: 1 }, downloads: 9_000_000 });
-    expect(score(b, profile)).toBeGreaterThan(score(a, profile));
-    expect(score(b, profile) - score(a, profile)).toBeLessThan(0.01);
+  it("meaningfully prefers popular, widely-used mods (but theme still leads)", () => {
+    const obscure = mod({ id: "a", name: "A", curatedTags: { building: 1 }, downloads: 50 });
+    const popular = mod({ id: "b", name: "B", curatedTags: { building: 1 }, downloads: 9_000_000 });
+    // Same theme match -> the widely-used one wins, by a real margin (not a tiebreak).
+    expect(score(popular, profile) - score(obscure, profile)).toBeGreaterThan(0.3);
+    // But a strong theme match beats a popular off-theme-ish one.
+    const strongObscure = mod({ id: "c", name: "C", curatedTags: { building: 2 }, downloads: 50 });
+    expect(score(strongObscure, profile)).toBeGreaterThan(score(popular, profile));
+  });
+
+  it("never ranks an off-theme mod on popularity alone", () => {
+    const offTheme = mod({ id: "z", name: "Z", curatedTags: { combat: 1 }, downloads: 50_000_000 });
+    expect(score(offTheme, profile)).toBe(0); // building profile, no building affinity
   });
 
   it("penalizes heavy mods on low-end hardware", () => {

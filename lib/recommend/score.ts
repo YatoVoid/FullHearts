@@ -2,28 +2,39 @@ import type { Mod } from "@/lib/sources/types";
 import type { Profile } from "@/lib/recommend/profile";
 import { isBlocked } from "@/lib/curation/blocklist";
 
-/** Tiny weight so popularity only breaks ties between equal-affinity mods. */
-const POPULARITY_EPS = 1e-4;
+/** How much a mod's popularity lifts its score. Meaningful — we PREFER widely-used,
+ *  well-maintained mods (they're the most stable / least likely to break a pack) —
+ *  but small enough that a strong theme match still beats a popular off-theme mod. */
+const POPULARITY_WEIGHT = 0.5;
 /** Penalty applied to heavy (non-performance) mods when the user is on low-end hardware. */
 const LOW_END_PENALTY = 0.4;
 
-function popularity(mod: Mod): number {
-  return mod.downloads && mod.downloads > 0 ? Math.log10(mod.downloads + 1) : 0;
+/** 0..1 popularity score from downloads: ~1k -> 0, 100k -> 0.5, 1M -> 0.75, 10M+ -> 1.
+ *  Widely-used mods get a real boost; the obscure long tail (the fragile,
+ *  dependency-breaking mods) sinks below the cut. */
+function popularityBoost(mod: Mod): number {
+  const d = mod.downloads ?? 0;
+  if (d <= 0) return 0;
+  return Math.min(1, Math.max(0, (Math.log10(d) - 3) / 4));
 }
 
 /**
- * score = Σ weight × affinity + ε·popularity (tiebreak).
- * Low-end profiles dock mods that aren't performance/low-end oriented.
+ * score = Σ weight × affinity + POPULARITY_WEIGHT × popularity.
+ * Theme affinity leads; popularity is a strong secondary preference toward the
+ * stable, widely-used mods. Low-end profiles dock heavy (non-perf) mods.
  */
 export function score(mod: Mod, profile: Profile): number {
-  let s = 0;
+  let theme = 0;
   for (const [tag, weight] of Object.entries(profile.weights)) {
     if (weight == null) continue;
     const affinity = mod.curatedTags[tag as keyof typeof mod.curatedTags] ?? 0;
-    s += weight * affinity;
+    theme += weight * affinity;
   }
-  s += POPULARITY_EPS * popularity(mod);
+  // No theme relevance -> not a candidate. (Popularity alone must never pull an
+  // off-theme mod into the loadout.)
+  if (theme <= 0) return 0;
 
+  let s = theme + POPULARITY_WEIGHT * popularityBoost(mod);
   if (profile.lowEnd) {
     const lightweight = (mod.curatedTags.performance ?? 0) > 0 || (mod.curatedTags["low-end"] ?? 0) > 0;
     if (!lightweight) s -= LOW_END_PENALTY;
