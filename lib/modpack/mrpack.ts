@@ -98,6 +98,7 @@ interface MrVersion {
   id: string;
   project_id: string;
   version_type?: "release" | "beta" | "alpha";
+  date_published?: string;
   files: MrVersionFile[];
   dependencies?: MrDependency[];
 }
@@ -138,6 +139,27 @@ export function jarFilenameMcMismatch(v: { files: MrVersionFile[] }, mc: string)
   if (!f) return null;
   const m = f.filename.match(/\+(1\.\d{1,2}(?:\.\d{1,2})?)/); // "+<mcversion>" build metadata
   return m && m[1] !== mc ? m[1] : null;
+}
+
+type EraVersion = { version_type?: "release" | "beta" | "alpha"; date_published?: string; files: MrVersionFile[] };
+
+/**
+ * From a project's versions (newest first), pick the build from the DEPENDENT's
+ * era: the newest release published on/before `before` (+14d grace); else the
+ * newest non-alpha in that window; else (every build is newer than the dependent)
+ * the oldest build. `before` empty → newest. Pure. This is what stops an old
+ * mod (IceAndFire CE 1.1.1, 2025) from being paired with a much-newer library
+ * build (Uranus 2.4.1, 2026) that removed the class it needs.
+ */
+export function pickEraVersion<T extends EraVersion>(versions: T[], before?: string): T | null {
+  const withFile = versions.filter((v) => fileEntryFromVersion(v));
+  if (withFile.length === 0) return null;
+  if (!before) return withFile.find((v) => v.version_type === "release") ?? withFile[0];
+  const ceiling = new Date(before).getTime() + 14 * 24 * 60 * 60 * 1000;
+  const inEra = withFile.filter((v) => v.date_published && new Date(v.date_published).getTime() <= ceiling);
+  const pick = inEra.find((v) => v.version_type === "release") ?? inEra.find((v) => v.version_type !== "alpha") ?? inEra[0];
+  if (pick) return pick;
+  return [...withFile].reverse().find((v) => v.version_type === "release") ?? withFile[withFile.length - 1] ?? null;
 }
 
 /** Build the modrinth.index.json object. Pure. */
@@ -462,6 +484,7 @@ function chooseDrop(a: string, b: string, dependedUpon: Set<string>, selected: S
 type WorkItem =
   | { kind: "mod"; mod: Mod }
   | { kind: "project"; id: string }
+  | { kind: "datedProject"; id: string; before?: string } // dep capped to the dependent's era
   | { kind: "version"; id: string }
   | { kind: "resolved"; version: MrVersion }; // already-fetched (a discovered undeclared dep)
 
@@ -525,9 +548,20 @@ export async function buildMrpack(opts: {
     }
   }
 
+  // Resolve a required dependency that has no pinned version, capping it to the
+  // DEPENDENT's era: a dependency released well after the dependent can't have
+  // been built against it (IceAndFire CE 1.1.1 from 2025 + the newest Uranus 2.4.1
+  // from 2026 = NoClassDefFoundError). Same-dev paired mods are the usual victims.
+  async function resolveDatedDep(id: string, before?: string): Promise<MrVersion | null> {
+    if (!before) return resolveVersionByProject(id, opts.loader, opts.mcVersion);
+    const versions = await listVersionsByProject(id, opts.loader, opts.mcVersion); // newest first
+    return pickEraVersion(versions, before) ?? resolveVersionByProject(id, opts.loader, opts.mcVersion);
+  }
+
   async function resolve(item: WorkItem): Promise<MrVersion | null> {
     if (item.kind === "mod") return resolveVersionByProject(item.mod.modrinthSlug ?? item.mod.id, opts.loader, opts.mcVersion);
     if (item.kind === "project") return resolveVersionByProject(item.id, opts.loader, opts.mcVersion);
+    if (item.kind === "datedProject") return resolveDatedDep(item.id, item.before);
     if (item.kind === "resolved") return item.version;
     return resolveVersionById(item.id);
   }
@@ -567,7 +601,7 @@ export async function buildMrpack(opts: {
             if (!requested.has(key)) { requested.add(key); next.push({ kind: "version", id: dep.version_id }); }
           } else if (dep.project_id && !resolvedByProject.has(dep.project_id)) {
             const key = `p:${dep.project_id}`;
-            if (!requested.has(key)) { requested.add(key); next.push({ kind: "project", id: dep.project_id }); }
+            if (!requested.has(key)) { requested.add(key); next.push({ kind: "datedProject", id: dep.project_id, before: version.date_published }); }
           }
         }
       }

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { fileEntryFromVersion, buildIndex, buildMrpack, resolveBuildable, jarFilenameMcMismatch } from "@/lib/modpack/mrpack";
+import { fileEntryFromVersion, buildIndex, buildMrpack, resolveBuildable, jarFilenameMcMismatch, pickEraVersion } from "@/lib/modpack/mrpack";
 import type { Mod } from "@/lib/sources/types";
 
 function file(filename: string) {
@@ -49,6 +49,25 @@ describe("jarFilenameMcMismatch", () => {
   it("passes a matching or unmarked jar", () => {
     expect(jarFilenameMcMismatch(v("create-0.5.1+1.20.1.jar"), "1.20.1")).toBeNull();
     expect(jarFilenameMcMismatch(v("sodium-fabric-0.5.3.jar"), "1.21.1")).toBeNull();
+  });
+});
+
+describe("pickEraVersion", () => {
+  const v = (filename: string, date: string, type: "release" | "beta" | "alpha" = "release") =>
+    ({ version_type: type, date_published: date, files: [file(filename)] });
+  // Uranus builds, newest first.
+  const uranus = [v("uranus-2.4.1.jar", "2026-04-29T00:00:00Z"), v("uranus-2.3.2.jar", "2025-08-23T00:00:00Z")];
+
+  it("picks the build from the dependent's era, not a much-newer one", () => {
+    // IceAndFire CE 1.1.1 (2025-08) -> Uranus 2.3.2 (2025-08), NOT 2.4.1 (2026-04).
+    expect(pickEraVersion(uranus, "2025-08-20T00:00:00Z")?.files[0].filename).toBe("uranus-2.3.2.jar");
+  });
+  it("picks the newest when the dependent is current (newest dep is in-era)", () => {
+    expect(pickEraVersion(uranus, "2026-05-01T00:00:00Z")?.files[0].filename).toBe("uranus-2.4.1.jar");
+    expect(pickEraVersion(uranus)?.files[0].filename).toBe("uranus-2.4.1.jar"); // no date -> newest
+  });
+  it("falls back to the oldest build when every build is newer than the dependent", () => {
+    expect(pickEraVersion(uranus, "2024-01-01T00:00:00Z")?.files[0].filename).toBe("uranus-2.3.2.jar");
   });
 });
 
