@@ -30,7 +30,12 @@ const BLOCKED: Record<string, BlockRule> = {
   "first-person-model": { loaders: ["forge", "neoforge"] },
   "trender": { loaders: ["forge", "neoforge"] },
   "transition": { loaders: ["forge", "neoforge"] },
-  "runelic": { loaders: ["forge", "neoforge"], versions: ["1.21.1", "1.21"] }
+  "runelic": { loaders: ["forge", "neoforge"], versions: ["1.21.1", "1.21"] },
+  // IceAndFire CE 1.1.1 (newest release on 1.21/1.21.1) requires Uranus but only
+  // declares "[2,)" — and the ONE Uranus build it actually works with (2.4.0) is
+  // indistinguishable from the broken ones (2.3.1 too old, 2.4.1 too new). No
+  // metadata signal can resolve it, so excluding it beats shipping a guaranteed crash.
+  "iceandfire-ce": { loaders: ["forge", "neoforge"], versions: ["1.21.1", "1.21"] }
 };
 
 /**
