@@ -713,9 +713,12 @@ export async function buildMrpack(opts: {
     }
     await readManifests(); // manifests for anything added in the final pass
 
-    // Fold manifest-declared required deps into the edge graph: real project ids
-    // when we could map the modid, a "missing:" placeholder (always unresolved,
-    // so the dependent drops) when we couldn't.
+    // Fold manifest-declared required deps into the edge graph when we could map
+    // the modid to a real, separate Modrinth project. A modid we CAN'T map is
+    // almost always a jar-in-jar BUNDLED library (already inside the mod) or a
+    // renamed/soft requirement — NOT actually missing — so we must NOT drop the
+    // mod for it (that was wrongly excluding tons of Fabric mods that bundle their
+    // libs). Real separate-download deps are covered by the Modrinth dep closure.
     for (const [pid, info] of manifestByProject) {
       for (const req of info.requires) {
         const childPid = projectByModId.get(req.id);
@@ -723,10 +726,6 @@ export async function buildMrpack(opts: {
           dependedUpon.add(childPid);
           requiredEdges.push([pid, childPid]);
           manifestRangeEdges.push({ parent: pid, modid: req.id, range: req.range });
-        } else {
-          const placeholder = `missing:${req.id}`;
-          dependedUpon.add(placeholder);
-          requiredEdges.push([pid, placeholder]);
         }
       }
     }

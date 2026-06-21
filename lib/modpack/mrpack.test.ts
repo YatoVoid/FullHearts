@@ -251,6 +251,29 @@ describe("buildMrpack dependency closure", () => {
     expect(depCount).toBe(1); // obscure_api auto-pulled from the manifest
   });
 
+  it("does NOT drop a mod for an unmappable manifest dep (jar-in-jar bundled lib)", async () => {
+    // Many Fabric mods bundle their libs and still declare them required in the
+    // manifest. An unmappable modid is bundled, not missing — keep the mod.
+    const m = { id: "vM", project_id: "M", version_type: "release", files: [file("mymod.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/project/mymod/version")) return jsonRes([m]);
+      return jsonRes([]); // "bundledlib" resolves/searches to nothing
+    }));
+    const manifests: Record<string, unknown> = {
+      M: { version: "1.0", provides: ["mymod"], requires: [{ id: "bundledlib", range: "*" }] }
+    };
+    const inspectJars = async (jobs: { key: string; url: string }[]) =>
+      Object.fromEntries(jobs.map((j) => [j.key, manifests[j.key] ?? null]));
+
+    const { included, skipped } = await buildMrpack({
+      name: "t", mods: [modStub("mymod")], loader: "fabric", mcVersion: "1.20.1", inspectJars: inspectJars as never
+    });
+
+    expect(included.map((mm) => mm.id)).toEqual(["mymod"]);
+    expect(skipped).toHaveLength(0);
+  });
+
   it("swaps a dependency to a version inside the dependent's range", async () => {
     // estrogen needs create [0.5.1,6.0.0); newest create is 6.0.8 -> must downgrade.
     const est = { id: "vE", project_id: "EST", version_type: "release", files: [file("estrogen.jar")], dependencies: [{ project_id: "CREATE", version_id: null, dependency_type: "required" }] };
