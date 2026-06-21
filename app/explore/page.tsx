@@ -98,12 +98,21 @@ export default function Explore() {
   const sections = useMemo(() => buildSections(pool), [pool]);
 
   const term = query.trim().toLowerCase();
+  // Tokenized, punctuation-agnostic match: every word must appear somewhere in
+  // name+summary, in any order. So "create new age" finds "Create: New Age"
+  // (exact-substring search was too strict — the colon broke it).
+  const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ");
+  const queryWords = normalize(term).split(" ").filter(Boolean);
   const matches = useMemo(() => {
-    if (!term) return null;
+    if (queryWords.length === 0) return null;
     return pool
-      .filter((m) => m.name.toLowerCase().includes(term) || (m.summary ?? "").toLowerCase().includes(term))
+      .filter((m) => {
+        const hay = normalize(`${m.name} ${m.summary ?? ""}`);
+        return queryWords.every((w) => hay.includes(w));
+      })
       .sort((a, b) => (b.downloads ?? 0) - (a.downloads ?? 0));
-  }, [term, pool]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryWords.join(" "), pool]);
 
   // Live Modrinth fallback: find specific mods our library doesn't have.
   useEffect(() => {
