@@ -296,17 +296,14 @@ async function resolveVersionByProject(idOrSlug: string, loader: Loader, mc: str
   try {
     const versions = (await fetchJSON(url)) as MrVersion[];
     if (!Array.isArray(versions) || versions.length === 0) return null;
-    // Prefer the newest STABLE release (versions are date-desc).
+    // Prefer the newest STABLE release, then newest BETA, then anything (alpha/
+    // snapshot). The user opted to allow mods that only ship unstable builds —
+    // many legit mods (Biomes O' Plenty, Create addons, cozy mods) live on beta,
+    // and a few only have alpha; shipping the newest build beats excluding them.
     const release = versions.find((v) => v.version_type === "release");
     if (release) return release;
-    // No release: accept the newest BETA. Tons of legit, popular content mods
-    // (Biomes O' Plenty, Create addons, Farmer's-Delight add-ons, cozy mods) only
-    // ship beta builds on Forge yet run fine — excluding them all gutted themed
-    // packs. We still refuse ALPHA on Forge/NeoForge (genuinely experimental, the
-    // crash-prone SNAPSHOT ports); Fabric/Quilt fall back to anything as before.
     const beta = versions.find((v) => v.version_type === "beta");
     if (beta) return beta;
-    if (loader === "forge" || loader === "neoforge") return null;
     return versions[0];
   } catch {
     return null;
