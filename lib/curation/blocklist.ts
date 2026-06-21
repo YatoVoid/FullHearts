@@ -44,7 +44,13 @@ const BLOCKED: Record<string, BlockRule> = {
   // Shoulder Surfing Reloaded's legacy FORGE 1.21.x port crashes (mixin/code
   // mismatch) — its primary, tested build for 1.21.x is NeoForge. Block the Forge
   // port only; it's fine on NeoForge and on older Forge.
-  "shoulder-surfing-reloaded": { loaders: ["forge"], versions: ["1.21.1", "1.21"] }
+  "shoulder-surfing-reloaded": { loaders: ["forge"], versions: ["1.21.1", "1.21"] },
+  // Let's Do Addon: Photographers has ONE abandoned build (1.0.0, Sep 2024) built
+  // against Meadow ~1.3.19. Its manifest range nominally allows newer Meadow, but
+  // current Meadow (1.3.25+) changed internals and the addon crashes against it.
+  // Downgrading the shared Meadow to match would break every other mod that wants
+  // it current, and there's no newer Photographers to update to. Block the addon.
+  "lets-do-photographers": { loaders: ["fabric", "quilt"] }
 };
 
 /**

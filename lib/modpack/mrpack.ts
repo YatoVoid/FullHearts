@@ -3,7 +3,7 @@ import type { Loader, Mod } from "@/lib/sources/types";
 import { extractManifestDeps, type ManifestInfo } from "@/lib/modpack/manifest";
 import { satisfies } from "@/lib/modpack/range";
 import { searchModrinthQuery } from "@/lib/sources/modrinth";
-import { isBlockedDep } from "@/lib/curation/blocklist";
+import { isBlocked, isBlockedDep } from "@/lib/curation/blocklist";
 
 /** Reads jar manifests (keyed by immutable jar URL) for a given loader. */
 export type JarInspector = (jobs: { key: string; url: string }[], loader?: Loader) => Promise<Record<string, ManifestInfo | null>>;
@@ -341,6 +341,7 @@ async function resolveVersionById(versionId: string): Promise<MrVersion | null> 
  * accepting a mod that won't actually run on the chosen loader + version.
  */
 export async function modBuildsFor(mod: Mod, loader: Loader, mc: string): Promise<boolean> {
+  if (isBlocked(mod, loader, mc)) return false;
   const v = await resolveVersionByProject(mod.modrinthSlug ?? mod.id, loader, mc);
   return Boolean(v && fileEntryFromVersion(v));
 }
@@ -441,6 +442,10 @@ export async function resolveBuildable(mods: Mod[], loader: Loader, mc: string):
   const buildable: Mod[] = [];
   const excluded: { mod: Mod; reason: string }[] = [];
   for (const mod of mods) {
+    if (isBlocked(mod, loader, mc)) {
+      excluded.push({ mod, reason: `known to crash on ${loaderLabel} ${mc}` });
+      continue;
+    }
     const pid = modProject.get(mod) ?? null;
     if (!pid || !resolved.get(pid)) {
       excluded.push({ mod, reason: `no ${loaderLabel} ${mc} file on Modrinth` });
@@ -535,14 +540,21 @@ export async function buildMrpack(opts: {
   // private library with its mod's era. ISO dates compare lexicographically.
   const depCeiling = new Map<string, string>();
 
-  let queue: WorkItem[] = opts.mods.map((mod) => ({ kind: "mod", mod }));
+  // Drop top-level mods on a loader/version they crash on (known-bad, no metadata
+  // signal — same denylist the quiz uses). Mods added straight from Explore skip
+  // quiz scoring, so this is the only place a blocked SELECTED mod gets caught.
+  const buildable = opts.mods.filter((m) => {
+    if (isBlocked(m, opts.loader, opts.mcVersion)) { skipped.push(m); return false; }
+    return true;
+  });
+  let queue: WorkItem[] = buildable.map((mod) => ({ kind: "mod", mod }));
 
   // Bulletproof a few dependencies that mods declare ONLY in their jar manifest
   // (Modrinth lists none) or via a modid whose slug differs — so they're always
   // pulled. Resolved like any other project, i.e. at the right build for the
   // chosen loader + Minecraft version, "no matter the version". Add to this map
   // as new always-missing deps surface.
-  for (const mod of opts.mods) {
+  for (const mod of buildable) {
     const slug = (mod.modrinthSlug ?? mod.id).toLowerCase();
     for (const dep of FORCE_DEPS[slug] ?? []) {
       const key = `p:${dep}`;
