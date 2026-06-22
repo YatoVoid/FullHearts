@@ -10,22 +10,28 @@
  * versions, so "modern = major >= 6" is enough. Revisit if a Create 7 lands.
  */
 
-/** Leading "X.Y" major of a version string ("6.0.8.1+build" -> 6, "0.5.1-j" -> 0). */
-export function verMajor(v: string): number {
-  const m = (v || "").match(/(\d+)\.\d+/);
-  return m ? parseInt(m[1], 10) : 0;
+/** True if a "X.Y[...]" version token is on Create's MODERN (6.0.x) line rather
+ *  than legacy (0.5.x). Create's Fabric port numbers the modern line two ways that
+ *  both show up in the wild: Modrinth tags it "6.0.8" while many addons declare the
+ *  requirement as "0.6.8" — so BOTH `6.x` and `0.6+` mean modern; `0.5.x` and below
+ *  (and open "*") mean legacy. */
+function modernToken(token: string | undefined): boolean {
+  if (!token) return false;
+  const m = token.match(/(\d+)\.(\d+)/);
+  if (!m) return false;
+  const major = parseInt(m[1], 10);
+  const minor = parseInt(m[2], 10);
+  return major >= 6 || (major === 0 && minor >= 6);
 }
 
-/** Major a dependency range was built against. "*"/empty = the 0.5 era (it predates
- *  Create 6); otherwise the first "X.Y" token's major (">=6.0.7" -> 6). */
-export function rangeMajor(range: string): number {
-  if (!range || range.trim() === "*") return 0;
-  const m = range.match(/(\d+)\.\d+/);
-  return m ? parseInt(m[1], 10) : 0;
-}
+/** Is this resolved Create build on the modern line? ("6.0.8.1+build" -> true). */
+export const isModernVersion = (v: string): boolean => modernToken(v);
 
-export const isModernVersion = (v: string): boolean => verMajor(v) >= 6;
-export const isModernRange = (range: string): boolean => rangeMajor(range) >= 6;
+/** Is this addon's declared Create range targeting the modern line? Open ("*"/empty)
+ *  predates Create 6, so it's legacy; otherwise the range's lower-bound token decides
+ *  (">=0.6.8" and ">=6.0.7" -> modern, ">=0.5.1" -> legacy). */
+export const isModernRange = (range: string): boolean =>
+  range && range.trim() !== "*" ? modernToken(range) : false;
 
 /** Which Create line to standardize on: the one MORE selected addons target.
  *  Ties go to the modern (6.x) line — it's where the ecosystem is heading. */
