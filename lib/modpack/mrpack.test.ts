@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { fileEntryFromVersion, buildIndex, buildMrpack, resolveBuildable, jarFilenameMcMismatch, pickEraVersion } from "@/lib/modpack/mrpack";
+import { fileEntryFromVersion, buildIndex, buildMrpack, resolveBuildable, jarFilenameMcMismatch, pickEraVersion, __resetCaches } from "@/lib/modpack/mrpack";
 import type { Mod } from "@/lib/sources/types";
 
 function file(filename: string) {
@@ -12,7 +12,7 @@ function jsonRes(data: unknown) {
   return { ok: true, json: async () => data } as Response;
 }
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => { vi.restoreAllMocks(); __resetCaches(); });
 
 describe("fileEntryFromVersion", () => {
   const version = {
@@ -277,8 +277,8 @@ describe("buildMrpack dependency closure", () => {
   it("swaps a dependency to a version inside the dependent's range", async () => {
     // estrogen needs create [0.5.1,6.0.0); newest create is 6.0.8 -> must downgrade.
     const est = { id: "vE", project_id: "EST", version_type: "release", files: [file("estrogen.jar")], dependencies: [{ project_id: "CREATE", version_id: null, dependency_type: "required" }] };
-    const create6 = { id: "vC6", project_id: "CREATE", version_type: "release", files: [file("create-6.jar")], dependencies: [] };
-    const create05 = { id: "vC05", project_id: "CREATE", version_type: "release", files: [file("create-05.jar")], dependencies: [] };
+    const create6 = { id: "vC6", project_id: "CREATE", version_number: "6.0.8", version_type: "release", files: [file("create-6.jar")], dependencies: [] };
+    const create05 = { id: "vC05", project_id: "CREATE", version_number: "0.5.1", version_type: "release", files: [file("create-05.jar")], dependencies: [] };
     vi.stubGlobal("fetch", vi.fn(async (url: string) => {
       if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
       if (url.includes("/project/estrogen/version")) return jsonRes([est]);
@@ -334,7 +334,7 @@ describe("buildMrpack dependency closure", () => {
 
   it("drops the dependent when no dependency version satisfies its range", async () => {
     const est = { id: "vE", project_id: "EST", version_type: "release", files: [file("estrogen.jar")], dependencies: [{ project_id: "CREATE", version_id: null, dependency_type: "required" }] };
-    const create6 = { id: "vC6", project_id: "CREATE", version_type: "release", files: [file("create-6.jar")], dependencies: [] };
+    const create6 = { id: "vC6", project_id: "CREATE", version_number: "6.0.8", version_type: "release", files: [file("create-6.jar")], dependencies: [] };
     vi.stubGlobal("fetch", vi.fn(async (url: string) => {
       if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
       if (url.includes("/project/estrogen/version")) return jsonRes([est]);
@@ -353,6 +353,41 @@ describe("buildMrpack dependency closure", () => {
     });
     expect(included).toHaveLength(0);
     expect(skipped.map((m) => m.id)).toEqual(["estrogen"]);
+  });
+
+  it("pins Create to the era keeping the most addons and drops the off-line minority", async () => {
+    // deco + slice want Create 0.5 (open "*" range); newage wants 6.x. Majority is
+    // the 0.5 line -> Create pinned 0.5.1, deco+slice kept, newage dropped — even
+    // though "*"/numeric satisfies() would wrongly accept 6.0.8 for the 0.5 addons.
+    const mk = (id: string, pid: string, fn: string) => ({ id, project_id: pid, version_type: "release", files: [file(fn)], dependencies: [{ project_id: "CREATE", version_id: null, dependency_type: "required" }] });
+    const deco = mk("vD", "DECO", "deco.jar");
+    const slice = mk("vS", "SLICE", "slice.jar");
+    const newage = mk("vN", "NEWAGE", "newage.jar");
+    const create6 = { id: "vC6", project_id: "CREATE", version_number: "6.0.8.1", version_type: "release", files: [file("create-6.jar")], dependencies: [] };
+    const create05 = { id: "vC05", project_id: "CREATE", version_number: "0.5.1-j", version_type: "release", files: [file("create-05.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/project/create-deco/version")) return jsonRes([deco]);
+      if (url.includes("/project/slice-and-dice/version")) return jsonRes([slice]);
+      if (url.includes("/project/create-new-age/version")) return jsonRes([newage]);
+      if (url.includes("/project/CREATE/version")) return jsonRes([create6, create05]); // newest first
+      return jsonRes([]);
+    }));
+    const manifests: Record<string, unknown> = {
+      "https://cdn/deco.jar": { version: "2.1.1", provides: ["createdeco"], requires: [{ id: "create", range: ">=0.5.1" }] },
+      "https://cdn/slice.jar": { version: "3.3.1", provides: ["sliceanddice"], requires: [{ id: "create", range: "*" }] },
+      "https://cdn/newage.jar": { version: "1.2.0", provides: ["create_new_age"], requires: [{ id: "create", range: ">=6.0.8" }] },
+      "https://cdn/create-6.jar": { version: "6.0.8.1", provides: ["create"], requires: [] },
+      "https://cdn/create-05.jar": { version: "0.5.1-j", provides: ["create"], requires: [] }
+    };
+    const inspectJars = async (jobs: { key: string; url: string }[]) =>
+      Object.fromEntries(jobs.map((j) => [j.key, manifests[j.url] ?? null]));
+
+    const { included, skipped } = await buildMrpack({
+      name: "t", mods: [modStub("create-deco"), modStub("slice-and-dice"), modStub("create-new-age")], loader: "fabric", mcVersion: "1.20.1", inspectJars: inspectJars as never
+    });
+    expect(included.map((m) => m.id).sort()).toEqual(["create-deco", "slice-and-dice"]);
+    expect(skipped.map((m) => m.id)).toEqual(["create-new-age"]);
   });
 
   it("drops a mod whose jar manifest doesn't support the target Minecraft version", async () => {

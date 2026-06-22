@@ -4,6 +4,7 @@ import { extractManifestDeps, type ManifestInfo } from "@/lib/modpack/manifest";
 import { satisfies } from "@/lib/modpack/range";
 import { searchModrinthQuery } from "@/lib/sources/modrinth";
 import { isBlocked, isBlockedDep } from "@/lib/curation/blocklist";
+import { preferModern, isModernVersion, isModernRange } from "@/lib/modpack/create-era";
 
 /** Reads jar manifests (keyed by immutable jar URL) for a given loader. */
 export type JarInspector = (jobs: { key: string; url: string }[], loader?: Loader) => Promise<Record<string, ManifestInfo | null>>;
@@ -97,6 +98,7 @@ interface MrDependency {
 interface MrVersion {
   id: string;
   project_id: string;
+  version_number?: string;
   version_type?: "release" | "beta" | "alpha";
   date_published?: string;
   files: MrVersionFile[];
@@ -191,6 +193,14 @@ const responseCache = new Map<string, unknown>();
 // an unchanged collection downloads instantly instead of re-validating.
 const buildResultCache = new Map<string, MrpackResult>();
 
+/** Test-only: drop the per-session caches so each test starts clean (the module
+ *  caches are deliberately process-lived in production). */
+export function __resetCaches(): void {
+  responseCache.clear();
+  buildResultCache.clear();
+  clientManifestCache.clear();
+}
+
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** Fetch JSON, caching results and backing off once on a 429 to stay a good
@@ -249,6 +259,16 @@ const MODID_TO_SLUG: Record<string, string> = {
   prism: "prism-lib"
 };
 
+// Projects whose Fabric/Quilt port lives in a SEPARATE Modrinth project. On those
+// loaders the base project has ZERO builds, so a selected "create" (or an addon's
+// declared dep on it) silently vanishes — keyed by slug AND project id so both the
+// user's pick and addons' dep edges redirect to the port. Create's Fabric port is
+// `create-fabric` (the `create` project, id LNytGWDc, is Forge/NeoForge only).
+const FABRIC_PORT: Record<string, string> = {
+  create: "create-fabric",
+  LNytGWDc: "create-fabric"
+};
+
 /** Forge/NeoForge loader version live from our server route (CORS-blocked client
  *  side, so it can't be fetched directly). Used for any MC version not in the
  *  pinned map. */
@@ -289,6 +309,9 @@ export async function resolveLoaderVersion(loader: Loader, mc: string): Promise<
 
 /** Newest version of a project matching loader + game version, or null. */
 async function resolveVersionByProject(idOrSlug: string, loader: Loader, mc: string): Promise<MrVersion | null> {
+  if (loader === "fabric" || loader === "quilt") {
+    idOrSlug = FABRIC_PORT[idOrSlug] ?? idOrSlug; // slugs are lowercase, ids case-exact
+  }
   const url =
     `${API}/project/${encodeURIComponent(idOrSlug)}/version` +
     `?loaders=${encodeURIComponent(JSON.stringify([loader]))}` +
@@ -312,6 +335,9 @@ async function resolveVersionByProject(idOrSlug: string, loader: Loader, mc: str
 
 /** All loader+mc versions of a project, newest first (for range reconciliation). */
 async function listVersionsByProject(idOrSlug: string, loader: Loader, mc: string): Promise<MrVersion[]> {
+  if (loader === "fabric" || loader === "quilt") {
+    idOrSlug = FABRIC_PORT[idOrSlug] ?? idOrSlug; // slugs are lowercase, ids case-exact
+  }
   const url =
     `${API}/project/${encodeURIComponent(idOrSlug)}/version` +
     `?loaders=${encodeURIComponent(JSON.stringify([loader]))}` +
@@ -770,9 +796,37 @@ export async function buildMrpack(opts: {
   const loaderOk = (info?: ManifestInfo | null) => !info?.loaderRange || satisfies(loaderVersion, info.loaderRange);
   const loaderDeadProviders = new Set<string>();
 
+  // ---- Create 0.5 vs 6.0 era reconciliation --------------------------------
+  // Create's Fabric port has two incompatible major lines on one MC version, and
+  // 0.5-era addons declare open ranges that satisfies() wrongly accepts for 6.0.8.
+  // Pick the Create line that keeps the MOST selected addons; drop the minority
+  // stuck on the other line (the standard drop+report path handles them).
+  const createPid = projectByModId.get("create");
+  let createEraHandled = false;
+  if (createPid && rangesByProvider.has(createPid)) {
+    try {
+      const reqs = rangesByProvider.get(createPid)!;
+      const targetModern = preferModern(reqs.map((r) => r.range));
+      const builds = await listVersionsByProject(createPid, opts.loader, opts.mcVersion);
+      const pick = builds.find((v) => isModernVersion(v.version_number ?? "") === targetModern && fileEntryFromVersion(v));
+      if (pick) {
+        resolvedByProject.set(createPid, pick);
+        const got = await inspect([{ key: pick.id, url: jarUrl(pick) ?? "" }].filter((j) => j.url), opts.loader);
+        if (got[pick.id]) manifestByProject.set(createPid, got[pick.id]!);
+        for (const r of reqs) if (isModernRange(r.range) !== targetModern) rangeBrokenDependents.add(r.parent);
+        createEraHandled = true;
+      }
+      // No build on the wanted line -> leave it to generic satisfies() below, which
+      // catches bounded ranges (e.g. estrogen "[0.5.1,6.0.0)") and drops what can't fit.
+    } catch {
+      // best-effort; fall through to generic reconciliation
+    }
+  }
+
   report(86, "Reconciling dependency versions…");
   try {
     for (const [providerPid, reqs] of rangesByProvider) {
+      if (providerPid === createPid && createEraHandled) continue; // era reconciliation above settled it
       const curInfo = manifestByProject.get(providerPid);
       const cur = curInfo?.version ?? "";
       // Already good: loader-compatible AND satisfies every dependent's range.
