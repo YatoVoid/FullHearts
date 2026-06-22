@@ -13,6 +13,7 @@ import { recommendedVersion, type Coverage } from "@/lib/catalog/coverage";
 import snapshotCoverage from "@/lib/catalog/coverage.snapshot.json";
 import { buildMrpack } from "@/lib/modpack/mrpack";
 import DownloadPack from "@/components/DownloadPack";
+import { MODRINTH_DOWN_TITLE, MODRINTH_DOWN_BODY } from "@/components/LuckyButton";
 import { ensureCollection, createCollection, listCollections, addMod, setLoadout, type Collection } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
 import { loadPool, isDegraded } from "@/lib/catalog/clientPool";
@@ -42,7 +43,7 @@ const HEART = (
   />
 );
 
-type Status = "loading" | "ready" | "empty" | "no-answers" | "error";
+type Status = "loading" | "ready" | "empty" | "no-answers" | "error" | "down";
 
 function loadAnswers(): QuizAnswers | null {
   try {
@@ -212,10 +213,10 @@ export default function Results() {
 
         const max = rec.profile.maxMods;
         if (deg) {
-          // Live data is down — can't verify buildability, so show the ranked
-          // candidates as-is (old behavior) rather than excluding everything.
-          setResults(rec.results.slice(0, max));
-          setStatus(rec.results.length > 0 ? "ready" : "empty");
+          // Modrinth's live data is down — we CAN'T verify a single mod builds or
+          // resolve its dependencies, so we refuse to show or download an
+          // unverified pack. Be honest and tell the user it's Modrinth, not them.
+          setStatus("down");
           return;
         }
 
@@ -335,6 +336,18 @@ export default function Results() {
           <p className="results-state">
             We couldn&apos;t reach the mod data. Please <Link href="/quiz" style={{ color: "var(--grass)" }}>try again</Link>.
           </p>
+        )}
+
+        {status === "down" && (
+          <div className="data-down" role="status" aria-live="polite">
+            <div className="data-down-emoji" aria-hidden="true">🔌</div>
+            <h2>{MODRINTH_DOWN_TITLE}</h2>
+            <p>{MODRINTH_DOWN_BODY}</p>
+            <div className="results-actions" style={{ justifyContent: "center" }}>
+              <button type="button" className="btn-primary" onClick={() => window.location.reload()}>Try again</button>
+              <Link className="btn-ghost" href="/collections">View your collections</Link>
+            </div>
+          </div>
         )}
 
         {status === "empty" && (

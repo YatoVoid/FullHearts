@@ -8,6 +8,7 @@ import { useCollectionTarget } from "@/lib/storage/useCollectionTarget";
 import { loadPool } from "@/lib/catalog/clientPool";
 import { searchModrinthQuery, fetchModsBySlugs } from "@/lib/sources/modrinth";
 import { modBuildsFor } from "@/lib/modpack/mrpack";
+import LuckyButton from "@/components/LuckyButton";
 import { isHighQuality } from "@/lib/catalog/quality";
 import { type ModFilter, DEFAULT_FILTER, loadFilter, saveFilter, matchesFilter, versionOptions } from "@/lib/catalog/filter";
 import { HEART_SRC } from "@/lib/asset";
@@ -259,7 +260,7 @@ export default function Explore() {
         </div>
 
         <div className="lucky-bar">
-          <Link className="btn-primary" href="/results?lucky=1">🎲 I&apos;m feeling lucky</Link>
+          <LuckyButton className="btn-primary" />
         </div>
 
         {status === "ready" && (

@@ -4,6 +4,7 @@ import { QUESTIONS } from "@/lib/curation/questions";
 import { CATALOG } from "@/lib/curation/catalog";
 import { HEART_SRC } from "@/lib/asset";
 import DescribeBox from "@/components/DescribeBox";
+import LuckyButton from "@/components/LuckyButton";
 
 const HEART = (
   <img
@@ -60,7 +61,7 @@ export default function Home() {
           <div className="hero-actions">
             <Link className="btn-primary" href="/quiz">Build my loadout</Link>
             <Link className="btn-ghost" href="/explore">Browse mods</Link>
-            <Link className="btn-ghost" href="/results?lucky=1">🎲 Feeling lucky</Link>
+            <LuckyButton className="btn-ghost" />
           </div>
           <div className="xpbar"><i className="xpfill" /></div>
           <div className="xplabel">NO ACCOUNT · SAVED IN YOUR BROWSER</div>

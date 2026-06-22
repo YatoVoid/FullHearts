@@ -56,3 +56,24 @@ export function loadPool(opts: PoolOpts = {}): Promise<Mod[]> {
 export function isDegraded(mods: Mod[]): boolean {
   return mods.length > 0 && !mods.some((m) => m.links.modrinth);
 }
+
+// One cheap liveness probe so entry points (the 🎲 lucky button, the results
+// page) can be honest when Modrinth's API is unreachable: we can't build or
+// verify a pack without it, and we won't ship one we can't verify. An "up"
+// result is cached for the session (no spam); a "down" result is forgotten so
+// the next check re-probes and the page recovers on its own once the API is back.
+let upProbe: Promise<boolean> | null = null;
+export function isModrinthUp(): Promise<boolean> {
+  if (upProbe) return upProbe;
+  const p = (async () => {
+    try {
+      const r = await fetch("https://api.modrinth.com/v2/search?limit=1", { signal: AbortSignal.timeout(7000) });
+      return r.ok;
+    } catch {
+      return false;
+    }
+  })();
+  upProbe = p;
+  p.then((ok) => { if (!ok) upProbe = null; }).catch(() => { upProbe = null; });
+  return p;
+}
