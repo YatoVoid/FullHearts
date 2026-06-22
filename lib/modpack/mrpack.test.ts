@@ -390,6 +390,43 @@ describe("buildMrpack dependency closure", () => {
     expect(skipped.map((m) => m.id)).toEqual(["create-new-age"]);
   });
 
+  it("when modern Create wins, drops the legacy create-deco (the AllMountedStorageTypes crash)", async () => {
+    // 3 modern (incl. ore-excavation declaring the modern line as 0.6.8) vs 1 legacy
+    // -> Create pinned 6.0.8, create-deco dropped instead of crashing on a 0.5 class.
+    const mk = (id: string, pid: string, fn: string) => ({ id, project_id: pid, version_type: "release", files: [file(fn)], dependencies: [{ project_id: "CREATE", version_id: null, dependency_type: "required" }] });
+    const deco = mk("vD", "DECO", "deco.jar");
+    const ore = mk("vO", "ORE", "ore.jar");
+    const addn = mk("vA", "ADDN", "addn.jar");
+    const newage = mk("vN", "NEWAGE", "newage.jar");
+    const create6 = { id: "vC6", project_id: "CREATE", version_number: "6.0.8.1", version_type: "release", files: [file("create-6.jar")], dependencies: [] };
+    const create05 = { id: "vC05", project_id: "CREATE", version_number: "0.5.1-j", version_type: "release", files: [file("create-05.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/project/create-deco/version")) return jsonRes([deco]);
+      if (url.includes("/project/create-ore-excavation/version")) return jsonRes([ore]);
+      if (url.includes("/project/createaddition/version")) return jsonRes([addn]);
+      if (url.includes("/project/create-new-age/version")) return jsonRes([newage]);
+      if (url.includes("/project/CREATE/version")) return jsonRes([create6, create05]);
+      return jsonRes([]);
+    }));
+    const manifests: Record<string, unknown> = {
+      "https://cdn/deco.jar": { version: "2.1.1", provides: ["createdeco"], requires: [{ id: "create", range: ">=0.5.1" }] },
+      "https://cdn/ore.jar": { version: "1.6.1", provides: ["createoreexcavation"], requires: [{ id: "create", range: ">=0.6.8" }] },
+      "https://cdn/addn.jar": { version: "1.3.4", provides: ["createaddition"], requires: [{ id: "create", range: ">=6.0.7.0" }] },
+      "https://cdn/newage.jar": { version: "1.2.0", provides: ["create_new_age"], requires: [{ id: "create", range: ">=6.0.8" }] },
+      "https://cdn/create-6.jar": { version: "6.0.8.1", provides: ["create"], requires: [] },
+      "https://cdn/create-05.jar": { version: "0.5.1-j", provides: ["create"], requires: [] }
+    };
+    const inspectJars = async (jobs: { key: string; url: string }[]) =>
+      Object.fromEntries(jobs.map((j) => [j.key, manifests[j.url] ?? null]));
+
+    const { included, skipped } = await buildMrpack({
+      name: "t", mods: [modStub("create-deco"), modStub("create-ore-excavation"), modStub("createaddition"), modStub("create-new-age")], loader: "fabric", mcVersion: "1.20.1", inspectJars: inspectJars as never
+    });
+    expect(included.map((m) => m.id).sort()).toEqual(["create-new-age", "create-ore-excavation", "createaddition"]);
+    expect(skipped.map((m) => m.id)).toEqual(["create-deco"]);
+  });
+
   it("drops a mod whose jar manifest doesn't support the target Minecraft version", async () => {
     // Modrinth tags Twigs as 1.21.1-compatible, but its manifest caps at 1.20.x.
     const twigs = { id: "vT", project_id: "TWIGS", version_type: "release", files: [file("twigs.jar")], dependencies: [] };
