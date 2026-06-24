@@ -251,7 +251,13 @@ const NEOFORGE_VERSIONS: Record<string, string> = {
 const FORCE_DEPS: Record<string, string[]> = {
   "chipped-express": ["chipped"],
   "legendary-tooltips": ["prism-lib"],
-  "item-borders": ["prism-lib"]
+  "item-borders": ["prism-lib"],
+  // Let's Do: Meadow loads Cloth Config (me.shedaniel.autoconfig) at init but
+  // declares only Fabric/Minecraft/Architectury, so the metadata never reveals
+  // it. Without cloth-config the pack crashes at launch (NoClassDefFoundError
+  // ConfigData). Other satisfy/Let's Do mods that open a config screen are the
+  // same family; add them here as they surface.
+  "lets-do-meadow": ["cloth-config"]
 };
 
 // A manifest modid whose Modrinth slug differs (so slug-guessing can't find it).
