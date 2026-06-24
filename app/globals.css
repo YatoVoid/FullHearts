@@ -135,6 +135,7 @@ nav.links a:hover{color:var(--ink);}
 .section-head{text-align:center;margin-bottom:40px;}
 .section-head .eyebrow{margin-bottom:16px;}
 .section-head h2{font-family:var(--pixel);font-size:clamp(16px,3vw,24px);text-shadow:0 3px 0 #000;}
+.section-head .section-sub{margin:16px auto 0;max-width:560px;color:var(--mute);font-size:15px;line-height:1.6;}
 .filters{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:42px;}
 .filters button{
   font-family:var(--pixel);font-size:9px;
@@ -287,9 +288,12 @@ nav.links a:hover{color:var(--ink);}
 .tip-links a.alt{background:var(--slot);color:var(--ink);box-shadow:0 3px 0 #0a0718;}
 .tip-links a:active{transform:translateY(3px);}
 .degraded-note{text-align:center;color:var(--mute);font-size:13px;margin-bottom:24px;}
-/* Disabled entry button (e.g. 🎲 lucky) when Modrinth's data is unreachable. */
+/* Disabled entry button (e.g. the lucky dice) when Modrinth's data is unreachable. */
 .btn-primary.is-disabled,.btn-ghost.is-disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none;pointer-events:auto;}
 .btn-primary.is-disabled:active,.btn-ghost.is-disabled:active{transform:none;}
+/* Visible reason next to a disabled lucky button (tooltips don't work on touch).
+   flex-basis:100% drops it onto its own line inside the flex button rows. */
+.lucky-down-note{flex-basis:100%;width:100%;max-width:520px;margin:8px auto 0;color:var(--mute);font-size:13px;line-height:1.5;text-align:center;}
 /* Honest "live mod data is down" notice on the results page. */
 .data-down{max-width:620px;margin:60px auto;text-align:center;padding:40px 28px;border:1px solid #2a2046;background:var(--slot,#15102b);}
 .data-down-emoji{font-size:44px;line-height:1;margin-bottom:14px;}

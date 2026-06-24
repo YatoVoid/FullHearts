@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ tag: stri
   const label = isTag(tag) ? TAG_LABELS[tag] : "Mods";
   return {
     title: `${label} mods | Full Hearts`,
-    description: `Every hand-tested ${label.toLowerCase()} Minecraft mod in the Full Hearts catalog.`,
+    description: `Browse ${label.toLowerCase()} Minecraft mods on Full Hearts, then export a pack with every dependency resolved and checked to run together.`,
     alternates: { canonical: `/explore/${tag}` }
   };
 }

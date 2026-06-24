@@ -21,19 +21,19 @@ const pressStart = Press_Start_2P({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Full Hearts: a curated, hand-tested Minecraft mod collection",
+  title: "Full Hearts: a Minecraft modpack that just launches",
   description:
-    "A hand-tested Minecraft mod collection you can't go wrong with. Answer a few quick questions and get a personalized, compatible loadout with a clear reason for every pick. No account needed.",
+    "Pick the Minecraft mods you want and Full Hearts pulls in every dependency, version matches them to your loader, and checks they run together, then exports one .mrpack you import and launch. No account needed.",
   keywords: [
-    "Minecraft mods", "best Minecraft mods", "curated Minecraft mods", "Minecraft modpack",
-    "Fabric mods", "Forge mods", "mod recommender", "Minecraft Java mods", "tested mods"
+    "Minecraft mods", "best Minecraft mods", "Minecraft modpack maker", "mrpack",
+    "Fabric mods", "Forge mods", "mod dependency resolver", "Minecraft Java mods", "compatible modpack"
   ],
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
   openGraph: {
-    title: "Full Hearts: a curated, hand-tested Minecraft mod collection",
+    title: "Full Hearts: a Minecraft modpack that just launches",
     description:
-      "Hand-tested Minecraft mods you can't go wrong with. Get a personalized, compatible loadout with a reason for every pick.",
+      "Pick the mods you want. Full Hearts pulls in dependencies, version matches them, and checks they run together, then exports one .mrpack you import and launch.",
     url: "/",
     type: "website",
     siteName: "Full Hearts"

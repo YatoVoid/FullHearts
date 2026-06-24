@@ -292,7 +292,7 @@ export default function Results() {
           {status === "ready" && <div className="summary">{summary}</div>}
           {status === "ready" && profile && !degraded && (
             <div className="compat compat-ok">
-              <Icon name="check" size={15} /> {contentCount} mods{essentialCount > 0 ? ` + ${essentialCount} essentials` : ""} for {profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1)} {profile.gameVersion}. Every one builds.
+              <Icon name="check" size={15} /> {contentCount} mods{essentialCount > 0 ? ` + ${essentialCount} essentials` : ""} for {profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1)} {profile.gameVersion}. Every one verified to launch, dependencies included.
             </div>
           )}
           {status === "ready" && profile && (
@@ -322,7 +322,7 @@ export default function Results() {
             </p>
             <p className="results-state">
               We&apos;re cross-checking every mod and its dependencies for {profile?.loader ? profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1) : "your loader"}{" "}
-              {profile?.gameVersion ?? ""} so your pack installs clean the first time. Big packs can take a minute — keep this tab open while it runs.
+              {profile?.gameVersion ?? ""} so your pack installs clean the first time. Big packs can take a minute, so keep this tab open while it runs.
             </p>
           </div>
         )}

@@ -109,7 +109,7 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
         const ok = await modBuildsFor(mod, loaderSel, versionSel);
         setAddBusy(null);
         if (!ok) {
-          setAddError(`${mod.name} has no ${loaderSel.charAt(0).toUpperCase() + loaderSel.slice(1)} ${versionSel} build — not added.`);
+          setAddError(`${mod.name} has no ${loaderSel.charAt(0).toUpperCase() + loaderSel.slice(1)} ${versionSel} build, so it wasn't added.`);
           return;
         }
       }
@@ -155,7 +155,7 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
             <CollectionPicker collections={collections} targetId={targetId} onSelect={selectTarget} onCreate={(n) => createAndSelect(n)} />
             {needsChoice && (
               <p className="filter-prompt" role="status">
-                Pick a mod loader and Minecraft version for <b>{target?.name}</b> before adding mods — that&apos;s what the pack is built for.
+                Pick a mod loader and Minecraft version for <b>{target?.name}</b> before adding mods. That&apos;s what the pack is built for.
               </p>
             )}
             <ModFilterBar

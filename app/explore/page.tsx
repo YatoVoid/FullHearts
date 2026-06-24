@@ -217,7 +217,7 @@ export default function Explore() {
         const ok = await modBuildsFor(mod, loaderSel, versionSel);
         setAddBusy(null);
         if (!ok) {
-          setAddError(`${mod.name} has no ${loaderSel.charAt(0).toUpperCase() + loaderSel.slice(1)} ${versionSel} build — not added.`);
+          setAddError(`${mod.name} has no ${loaderSel.charAt(0).toUpperCase() + loaderSel.slice(1)} ${versionSel} build, so it wasn't added.`);
           return;
         }
       }
@@ -257,6 +257,7 @@ export default function Explore() {
         <div className="section-head">
           <div className="eyebrow">BROWSE BY THEME</div>
           <h2>Explore the mod library</h2>
+          <p className="section-sub">Add any mods you like. Full Hearts handles the dependencies and checks they work together, then exports one file you import and launch.</p>
         </div>
 
         <div className="lucky-bar">
@@ -287,7 +288,7 @@ export default function Explore() {
             )}
             {needsChoice && (
               <p className="filter-prompt" role="status">
-                Pick a mod loader and Minecraft version for <b>{target?.name}</b> before adding mods — that&apos;s what the pack is built for.
+                Pick a mod loader and Minecraft version for <b>{target?.name}</b> before adding mods. That&apos;s what the pack is built for.
               </p>
             )}
             <ModFilterBar

@@ -23,7 +23,7 @@ const JSON_LD = {
   applicationCategory: "GameApplication",
   operatingSystem: "Web",
   description:
-    "A hand-tested, curated Minecraft mod collection. Answer a few questions and get a personalized, compatible loadout you can't go wrong with, plus a reason for every pick.",
+    "Pick the Minecraft mods you want and Full Hearts pulls in every dependency, version matches them to your loader, and checks they run together against live data, then exports one .mrpack you import and launch. New to mods? A quick quiz builds a set for you.",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" }
 };
 
@@ -44,25 +44,25 @@ export default function Home() {
             <Link href="/explore">Explore</Link>
             <Link href="/collections">Collections</Link>
           </nav>
-          <Link className="nav-cta" href="/quiz">Start the quiz</Link>
+          <Link className="nav-cta" href="/explore">Build a pack</Link>
         </div>
       </header>
 
       <main>
         <section className="hero wrap">
           <div className="hero-glow" aria-hidden="true" />
-          <div className="eyebrow">CURATED · HAND-TESTED · MINECRAFT JAVA</div>
+          <div className="eyebrow">AUTO-VERIFIED · DEPENDENCY-CHECKED · MINECRAFT JAVA</div>
           <div className="hearts" aria-hidden="true">
             {Array.from({ length: 10 }).map((_, i) => (
               <span key={i} style={{ width: 30, height: 30, display: "inline-flex", animationDelay: `${i * 60}ms` }}>{HEART}</span>
             ))}
           </div>
-          <h1>A mod collection you <span className="g">can&apos;t go wrong</span> with.</h1>
-          <p className="lede">Every mod in Full Hearts is hand-picked and tested, so there are no duds. Answer a few quick questions about how you like to play and we&apos;ll build you a compatible loadout, with a reason behind every pick.</p>
+          <h1>Pick the mods you love. We make them <span className="g">work together</span>.</h1>
+          <p className="lede">Add any mods and Full Hearts pulls in every dependency, version matches them to your loader, and checks they actually run together. Then it&apos;s one file you import and launch. New to mods? Take the quiz and we&apos;ll build a set from scratch.</p>
           <div className="hero-actions">
-            <Link className="btn-primary" href="/quiz">Build my loadout</Link>
-            <Link className="btn-ghost" href="/explore">Browse mods</Link>
+            <Link className="btn-primary" href="/explore">Add your mods</Link>
             <LuckyButton className="btn-ghost" />
+            <Link className="btn-ghost" href="/quiz">New? Take the quiz</Link>
           </div>
           <div className="xpbar"><i className="xpfill" /></div>
           <div className="xplabel">NO ACCOUNT · SAVED IN YOUR BROWSER</div>
@@ -77,9 +77,9 @@ export default function Home() {
         </section>
 
         <section className="stats wrap">
-          <div className="stat"><div className="num">100%</div><div className="lab">Compatibility</div></div>
-          <div className="stat"><div className="num">{QUESTIONS.length}</div><div className="lab">Quick questions</div></div>
+          <div className="stat"><div className="num">1 file</div><div className="lab">Installs the whole pack</div></div>
           <div className="stat"><div className="num">0</div><div className="lab">Accounts required</div></div>
+          <div className="stat"><div className="num">{QUESTIONS.length}</div><div className="lab">Quick questions, optional</div></div>
         </section>
 
         <section className="wrap">
@@ -87,14 +87,14 @@ export default function Home() {
             <div className="mrpack-emoji" aria-hidden="true"><Icon name="package" size={40} /></div>
             <div className="mrpack-text">
               <div className="eyebrow">THE ONE-CLICK MODPACK</div>
-              <h2>One file. The whole pack. Guaranteed to launch.</h2>
+              <h2>One file. The whole pack. Made to launch clean.</h2>
               <p>
-                Download your loadout as a single <code>.mrpack</code>. Every mod <strong>and its dependencies</strong> are
-                bundled and version-matched, then checked to work together. Import it into the Modrinth App, Prism, or
-                ATLauncher in one click. No other mod recommender does this.
+                Download your pack as a single <code>.mrpack</code>. Every mod <strong>and its dependencies</strong> are
+                bundled and version matched, then checked to work together against live data before you download. Import it
+                into the Modrinth App, Prism, or ATLauncher in one click. No other mod recommender does this.
               </p>
               <div className="hero-actions" style={{ justifyContent: "flex-start" }}>
-                <Link className="btn-primary" href="/quiz">Build my modpack</Link>
+                <Link className="btn-primary" href="/explore">Build my modpack</Link>
                 <Link className="btn-ghost" href="/install">How it works</Link>
               </div>
             </div>
