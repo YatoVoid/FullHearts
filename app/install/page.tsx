@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
+import Icon from "@/components/Icon";
 import { HEART_SRC, asset } from "@/lib/asset";
 
 export const metadata: Metadata = {
@@ -174,7 +175,7 @@ export default function Install() {
           </ol>
           <div className="install-cta">
             <a className="btn-ghost" href={DOWNLOADER} target="_blank" rel="noopener noreferrer">
-              ⬇ Get the collection downloader
+              <Icon name="download" size={15} /> Get the collection downloader
             </a>
             <Link className="btn-ghost" href="/collections">Open my collections</Link>
           </div>

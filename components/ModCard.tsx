@@ -1,4 +1,5 @@
 import type { Mod } from "@/lib/sources/types";
+import Icon from "@/components/Icon";
 
 const RARITY = ["r-epic", "r-rare", "r-uncommon", "r-common"];
 
@@ -37,8 +38,8 @@ export default function ModCard({
             onClick={() => onRemove?.(mod.id)}
             disabled={!onRemove}
           >
-            <span className="lbl-added">Added ✓</span>
-            <span className="lbl-remove">Remove ✕</span>
+            <span className="lbl-added">Added <Icon name="check" size={13} /></span>
+            <span className="lbl-remove">Remove <Icon name="x" size={13} /></span>
           </button>
         ) : (
           <button

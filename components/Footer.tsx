@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { HEART_SRC } from "@/lib/asset";
+import Icon from "@/components/Icon";
 
 const HEART = (
   <img
@@ -25,7 +26,7 @@ export default function Footer() {
         target="_blank"
         rel="noopener noreferrer"
       >
-        ☕ Buy me a coffee
+        <Icon name="coffee" size={15} /> Buy me a coffee
       </a>
       <p className="note">
         Mod data from <a href="https://modrinth.com" target="_blank" rel="noopener noreferrer">Modrinth</a>.

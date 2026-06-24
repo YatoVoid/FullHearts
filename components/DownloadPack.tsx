@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Loader, Mod } from "@/lib/sources/types";
 import { buildMrpack, MrpackError } from "@/lib/modpack/mrpack";
+import Icon from "@/components/Icon";
 
 function safeName(name: string): string {
   return name.replace(/[^\w \-]/g, "").trim() || "fullhearts";
@@ -85,7 +86,7 @@ export default function DownloadPack({
   return (
     <div className="pack-dl">
       <button type="button" className="btn-primary" onClick={go} disabled={disabled || state === "building"}>
-        {state === "building" ? "Building .mrpack…" : "⬇ Download as modpack (.mrpack)"}
+        {state === "building" ? "Building .mrpack…" : <><Icon name="download" size={15} /> Download as modpack (.mrpack)</>}
       </button>
       {state === "building" && (
         <div className="pack-progress" role="status" aria-live="polite">

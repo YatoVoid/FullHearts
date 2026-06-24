@@ -10,6 +10,7 @@ import { VERSIONS } from "@/lib/catalog/coverage";
 import { checkCompatibility, compatibilitySummary } from "@/lib/recommend/compatibility";
 import DownloadPack from "@/components/DownloadPack";
 import ServerCta from "@/components/ServerCta";
+import Icon from "@/components/Icon";
 import {
   listCollections,
   createCollection,
@@ -289,7 +290,7 @@ export default function Collections() {
         </div>
 
         <div className="lucky-bar">
-          <Link className="btn-ghost" href="/install">📦 How to install a whole loadout at once →</Link>
+          <Link className="btn-ghost" href="/install"><Icon name="package" size={15} /> How to install a whole loadout at once →</Link>
         </div>
 
         {degraded && (
@@ -331,10 +332,10 @@ export default function Collections() {
                   <>
                     {resolved.length >= 2 && (report.ok ? (
                       <div className="compat compat-ok">
-                        ✓ Should launch together{compatibilitySummary(report) && <> · {compatibilitySummary(report)}</>}
+                        <Icon name="check" size={15} /> Should launch together{compatibilitySummary(report) && <> · {compatibilitySummary(report)}</>}
                       </div>
                     ) : (
-                      <div className="compat compat-warn">⚠ {report.messages[0]}</div>
+                      <div className="compat compat-warn"><Icon name="alert" size={15} /> {report.messages[0]}</div>
                     ))}
                     <DownloadPack
                       name={c.name}
@@ -378,7 +379,7 @@ export default function Collections() {
               <div className="col-actions">
                 {c.modIds.length > 0 && (
                   <button type="button" className="chip-btn" onClick={() => setMig({ collection: c, version: null, checking: false, results: null, loader: null, env: "client", name: "", done: null })}>
-                    ⇄ Migrate to another version
+                    <Icon name="swap" size={15} /> Migrate to another version
                   </button>
                 )}
                 {c.modIds.length > 0 && (
@@ -400,7 +401,7 @@ export default function Collections() {
           <div className="cmodal migrate-modal" onClick={(e) => e.stopPropagation()}>
             {mig.done ? (
               <>
-                <h3>✓ Migrated to {mig.done.name}</h3>
+                <h3><Icon name="check" size={16} /> Migrated to {mig.done.name}</h3>
                 <p className="cmodal-sub">
                   {mig.done.migrated} mod{mig.done.migrated === 1 ? "" : "s"} carried over to {LOADER_LABEL[mig.loader!]} {mig.version}.
                   {mig.done.dropped.length > 0 && <> {mig.done.dropped.length} couldn&apos;t come along (no build there).</>}
@@ -444,14 +445,14 @@ export default function Collections() {
                     className={`migrate-env-opt${mig.env === "client" ? " on" : ""}`}
                     onClick={() => setMig((m) => (m ? { ...m, env: "client" } : m))}
                   >
-                    🖥️ Client<span className="migrate-env-hint">for playing</span>
+                    <Icon name="monitor" size={20} /> Client<span className="migrate-env-hint">for playing</span>
                   </button>
                   <button
                     type="button"
                     className={`migrate-env-opt${mig.env === "server" ? " on" : ""}`}
                     onClick={() => setMig((m) => (m ? { ...m, env: "server" } : m))}
                   >
-                    🗄️ Server<span className="migrate-env-hint">drops client-only mods</span>
+                    <Icon name="server" size={20} /> Server<span className="migrate-env-hint">drops client-only mods</span>
                   </button>
                 </div>
                 <p className="cmodal-sub">On {mig.version}, here&apos;s how many of your {mig.collection.modIds.length} mods come along per loader{mig.env === "server" ? " (client-only mods excluded)" : ""}. We recommend the one that keeps the most.</p>

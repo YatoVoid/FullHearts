@@ -5,6 +5,7 @@ import { CATALOG } from "@/lib/curation/catalog";
 import { HEART_SRC } from "@/lib/asset";
 import DescribeBox from "@/components/DescribeBox";
 import LuckyButton from "@/components/LuckyButton";
+import Icon from "@/components/Icon";
 
 const HEART = (
   <img
@@ -83,7 +84,7 @@ export default function Home() {
 
         <section className="wrap">
           <div className="mrpack-band">
-            <div className="mrpack-emoji" aria-hidden="true">📦</div>
+            <div className="mrpack-emoji" aria-hidden="true"><Icon name="package" size={40} /></div>
             <div className="mrpack-text">
               <div className="eyebrow">THE ONE-CLICK MODPACK</div>
               <h2>One file. The whole pack. Guaranteed to launch.</h2>

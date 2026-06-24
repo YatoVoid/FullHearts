@@ -13,6 +13,7 @@ import { recommendedVersion, type Coverage } from "@/lib/catalog/coverage";
 import snapshotCoverage from "@/lib/catalog/coverage.snapshot.json";
 import { buildMrpack } from "@/lib/modpack/mrpack";
 import DownloadPack from "@/components/DownloadPack";
+import Icon from "@/components/Icon";
 import { MODRINTH_DOWN_TITLE, MODRINTH_DOWN_BODY } from "@/components/LuckyButton";
 import { ensureCollection, createCollection, listCollections, addMod, setLoadout, type Collection } from "@/lib/storage/collections";
 import { setLastCollectionId } from "@/lib/storage/user";
@@ -282,16 +283,16 @@ export default function Results() {
       <main className="results">
         <div className="results-head">
           <div className="eyebrow">
-            {luckyLabel
-              ? `🎲 FEELING LUCKY · ${luckyLabel.toUpperCase()}`
-              : describeQuery
-              ? `🔎 “${describeQuery.toUpperCase()}” · AI BETA`
-              : "YOUR LOADOUT"}
+            {luckyLabel ? (
+              <><Icon name="dice" size={13} /> FEELING LUCKY · {luckyLabel.toUpperCase()}</>
+            ) : describeQuery ? (
+              <><Icon name="search" size={13} /> “{describeQuery.toUpperCase()}” · AI BETA</>
+            ) : "YOUR LOADOUT"}
           </div>
           {status === "ready" && <div className="summary">{summary}</div>}
           {status === "ready" && profile && !degraded && (
             <div className="compat compat-ok">
-              ✓ {contentCount} mods{essentialCount > 0 ? ` + ${essentialCount} essentials` : ""} for {profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1)} {profile.gameVersion}. Every one builds.
+              <Icon name="check" size={15} /> {contentCount} mods{essentialCount > 0 ? ` + ${essentialCount} essentials` : ""} for {profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1)} {profile.gameVersion}. Every one builds.
             </div>
           )}
           {status === "ready" && profile && (
@@ -306,7 +307,7 @@ export default function Results() {
             <div className="results-actions">
               <button type="button" className="btn-ghost" onClick={addAll}>Save all to collection</button>
               <button type="button" className="btn-ghost" onClick={openAll}>Open all mod pages ({results.length})</button>
-              <Link className="btn-ghost" href="/install">📦 Install guide</Link>
+              <Link className="btn-ghost" href="/install"><Icon name="package" size={15} /> Install guide</Link>
               <Link className="btn-ghost" href="/collections">View collections</Link>
             </div>
           )}
@@ -340,7 +341,7 @@ export default function Results() {
 
         {status === "down" && (
           <div className="data-down" role="status" aria-live="polite">
-            <div className="data-down-emoji" aria-hidden="true">🔌</div>
+            <div className="data-down-emoji" aria-hidden="true"><Icon name="cloud-off" size={44} /></div>
             <h2>{MODRINTH_DOWN_TITLE}</h2>
             <p>{MODRINTH_DOWN_BODY}</p>
             <div className="results-actions" style={{ justifyContent: "center" }}>
@@ -391,7 +392,7 @@ export default function Results() {
                         onClick={() => addToCollection(mod.id)}
                         disabled={added.has(mod.id)}
                       >
-                        {added.has(mod.id) ? "Added ✓" : "+ Add"}
+                        {added.has(mod.id) ? <>Added <Icon name="check" size={13} /></> : "+ Add"}
                       </button>
                       {mod.links.modrinth && (
                         <a href={mod.links.modrinth} target="_blank" rel="noopener noreferrer">Modrinth</a>
