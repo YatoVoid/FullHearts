@@ -173,7 +173,7 @@ nav.links a:hover{color:var(--ink);}
 .tip .verified{flex:none;align-self:flex-start;font-size:9px;font-weight:700;color:var(--void);background:var(--grass);padding:3px 7px;border-radius:3px;letter-spacing:.3px;white-space:nowrap;}
 
 /* ---------- HOMEPAGE MRPACK BAND ---------- */
-.mrpack-band{display:flex;gap:26px;align-items:center;border:2px solid var(--grass);background:rgba(116,192,67,.05);box-shadow:0 4px 0 #0a0718;padding:28px 26px;margin:30px 0 10px;}
+.mrpack-band{display:flex;gap:26px;align-items:center;border:2px solid var(--grass);background:rgba(116,192,67,.05);box-shadow:0 4px 0 #0a0718;padding:28px 26px;margin:30px auto 10px;width:fit-content;max-width:100%;}
 .mrpack-emoji{font-size:56px;line-height:1;flex:none;}
 .mrpack-text h2{font-family:var(--pixel);font-size:clamp(13px,2.3vw,18px);color:var(--ink);margin:6px 0 12px;line-height:1.5;}
 .mrpack-text p{font-size:15px;color:#c5bfd6;line-height:1.6;margin-bottom:18px;max-width:62ch;}
