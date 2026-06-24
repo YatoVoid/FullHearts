@@ -452,6 +452,11 @@ footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
 .cmodal-new .btn-primary{flex:0 0 auto;font-size:9px;padding:12px 14px;}
 .cmodal-cancel{display:block;margin:6px auto 0;background:none;border:none;color:var(--mute);font-size:12px;text-decoration:underline;cursor:pointer;}
 .cmodal-cancel:hover{color:var(--ink);}
+.cmodal-actions{display:flex;justify-content:center;margin-bottom:6px;}
+.cmodal-actions .btn-primary,.cmodal-actions .btn-danger{min-width:140px;text-align:center;}
+/* Destructive confirm (delete) button: red themed to match the pixel buttons. */
+.btn-danger{display:inline-block;font-family:var(--pixel);font-size:10px;color:#fff;background:#c0314b;border:none;padding:14px 18px;cursor:pointer;box-shadow:0 4px 0 #7a1330;text-decoration:none;}
+.btn-danger:active{transform:translateY(4px);box-shadow:0 1px 0 #7a1330;}
 /* migrate modal extras */
 .migrate-modal{max-width:480px;}
 .cmodal-row.on{border-color:var(--grass);background:#1f1840;}

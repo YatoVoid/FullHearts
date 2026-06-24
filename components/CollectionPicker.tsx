@@ -1,6 +1,7 @@
 "use client";
 
 import type { Collection } from "@/lib/storage/collections";
+import { useDialog } from "@/components/useDialog";
 
 const NEW = "__new__";
 
@@ -16,10 +17,17 @@ export default function CollectionPicker({
   onSelect: (id: string) => void;
   onCreate: (name: string) => void;
 }) {
-  function handle(value: string) {
+  const { prompt, dialog } = useDialog();
+
+  async function handle(value: string) {
     if (value === NEW) {
-      const name = window.prompt("Name your new collection:", "");
-      if (name && name.trim()) onCreate(name.trim());
+      const name = await prompt({
+        title: "Name your new collection",
+        placeholder: "e.g. Cozy survival",
+        confirmLabel: "Create",
+        icon: "package"
+      });
+      if (name) onCreate(name);
       return;
     }
     onSelect(value);
@@ -36,6 +44,7 @@ export default function CollectionPicker({
         ))}
         <option value={NEW}>+ New collection…</option>
       </select>
+      {dialog}
     </div>
   );
 }

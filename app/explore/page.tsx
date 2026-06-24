@@ -9,6 +9,7 @@ import { loadPool } from "@/lib/catalog/clientPool";
 import { searchModrinthQuery, fetchModsBySlugs } from "@/lib/sources/modrinth";
 import { modBuildsFor } from "@/lib/modpack/mrpack";
 import LuckyButton from "@/components/LuckyButton";
+import { useDialog } from "@/components/useDialog";
 import { isHighQuality } from "@/lib/catalog/quality";
 import { type ModFilter, DEFAULT_FILTER, loadFilter, saveFilter, matchesFilter, versionOptions } from "@/lib/catalog/filter";
 import { HEART_SRC } from "@/lib/asset";
@@ -67,6 +68,7 @@ export default function Explore() {
   const [mods, setMods] = useState<Mod[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const { collections, targetId, selectTarget, createAndSelect, addToTarget, removeFromTarget, added } = useCollectionTarget();
+  const { confirm: askConfirm, dialog } = useDialog();
   const [showTarget, setShowTarget] = useState(false);
   const [addBusy, setAddBusy] = useState<string | null>(null);
   const [addError, setAddError] = useState("");
@@ -142,11 +144,14 @@ export default function Explore() {
   );
   const liveHidden = live.length - liveShown.length;
 
-  function toggleQuality() {
+  async function toggleQuality() {
     if (qualityOn) {
-      const ok = window.confirm(
-        "Turn off the quality filter?\n\nThis shows every mod on Modrinth, including untested, niche, or abandoned ones. Only recommended if you know the exact mod you want."
-      );
+      const ok = await askConfirm({
+        title: "Turn off the quality filter?",
+        body: "This shows every mod on Modrinth, including untested, niche, or abandoned ones. Only recommended if you know the exact mod you want.",
+        confirmLabel: "Show everything",
+        icon: "alert"
+      });
       if (!ok) return;
       setQualityOn(false);
     } else {
@@ -416,6 +421,7 @@ export default function Explore() {
 
       <ScrollTop />
       <Footer />
+      {dialog}
     </>
   );
 }

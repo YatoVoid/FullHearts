@@ -11,6 +11,7 @@ import { checkCompatibility, compatibilitySummary } from "@/lib/recommend/compat
 import DownloadPack from "@/components/DownloadPack";
 import ServerCta from "@/components/ServerCta";
 import Icon from "@/components/Icon";
+import { useDialog } from "@/components/useDialog";
 import {
   listCollections,
   createCollection,
@@ -76,6 +77,7 @@ export default function Collections() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [upTarget, setUpTarget] = useState<string | null>(null);
   const [mig, setMig] = useState<MigrateState | null>(null);
+  const { confirm: askConfirm, prompt: askPrompt, dialog } = useDialog();
 
   const refresh = useCallback(() => setCollections(listCollections()), []);
 
@@ -247,16 +249,28 @@ export default function Collections() {
     }
   }
 
-  function handleRename(c: Collection) {
-    const name = window.prompt("Rename collection", c.name);
-    if (name != null) {
+  async function handleRename(c: Collection) {
+    const name = await askPrompt({
+      title: "Rename collection",
+      defaultValue: c.name,
+      confirmLabel: "Rename",
+      icon: "swap"
+    });
+    if (name) {
       renameCollection(c.id, name);
       refresh();
     }
   }
 
-  function handleDelete(c: Collection) {
-    if (window.confirm(`Delete "${c.name}"?`)) {
+  async function handleDelete(c: Collection) {
+    const ok = await askConfirm({
+      title: "Delete this collection?",
+      body: `"${c.name}" will be removed from this browser. This can't be undone.`,
+      confirmLabel: "Delete",
+      danger: true,
+      icon: "x"
+    });
+    if (ok) {
       deleteCollection(c.id);
       refresh();
     }
@@ -493,6 +507,7 @@ export default function Collections() {
           ▲
         </button>
       )}
+      {dialog}
     </>
   );
 }
