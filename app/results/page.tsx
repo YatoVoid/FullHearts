@@ -317,7 +317,7 @@ export default function Results() {
           <div className="results-building" role="status" aria-live="polite">
             <div className="quiz-progress" aria-hidden="true"><i style={{ width: `${Math.max(6, buildProgress.pct)}%` }} /></div>
             <p className="results-building-head">
-              <span className="building-label">{buildProgress.label || "Building your loadout"}<span className="building-dots" aria-hidden="true" /></span>
+              <span className="building-label"><span className="building-text">{buildProgress.label || "Building your loadout"}</span><span className="building-dots" aria-hidden="true" /></span>
               <span className="building-meter">{Math.round(buildProgress.pct)}% · {elapsed}s</span>
             </p>
             <p className="results-state">
