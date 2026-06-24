@@ -443,6 +443,12 @@ footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
 /* migrate modal extras */
 .migrate-modal{max-width:480px;}
 .cmodal-row.on{border-color:var(--grass);background:#1f1840;}
+/* client / server environment toggle */
+.migrate-env{display:flex;gap:10px;margin:0 0 14px;}
+.migrate-env-opt{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 8px;border:2px solid #2a2046;background:var(--slot);color:var(--ink);font-weight:600;cursor:pointer;}
+.migrate-env-opt:active{transform:translateY(2px);}
+.migrate-env-opt.on{border-color:var(--grass);background:#1f1840;}
+.migrate-env-hint{font-size:11px;color:var(--mute);font-weight:400;}
 .migrate-rec{font-family:var(--pixel);font-size:7px;color:var(--gold);margin-left:8px;letter-spacing:1px;}
 .migrate-dropped{list-style:none;margin:0 0 14px;max-height:160px;overflow-y:auto;border:2px solid #2a2046;background:var(--slot);padding:6px 10px;}
 .migrate-dropped li{font-size:12.5px;color:var(--mute);padding:4px 2px;border-bottom:1px solid #221a3c;}

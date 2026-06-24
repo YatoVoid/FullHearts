@@ -42,6 +42,13 @@ describe("modrinth normalization", () => {
     expect(e.loaders).toEqual(["fabric"]);
   });
 
+  it("flags client-only mods from server_side 'unsupported' (for server-mode migration)", () => {
+    expect(normalizeProject({ ...projectsFixture[0], server_side: "unsupported" }).clientOnly).toBe(true);
+    expect(normalizeProject({ ...projectsFixture[0], server_side: "required" }).clientOnly).toBe(false);
+    expect(normalizeProject(projectsFixture[0]).clientOnly).toBe(false); // unknown -> not client-only
+    expect(normalizeSearchHit({ ...searchFixture.hits[0], server_side: "unsupported" }).clientOnly).toBe(true);
+  });
+
   it("extracts only REQUIRED dependencies as required", () => {
     const deps = normalizeDependencies(versionFixture);
     const required = deps.filter((d) => d.required).map((d) => d.id);

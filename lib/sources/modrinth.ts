@@ -13,8 +13,12 @@ interface MrProject {
   loaders: string[];
   downloads?: number;
   icon_url?: string;
+  server_side?: string; // "required" | "optional" | "unsupported"
   versions?: string[]; // version ids, ordered oldest -> newest
 }
+
+/** Modrinth says a project does nothing (or breaks) on a dedicated server. */
+const isClientOnly = (serverSide?: string): boolean => serverSide === "unsupported";
 
 interface MrDependency {
   project_id: string | null;
@@ -37,7 +41,8 @@ export function normalizeProject(p: MrProject): Enrichment {
     dependencies: [],
     links: { modrinth: `https://modrinth.com/mod/${p.slug}` },
     downloads: p.downloads,
-    iconUrl: p.icon_url
+    iconUrl: p.icon_url,
+    clientOnly: isClientOnly(p.server_side)
   };
 }
 
@@ -138,6 +143,7 @@ export interface MrSearchHit {
   versions: string[];   // game versions
   downloads?: number;
   icon_url?: string;
+  server_side?: string;
 }
 
 // Modrinth categories that mark a project as a framework/library, not something
@@ -169,7 +175,8 @@ export function normalizeSearchHit(hit: MrSearchHit): Mod {
     dependencies: [],
     links: { modrinth: `https://modrinth.com/mod/${hit.slug}` },
     downloads: hit.downloads,
-    iconUrl: hit.icon_url
+    iconUrl: hit.icon_url,
+    clientOnly: isClientOnly(hit.server_side)
   };
 }
 
@@ -269,7 +276,8 @@ function projectToMod(p: MrProject & { description?: string }): Mod {
     dependencies: [],
     links: { modrinth: `https://modrinth.com/mod/${p.slug}` },
     downloads: p.downloads,
-    iconUrl: p.icon_url
+    iconUrl: p.icon_url,
+    clientOnly: isClientOnly(p.server_side)
   };
 }
 

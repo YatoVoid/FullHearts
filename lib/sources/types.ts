@@ -29,6 +29,9 @@ export interface Mod extends CuratedMod {
   iconUrl?: string;
   /** True for hand-tested curated mods; absent/false for the dynamic pool. */
   verified?: boolean;
+  /** Modrinth marks server_side "unsupported": pointless/broken on a server, so a
+   *  server-mode migration drops it. */
+  clientOnly?: boolean;
 }
 
 /** Live data fetched for a single curated mod. */
@@ -39,6 +42,7 @@ export interface Enrichment {
   links: { modrinth?: string; curseforge?: string };
   downloads?: number;
   iconUrl?: string;
+  clientOnly?: boolean;
 }
 
 /** A pluggable data source (Modrinth, CurseForge, ...). */

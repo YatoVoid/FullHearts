@@ -44,8 +44,15 @@ interface MigrateState {
   checking: boolean;
   results: { loader: Loader; build: Mod[]; miss: Mod[] }[] | null;
   loader: Loader | null;             // chosen target loader
+  env: "client" | "server";          // server mode drops client-only mods
   name: string;
   done: { name: string; migrated: number; dropped: string[] } | null;
+}
+
+/** Mods that survive a migration for the chosen environment: server mode also
+ *  drops client-only mods (Modrinth server_side "unsupported"). */
+function keptFor(build: Mod[], env: "client" | "server"): Mod[] {
+  return env === "server" ? build.filter((m) => !m.clientOnly) : build;
 }
 
 function download(filename: string, content: string, type: string) {
@@ -101,10 +108,18 @@ export default function Collections() {
     const res = mig.results.find((r) => r.loader === mig.loader);
     if (!res) return;
     const name = mig.name.trim() || `${mig.collection.name} (${mig.version})`;
-    const created = createCollection(name, res.build.map((m) => m.id));
+    const kept = keptFor(res.build, mig.env);
+    // Two reasons a mod is left behind: no build for this loader/version, or
+    // (server mode) it's client-only. Label the client-only ones so it's clear.
+    const droppedClient = mig.env === "server" ? res.build.filter((m) => m.clientOnly) : [];
+    const dropped = [
+      ...res.miss.map((x) => x.name),
+      ...droppedClient.map((x) => `${x.name} (client-only)`)
+    ];
+    const created = createCollection(name, kept.map((m) => m.id));
     setLoadout(created.id, mig.loader, mig.version);
     refresh();
-    setMig((m) => (m ? { ...m, done: { name, migrated: res.build.length, dropped: res.miss.map((x) => x.name) } } : m));
+    setMig((m) => (m ? { ...m, done: { name, migrated: kept.length, dropped } } : m));
   }
 
   const toggleExpanded = useCallback((id: string) => {
@@ -362,7 +377,7 @@ export default function Collections() {
 
               <div className="col-actions">
                 {c.modIds.length > 0 && (
-                  <button type="button" className="chip-btn" onClick={() => setMig({ collection: c, version: null, checking: false, results: null, loader: null, name: "", done: null })}>
+                  <button type="button" className="chip-btn" onClick={() => setMig({ collection: c, version: null, checking: false, results: null, loader: null, env: "client", name: "", done: null })}>
                     ⇄ Migrate to another version
                   </button>
                 )}
@@ -423,23 +438,43 @@ export default function Collections() {
             ) : (
               <>
                 <h3>Move to which loader?</h3>
-                <p className="cmodal-sub">On {mig.version}, here&apos;s how many of your {mig.collection.modIds.length} mods have a build per loader. We recommend the one that keeps the most.</p>
+                <div className="migrate-env" role="group" aria-label="Pack environment">
+                  <button
+                    type="button"
+                    className={`migrate-env-opt${mig.env === "client" ? " on" : ""}`}
+                    onClick={() => setMig((m) => (m ? { ...m, env: "client" } : m))}
+                  >
+                    🖥️ Client<span className="migrate-env-hint">for playing</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`migrate-env-opt${mig.env === "server" ? " on" : ""}`}
+                    onClick={() => setMig((m) => (m ? { ...m, env: "server" } : m))}
+                  >
+                    🗄️ Server<span className="migrate-env-hint">drops client-only mods</span>
+                  </button>
+                </div>
+                <p className="cmodal-sub">On {mig.version}, here&apos;s how many of your {mig.collection.modIds.length} mods come along per loader{mig.env === "server" ? " (client-only mods excluded)" : ""}. We recommend the one that keeps the most.</p>
                 <ul className="cmodal-list">
-                  {mig.results!.slice().sort((a, b) => b.build.length - a.build.length).map((r) => (
-                    <li key={r.loader}>
-                      <button
-                        type="button"
-                        className={`cmodal-row${mig.loader === r.loader ? " on" : ""}`}
-                        onClick={() => setMig((m) => (m ? { ...m, loader: r.loader } : m))}
-                      >
-                        <span className="cmodal-row-name">
-                          {LOADER_LABEL[r.loader]}
-                          {r === mig.results!.reduce((a, b) => (b.build.length > a.build.length ? b : a)) && <span className="migrate-rec"> Recommended</span>}
-                        </span>
-                        <span className="cmodal-row-count">{r.build.length} / {r.build.length + r.miss.length} mods</span>
-                      </button>
-                    </li>
-                  ))}
+                  {mig.results!.slice().sort((a, b) => keptFor(b.build, mig.env).length - keptFor(a.build, mig.env).length).map((r) => {
+                    const kept = keptFor(r.build, mig.env).length;
+                    const best = mig.results!.reduce((a, b) => (keptFor(b.build, mig.env).length > keptFor(a.build, mig.env).length ? b : a));
+                    return (
+                      <li key={r.loader}>
+                        <button
+                          type="button"
+                          className={`cmodal-row${mig.loader === r.loader ? " on" : ""}`}
+                          onClick={() => setMig((m) => (m ? { ...m, loader: r.loader } : m))}
+                        >
+                          <span className="cmodal-row-name">
+                            {LOADER_LABEL[r.loader]}
+                            {r === best && <span className="migrate-rec"> Recommended</span>}
+                          </span>
+                          <span className="cmodal-row-count">{kept} / {mig.collection.modIds.length} mods</span>
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
                 <div className="cmodal-new">
                   <input className="cmodal-input" value={mig.name} onChange={(e) => setMig((m) => (m ? { ...m, name: e.target.value } : m))} aria-label="New collection name" placeholder="New collection name" />
