@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { Mod } from "@/lib/sources/types";
 import { TAG_LABELS, type Tag } from "@/lib/curation/tags";
@@ -97,7 +97,17 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
   const isCompatibleWithTarget = (mod: Mod) =>
     !lock || (mod.loaders.includes(lock.loader) && mod.gameVersions.includes(lock.version));
 
+  // Loader/version not chosen yet -> Add scrolls back up to the picker and flashes it.
+  const chooserRef = useRef<HTMLDivElement>(null);
+  const [flashChooser, setFlashChooser] = useState(false);
+  function requireChoice() {
+    chooserRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setFlashChooser(true);
+    window.setTimeout(() => setFlashChooser(false), 1600);
+  }
+
   async function handleAdd(modId: string) {
+    if (needsChoice) { requireChoice(); return; }
     const loaderSel = lock?.loader ?? (filter.loader !== "all" ? filter.loader : undefined);
     const versionSel = lock?.version ?? (filter.version !== "all" ? filter.version : undefined);
     // Verify a real jar exists for this loader+version before adding (project tags lie).
@@ -153,20 +163,22 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
         {status === "ready" && (
           <>
             <CollectionPicker collections={collections} targetId={targetId} onSelect={selectTarget} onCreate={(n) => createAndSelect(n)} />
-            {needsChoice && (
-              <p className="filter-prompt" role="status">
-                Pick a mod loader and Minecraft version for <b>{target?.name}</b> before adding mods. That&apos;s what the pack is built for.
-              </p>
-            )}
-            <ModFilterBar
-              filter={filter}
-              versions={versions}
-              onChange={changeFilter}
-              lockLoader={lock?.loader}
-              lockVersion={lock?.version}
-              needLoader={needsChoice && filter.loader === "all"}
-              needVersion={needsChoice && filter.version === "all"}
-            />
+            <div ref={chooserRef} className={`explore-chooser${flashChooser ? " flash" : ""}`}>
+              {needsChoice && (
+                <p className="filter-prompt" role="status">
+                  Pick a mod loader and Minecraft version for <b>{target?.name}</b> before adding mods. That&apos;s what the pack is built for.
+                </p>
+              )}
+              <ModFilterBar
+                filter={filter}
+                versions={versions}
+                onChange={changeFilter}
+                lockLoader={lock?.loader}
+                lockVersion={lock?.version}
+                needLoader={needsChoice && filter.loader === "all"}
+                needVersion={needsChoice && filter.version === "all"}
+              />
+            </div>
             {addBusy && <p className="add-feedback checking" role="status">Checking this mod builds for your loadout…</p>}
             {addError && <p className="add-feedback err" role="alert">{addError}</p>}
             <div className="row-head">
@@ -183,7 +195,7 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
                     mod={mod}
                     i={i}
                     added={added.has(mod.id)}
-                    disabled={needsChoice || addBusy === mod.id || (!added.has(mod.id) && !isCompatibleWithTarget(mod))}
+                    disabled={addBusy === mod.id || (!added.has(mod.id) && !isCompatibleWithTarget(mod))}
                     onAdd={handleAdd}
                     onRemove={removeFromTarget}
                   />

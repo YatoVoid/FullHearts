@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { Mod } from "@/lib/sources/types";
 import { TAGS, TAG_LABELS, type Tag } from "@/lib/curation/tags";
@@ -202,7 +202,18 @@ export default function Explore() {
   const isCompatibleWithTarget = (mod: Mod) =>
     !lock || (mod.loaders.includes(lock.loader) && mod.gameVersions.includes(lock.version));
 
+  // When a collection is targeted but loader/version isn't chosen yet, clicking
+  // Add scrolls back up to the picker and flashes it so the user sees what's missing.
+  const chooserRef = useRef<HTMLDivElement>(null);
+  const [flashChooser, setFlashChooser] = useState(false);
+  function requireChoice() {
+    chooserRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setFlashChooser(true);
+    window.setTimeout(() => setFlashChooser(false), 1600);
+  }
+
   async function handleAdd(modId: string) {
+    if (needsChoice) { requireChoice(); return; }
     const loaderSel = lock?.loader ?? (filter.loader !== "all" ? filter.loader : undefined);
     const versionSel = lock?.version ?? (filter.version !== "all" ? filter.version : undefined);
     // VERIFY the mod actually has a jar for this exact loader + version before it
@@ -231,7 +242,7 @@ export default function Explore() {
       mod={mod}
       i={i}
       added={added.has(mod.id)}
-      disabled={needsChoice || addBusy === mod.id || (!added.has(mod.id) && !isCompatibleWithTarget(mod))}
+      disabled={addBusy === mod.id || (!added.has(mod.id) && !isCompatibleWithTarget(mod))}
       onAdd={handleAdd}
       onRemove={removeFromTarget}
     />
@@ -286,20 +297,22 @@ export default function Explore() {
                 )}
               </div>
             )}
-            {needsChoice && (
-              <p className="filter-prompt" role="status">
-                Pick a mod loader and Minecraft version for <b>{target?.name}</b> before adding mods. That&apos;s what the pack is built for.
-              </p>
-            )}
-            <ModFilterBar
-              filter={filter}
-              versions={versions}
-              onChange={changeFilter}
-              lockLoader={lock?.loader}
-              lockVersion={lock?.version}
-              needLoader={needsChoice && filter.loader === "all"}
-              needVersion={needsChoice && filter.version === "all"}
-            />
+            <div ref={chooserRef} className={`explore-chooser${flashChooser ? " flash" : ""}`}>
+              {needsChoice && (
+                <p className="filter-prompt" role="status">
+                  Pick a mod loader and Minecraft version for <b>{target?.name}</b> before adding mods. That&apos;s what the pack is built for.
+                </p>
+              )}
+              <ModFilterBar
+                filter={filter}
+                versions={versions}
+                onChange={changeFilter}
+                lockLoader={lock?.loader}
+                lockVersion={lock?.version}
+                needLoader={needsChoice && filter.loader === "all"}
+                needVersion={needsChoice && filter.version === "all"}
+              />
+            </div>
             <div className="explore-search">
               <input
                 type="search"
