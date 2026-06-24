@@ -1,6 +1,10 @@
-// Server-host affiliate CTA. BisectHosting is primary because it installs
-// Modrinth (.mrpack) modpacks in one click and runs a recurring creator
-// program; Shockbyte ($4/sale) is the budget secondary. Override either via env.
+// Server-host affiliate CTA (both links are our affiliate URLs).
+// BisectHosting is the primary "Get a server": it installs Modrinth (.mrpack)
+// modpacks in ONE click (exactly what this site exports) and its budget tier is
+// $2.99/mo, premium $7.99/mo for real modded RAM.
+// Shockbyte is the secondary "Budget option": its entry tier is cheaper
+// (~$1.99-2.50/mo), so it's the genuine cheapest pick. (Verified June 2026.)
+// Override either via env ONLY with another affiliate URL.
 const BISECT =
   process.env.NEXT_PUBLIC_HOST_REF_BISECT ||
   "https://www.bisecthosting.com/clients/aff.php?aff=7330";
