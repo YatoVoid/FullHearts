@@ -7,7 +7,7 @@ import type { Tag } from "@/lib/curation/tags";
  * `library` and `cursed` are intentionally excluded from the discovery pool.
  */
 const CATEGORY_TAGS: Record<string, Partial<Record<Tag, number>>> = {
-  optimization: { performance: 1, "low-end": 0.6 },
+  optimization: { performance: 1 },
   decoration: { building: 1 },
   worldgen: { biome: 0.9, structures: 0.6, exploration: 0.6 },
   magic: { magic: 1 },
@@ -62,7 +62,6 @@ const TEXT_TAG_KEYWORDS: Partial<Record<Tag, string[]>> = {
   rpg: ["quest", "skill tree", "leveling", "level up", "classes", "rpg"],
   coop: ["multiplayer", "server-side", "co-op"],
   "low-grind": ["cozy", "casual", "relaxing", "wholesome"],
-  "low-end": ["low-end", "potato pc", "older hardware"],
   structures: ["structure", "dungeon", "villages", "ruins", "towers", "temples"],
   biome: ["biome", "terrain", "worldgen", "world generation"],
   mobs: ["creatures", "monsters", "new mobs", "mob variants"],
@@ -136,7 +135,6 @@ const REASON_BY_TAG: Record<Tag, string> = {
   rpg: "it adds RPG progression",
   coop: "it shines in multiplayer",
   "low-grind": "it keeps things cozy and low-grind",
-  "low-end": "it runs light on older hardware",
   structures: "it adds new places to discover",
   biome: "it enriches your world's biomes",
   mobs: "it brings new creatures to your world",

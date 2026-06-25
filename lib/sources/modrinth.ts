@@ -194,7 +194,8 @@ interface MrSearchResponse {
 const SEARCH_FACETS = [
   null, // broad, most-downloaded
   "optimization", "worldgen", "magic", "technology",
-  "adventure", "mobs", "food", "utility", "decoration"
+  "adventure", "mobs", "food", "utility", "decoration",
+  "social" // multiplayer/co-op mods (were under-represented without their own facet)
 ];
 
 /** Optional loader/version targeting so the pool matches the user's profile. */
@@ -202,6 +203,24 @@ export interface SearchOpts {
   loader?: Loader;
   version?: string;
   limit?: number;
+}
+
+/**
+ * Visual mods aren't a Modrinth *mod* category — shaders and resource packs are
+ * separate project types — so a facet can't surface them. We pull visual mods
+ * with a text query instead; text mining then tags them `visual`.
+ */
+async function searchVisual(limit: number, opts: SearchOpts): Promise<MrSearchHit[]> {
+  const facets: string[][] = [["project_type:mod"]];
+  if (opts.loader) facets.push([`categories:${opts.loader}`]);
+  if (opts.version) facets.push([`versions:${opts.version}`]);
+  const path = `/search?query=shaders&limit=${limit}&index=downloads&facets=${encodeURIComponent(JSON.stringify(facets))}`;
+  try {
+    const res = await mrFetch<MrSearchResponse>(path);
+    return res.hits ?? [];
+  } catch {
+    return [];
+  }
 }
 
 async function searchOne(category: string | null, limit: number, opts: SearchOpts): Promise<MrSearchHit[]> {
@@ -229,7 +248,10 @@ async function searchOne(category: string | null, limit: number, opts: SearchOpt
  */
 export async function searchMods(opts: SearchOpts = {}): Promise<Mod[]> {
   const limit = opts.limit ?? 60;
-  const batches = await Promise.all(SEARCH_FACETS.map((c) => searchOne(c, limit, opts)));
+  const batches = await Promise.all([
+    ...SEARCH_FACETS.map((c) => searchOne(c, limit, opts)),
+    searchVisual(limit, opts)
+  ]);
   const bySlug = new Map<string, Mod>();
   for (const hits of batches) {
     for (const hit of hits) {
@@ -261,6 +283,27 @@ export async function searchModrinthQuery(
   try {
     const res = await mrFetch<MrSearchResponse>(path);
     return (res.hits ?? []).map(normalizeSearchHit);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Live category browse: more mods for a single Modrinth category, most-downloaded
+ * first, libraries dropped. Used by "Show all" when the quality filter is off, to
+ * surface lesser-known mods the curated pool doesn't carry.
+ */
+export async function searchModrinthCategory(
+  category: string,
+  opts: { loader?: Loader; version?: string; limit?: number } = {}
+): Promise<Mod[]> {
+  const facets: string[][] = [["project_type:mod"], [`categories:${category}`]];
+  if (opts.loader) facets.push([`categories:${opts.loader}`]);
+  if (opts.version) facets.push([`versions:${opts.version}`]);
+  const path = `/search?limit=${opts.limit ?? 100}&index=downloads&facets=${encodeURIComponent(JSON.stringify(facets))}`;
+  try {
+    const res = await mrFetch<MrSearchResponse>(path);
+    return (res.hits ?? []).filter((h) => !isLibraryHit(h)).map(normalizeSearchHit);
   } catch {
     return [];
   }

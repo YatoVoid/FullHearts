@@ -10,7 +10,7 @@ export const CATALOG: CuratedMod[] = [
     id: "sodium",
     name: "Sodium",
     summary: "Rebuilds the rendering engine for big FPS gains with no visual downsides.",
-    curatedTags: { performance: 1, "low-end": 1 },
+    curatedTags: { performance: 1 },
     reasonTemplate: "you wanted better performance",
     modrinthSlug: "sodium"
   },
@@ -18,7 +18,7 @@ export const CATALOG: CuratedMod[] = [
     id: "lithium",
     name: "Lithium",
     summary: "Optimizes tick logic, mob AI, and physics without changing behavior.",
-    curatedTags: { performance: 0.9, "low-end": 0.8 },
+    curatedTags: { performance: 0.9 },
     reasonTemplate: "you wanted smoother performance",
     modrinthSlug: "lithium"
   },
@@ -26,7 +26,7 @@ export const CATALOG: CuratedMod[] = [
     id: "ferritecore",
     name: "FerriteCore",
     summary: "Cuts memory usage by storing block and chunk data more efficiently.",
-    curatedTags: { performance: 0.7, "low-end": 0.9 },
+    curatedTags: { performance: 0.7 },
     reasonTemplate: "you're on limited hardware",
     modrinthSlug: "ferrite-core"
   },
@@ -162,7 +162,7 @@ export const CATALOG: CuratedMod[] = [
     id: "sodium-extra",
     name: "Sodium Extra",
     summary: "Extra video-setting toggles on top of Sodium for fine performance tuning.",
-    curatedTags: { performance: 0.7, "low-end": 0.7, interface: 0.4 },
+    curatedTags: { performance: 0.7, interface: 0.4 },
     reasonTemplate: "you wanted more performance control",
     modrinthSlug: "sodium-extra"
   },
@@ -218,7 +218,7 @@ export const CATALOG: CuratedMod[] = [
     id: "modernfix",
     name: "ModernFix",
     summary: "Faster load times and lower memory use, stacks with other optimizers.",
-    curatedTags: { performance: 1, "low-end": 0.8 },
+    curatedTags: { performance: 1 },
     reasonTemplate: "you wanted faster loading and less RAM use",
     modrinthSlug: "modernfix"
   },

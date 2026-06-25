@@ -6,9 +6,10 @@ import type { Mod } from "@/lib/sources/types";
 import { TAG_LABELS, type Tag } from "@/lib/curation/tags";
 import { useCollectionTarget } from "@/lib/storage/useCollectionTarget";
 import { loadPool } from "@/lib/catalog/clientPool";
-import { fetchModsBySlugs } from "@/lib/sources/modrinth";
+import { fetchModsBySlugs, searchModrinthCategory, searchModrinthQuery } from "@/lib/sources/modrinth";
 import { modBuildsFor } from "@/lib/modpack/mrpack";
 import { type ModFilter, DEFAULT_FILTER, loadFilter, saveFilter, matchesFilter, versionOptions } from "@/lib/catalog/filter";
+import { useDialog } from "@/components/useDialog";
 import { HEART_SRC } from "@/lib/asset";
 import Footer from "@/components/Footer";
 import ModCard from "@/components/ModCard";
@@ -17,6 +18,32 @@ import CollectionPicker from "@/components/CollectionPicker";
 import ScrollTop from "@/components/ScrollTop";
 
 const MATCH_THRESHOLD = 0.5; // same bar Explore uses to place a mod in a tag
+
+// What to pull live for "show more" per tag. Most tags map to a Modrinth
+// category; visuals and cozy aren't categories (shaders/resource packs are their
+// own project types) so they fall back to a text query — the "logic differs by
+// sub-category" case.
+const LIVE_CATEGORY: Partial<Record<Tag, string>> = {
+  performance: "optimization",
+  interface: "utility",
+  building: "decoration",
+  exploration: "adventure",
+  automation: "technology",
+  tech: "technology",
+  magic: "magic",
+  combat: "equipment",
+  rpg: "adventure",
+  coop: "social",
+  structures: "worldgen",
+  biome: "worldgen",
+  mobs: "mobs",
+  food: "food",
+  qol: "utility"
+};
+const LIVE_QUERY: Partial<Record<Tag, string>> = {
+  visual: "shaders",
+  "low-grind": "cozy"
+};
 
 const HEART = (
   <img
@@ -32,9 +59,13 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
   const [mods, setMods] = useState<Mod[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const { collections, targetId, selectTarget, createAndSelect, addToTarget, removeFromTarget, added } = useCollectionTarget();
+  const { confirm: askConfirm, dialog } = useDialog();
   const [addBusy, setAddBusy] = useState<string | null>(null);
   const [addError, setAddError] = useState("");
   const [filter, setFilter] = useState<ModFilter>(DEFAULT_FILTER);
+  const [qualityOn, setQualityOn] = useState(true);
+  const [live, setLive] = useState<Mod[]>([]);
+  const [liveLoading, setLiveLoading] = useState(false);
 
   useEffect(() => {
     setFilter(loadFilter());
@@ -112,7 +143,7 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
     const versionSel = lock?.version ?? (filter.version !== "all" ? filter.version : undefined);
     // Verify a real jar exists for this loader+version before adding (project tags lie).
     if (loaderSel && versionSel) {
-      const mod = [...mods, ...Object.values(extraTargetMods)].find((m) => m.id === modId);
+      const mod = [...mods, ...live, ...Object.values(extraTargetMods)].find((m) => m.id === modId);
       if (mod) {
         setAddError("");
         setAddBusy(modId);
@@ -133,6 +164,63 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
         .filter((m) => (m.curatedTags[tag] ?? 0) >= MATCH_THRESHOLD && matchesFilter(m, filter))
         .sort((a, b) => (b.downloads ?? 0) - (a.downloads ?? 0)),
     [mods, tag, filter]
+  );
+
+  // When the quality filter is off, pull lesser-known mods for this category live
+  // from Modrinth — the curated pool only carries the most popular ones, so this
+  // is what actually fills out thin categories on demand.
+  useEffect(() => {
+    if (qualityOn) { setLive([]); return; }
+    let cancelled = false;
+    setLiveLoading(true);
+    (async () => {
+      const o = {
+        loader: filter.loader === "all" ? undefined : filter.loader,
+        version: filter.version === "all" ? undefined : filter.version,
+        limit: 100
+      };
+      const cat = LIVE_CATEGORY[tag];
+      const hits = cat ? await searchModrinthCategory(cat, o) : await searchModrinthQuery(LIVE_QUERY[tag] ?? tag, o);
+      if (cancelled) return;
+      setLive(hits);
+      setLiveLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [qualityOn, tag, filter]);
+
+  // Live mods not already shown from the curated pool, respecting the loader/version.
+  const extra = useMemo(() => {
+    if (qualityOn) return [];
+    const known = new Set<string>();
+    for (const m of inTag) { known.add(m.id); if (m.modrinthSlug) known.add(m.modrinthSlug); }
+    return live.filter((m) => !known.has(m.id) && !known.has(m.modrinthSlug ?? "") && matchesFilter(m, filter));
+  }, [live, inTag, qualityOn, filter]);
+
+  async function toggleQuality() {
+    if (qualityOn) {
+      const ok = await askConfirm({
+        title: "Turn off the quality filter?",
+        body: "This shows lesser-known mods in this category, including untested, niche, or abandoned ones. Great for digging deeper, but less guaranteed to work cleanly.",
+        confirmLabel: "Show more mods",
+        icon: "alert"
+      });
+      if (!ok) return;
+      setQualityOn(false);
+    } else {
+      setQualityOn(true);
+    }
+  }
+
+  const card = (mod: Mod, i: number) => (
+    <ModCard
+      key={mod.id}
+      mod={mod}
+      i={i}
+      added={added.has(mod.id)}
+      disabled={addBusy === mod.id || (!added.has(mod.id) && !isCompatibleWithTarget(mod))}
+      onAdd={handleAdd}
+      onRemove={removeFromTarget}
+    />
   );
 
   return (
@@ -183,31 +271,30 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
             {addError && <p className="add-feedback err" role="alert">{addError}</p>}
             <div className="row-head">
               <h2>{TAG_LABELS[tag]}</h2>
-              <span className="count">{inTag.length} mods</span>
+              <div className="row-head-right">
+                <span className="count">{inTag.length}{!qualityOn && extra.length > 0 ? ` + ${extra.length}` : ""} mods</span>
+                <label className="quality-toggle">
+                  <input type="checkbox" checked={qualityOn} onChange={toggleQuality} />
+                  High-quality only
+                </label>
+              </div>
             </div>
-            {inTag.length === 0 ? (
+            {inTag.length === 0 && extra.length === 0 && !liveLoading ? (
               <p className="results-state">No mods match this loader/version in this theme.</p>
             ) : (
               <div className="grid">
-                {inTag.map((mod, i) => (
-                  <ModCard
-                    key={mod.id}
-                    mod={mod}
-                    i={i}
-                    added={added.has(mod.id)}
-                    disabled={addBusy === mod.id || (!added.has(mod.id) && !isCompatibleWithTarget(mod))}
-                    onAdd={handleAdd}
-                    onRemove={removeFromTarget}
-                  />
-                ))}
+                {inTag.map((mod, i) => card(mod, i))}
+                {extra.map((mod, i) => card(mod, inTag.length + i))}
               </div>
             )}
+            {liveLoading && <p className="results-state">Finding more mods on Modrinth…</p>}
           </>
         )}
       </main>
 
       <ScrollTop />
       <Footer />
+      {dialog}
     </>
   );
 }

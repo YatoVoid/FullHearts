@@ -2,14 +2,14 @@ import type { Tag } from "@/lib/curation/tags";
 import type { Mod } from "@/lib/sources/types";
 
 /**
- * "Background" tags: performance, visuals, UI/HUD, quality-of-life, low-end, and
+ * "Background" tags: performance, visuals, UI/HUD, quality-of-life, and
  * multiplayer plumbing. These mods are useful life-additions but they don't
  * change what you DO in the game. A themed pack ("cozy builder") is really about
  * its CONTENT mods (building, food, structures, magic…), so background mods must
  * NOT eat the content slots — they ride along as a small bounded extra instead.
  */
 export const BACKGROUND_TAGS: Tag[] = [
-  "performance", "visual", "low-end", "interface", "qol", "low-grind", "coop"
+  "performance", "visual", "interface", "qol", "low-grind", "coop"
 ];
 
 const isBg = (t: string) => (BACKGROUND_TAGS as string[]).includes(t);

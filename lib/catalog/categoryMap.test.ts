@@ -13,7 +13,7 @@ describe("category mapping", () => {
     const tags = tagsFromCategories(["fabric", "library", "cursed", "optimization"]);
     expect(tags.performance).toBe(1);
     // no tag leaked from fabric/library/cursed
-    expect(Object.keys(tags)).toEqual(expect.arrayContaining(["performance", "low-end"]));
+    expect(Object.keys(tags)).toEqual(expect.arrayContaining(["performance"]));
     expect(tags).not.toHaveProperty("magic");
   });
 

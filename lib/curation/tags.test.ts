@@ -4,7 +4,7 @@ import { TAGS, TAG_LABELS, isTag } from "@/lib/curation/tags";
 describe("tags", () => {
   it("includes the core taxonomy and new discovery tags", () => {
     for (const t of [
-      "performance", "building", "automation", "magic", "low-grind", "low-end",
+      "performance", "building", "automation", "magic", "low-grind",
       "structures", "biome", "mobs", "food", "qol"
     ]) {
       expect(TAGS).toContain(t);

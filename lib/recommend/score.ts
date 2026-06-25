@@ -36,7 +36,7 @@ export function score(mod: Mod, profile: Profile): number {
 
   let s = theme + POPULARITY_WEIGHT * popularityBoost(mod);
   if (profile.lowEnd) {
-    const lightweight = (mod.curatedTags.performance ?? 0) > 0 || (mod.curatedTags["low-end"] ?? 0) > 0;
+    const lightweight = (mod.curatedTags.performance ?? 0) > 0;
     if (!lightweight) s -= LOW_END_PENALTY;
   }
   return s;

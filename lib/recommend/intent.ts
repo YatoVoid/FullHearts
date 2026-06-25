@@ -25,13 +25,18 @@ const TAG_KEYWORDS: Record<Tag, string[]> = {
   rpg: ["rpg", "quest", "level up", "leveling", "skill tree", "class", "progress", "story", "loot", "dungeon crawl"],
   coop: ["friend", "multiplayer", "co-op", "coop", "together", "smp", "with my", "server"],
   "low-grind": ["cozy", "casual", "relax", "chill", "low grind", "low-grind", "peaceful", "slow paced", "laid back", "comfy"],
-  "low-end": ["low end", "low-end", "potato", "old pc", "old computer", "weak", "laptop", "toaster", "bad pc", "struggle to run"],
   structures: ["structure", "dungeon", "village", "ruin", "tower", "temple", "landmark", "new places"],
   biome: ["biome", "terrain", "world gen", "worldgen", "landscape", "scenery", "nature"],
   mobs: ["mob", "creature", "animal", "monster", "enemy", "beast", "wildlife"],
   food: ["food", "farm", "cook", "crop", "agricultur", "eat", "recipe", "kitchen"],
   qol: ["quality of life", "qol", "convenien", "tweak", "helpful", "utility", "storage", "inventory", "minimap", "map", "waypoint"]
 };
+
+// "Low-end" is no longer a browse tag, but the constraint still matters: it
+// drives the heavy-mod penalty (score.ts) and the reply phrase. Detected as a
+// standalone flag, not a tag weight.
+const LOW_END_KEYWORDS = ["low end", "low-end", "potato", "old pc", "old computer", "weak", "laptop", "toaster", "bad pc", "struggle to run"];
+const LOW_END_PHRASE = "running light on older hardware";
 
 // Phrases that flip a following tag mention into a negative.
 const NEGATIONS = ["no ", "not ", "without ", "don't", "dont", "hate", "avoid", "skip ", "dislike", "less ", "minus "];
@@ -85,8 +90,7 @@ export function parseIntent(raw: string): ParsedIntent {
   const ver = raw.toLowerCase().match(/1\.(?:1[0-9]|2[0-9])(?:\.\d+)?/); // 1.10–1.29(.x)
   if (ver) gameVersion = ver[0];
 
-  const lowEnd = (weights["low-end"] ?? 0) > 0 || /potato|toaster|old (pc|computer|laptop)|can'?t run|struggle to run/.test(text);
-  if (lowEnd) weights["low-end"] = Math.max(weights["low-end"] ?? 0, 1);
+  const lowEnd = LOW_END_KEYWORDS.some((w) => text.includes(w));
 
   let maxMods = 25; // text mode default: a solid set
   if (/\b(minimal|just essentials|essentials only|few mods|lightweight|keep it small|small|light)\b/.test(text)) maxMods = 10;
@@ -96,7 +100,6 @@ export function parseIntent(raw: string): ParsedIntent {
   return {
     profile: { weights, loader, gameVersion, maxMods, lowEnd },
     matched: Object.entries(weights)
-      .filter(([t]) => t !== "low-end")
       .sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))
       .map(([t]) => t as Tag)
   };
@@ -140,7 +143,6 @@ const TAG_PHRASES: Record<Tag, string> = {
   rpg: "RPG progression",
   coop: "multiplayer",
   "low-grind": "a cozy, low-grind pace",
-  "low-end": "running light on older hardware",
   structures: "new structures & dungeons",
   biome: "richer biomes",
   mobs: "new creatures",
@@ -158,7 +160,7 @@ function pick<T>(arr: T[], seed: string): T {
 /** Join matched tags into a friendly clause: "magic, exploration and a cozy pace". */
 function describeMatched(matched: Tag[], lowEnd: boolean): string {
   const phrases = matched.slice(0, 3).map((t) => TAG_PHRASES[t]);
-  if (lowEnd) phrases.push(TAG_PHRASES["low-end"]);
+  if (lowEnd) phrases.push(LOW_END_PHRASE);
   if (phrases.length === 0) return "";
   if (phrases.length === 1) return phrases[0];
   return `${phrases.slice(0, -1).join(", ")} and ${phrases[phrases.length - 1]}`;
