@@ -82,19 +82,30 @@ export function recommend(answers: QuizAnswers, mods: Mod[], limit?: number): Re
  * ("solar panels") returns only the mods that genuinely match — no padding to a
  * fixed count — while a rich description still fills a loadout.
  */
+// How hard an unwanted match ("no combat") counts against a mod. Same scale as
+// the positive tag multiplier, so a mod that's mostly what they DON'T want drops
+// below zero relevance and is dropped entirely.
+const NEG_PENALTY = 1.5;
+
 export function recommendFromQuery(text: string, mods: Mod[], limit?: number): Recommendation {
-  const { profile } = parseIntent(text);
-  const terms = expandTerms(text);
+  const { profile, negativeTerms } = parseIntent(text);
+
+  // Negated words (+ synonyms) must not boost positively, and should push down.
+  const negTerms = expandTerms(negativeTerms.join(" "));
+  const negSet = new Set(negTerms);
+  const terms = expandTerms(text).filter((t) => !negSet.has(t));
+  const negWeights = profile.negativeWeights ?? {};
 
   const scored = mods
     .filter((m) => passesHardFilters(m, profile))
     .map((m) => {
       const tagS = tagScore(m, profile.weights);
       const lexS = lexicalScore(m, terms);
-      return { mod: m, rel: lexS + tagS * 1.5, lexS, tagS };
+      const negS = lexicalScore(m, negTerms) + tagScore(m, negWeights) * 1.5;
+      return { mod: m, rel: lexS + tagS * 1.5 - NEG_PENALTY * negS, lexS, tagS };
     })
-    // Must actually match something — a tag affinity or a word in name/desc.
-    .filter((x) => x.lexS > 0 || x.tagS >= 0.5)
+    // Must match something positive AND not be dominated by what they don't want.
+    .filter((x) => (x.lexS > 0 || x.tagS >= 0.5) && x.rel > 0)
     .sort((a, b) => b.rel - a.rel || (b.mod.downloads ?? 0) - (a.mod.downloads ?? 0));
 
   // Don't invent filler: take only real matches, capped by the size preference

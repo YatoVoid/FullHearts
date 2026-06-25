@@ -55,4 +55,22 @@ describe("recommendFromQuery", () => {
   it("returns nothing for a query with no matches", () => {
     expect(recommendFromQuery("zzzqqq", pool).results).toHaveLength(0);
   });
+
+  it("excludes what the user said they don't want", () => {
+    const magic = mod("ars", "Ars Nouveau", "spells, arcane magic and mana", { curatedTags: { magic: 1 } });
+    const combat = mod("combat", "Combat Plus", "adds weapons and fighting", { curatedTags: { combat: 1 } });
+    const { results } = recommendFromQuery("magic but no combat", [magic, combat]);
+    const ids = results.map((r) => r.mod.id);
+    expect(ids).toContain("ars");
+    expect(ids).not.toContain("combat");
+  });
+
+  it("a negated word never boosts a matching mod", () => {
+    // "no guns" must not pull a gun mod in via lexical match on the word "guns".
+    const gun = mod("tac", "TacZ", "realistic guns, firearms and rifles", { curatedTags: { combat: 1 } });
+    const farm = mod("farmers", "Farmer's Delight", "cooking, crops and farming", { curatedTags: { food: 1 } });
+    const ids = recommendFromQuery("cozy farming, no guns", [gun, farm]).results.map((r) => r.mod.id);
+    expect(ids).toContain("farmers");
+    expect(ids).not.toContain("tac");
+  });
 });

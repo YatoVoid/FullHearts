@@ -53,16 +53,31 @@ function isNegated(text: string, idx: number): boolean {
   return NEGATIONS.some((n) => window.includes(n));
 }
 
+/** Content words the user negated ("no guns", "without grinding") — used to
+ *  down-rank mods whose name/description matches them, even when the word isn't a tag. */
+function negatedTokens(text: string): string[] {
+  const out = new Set<string>();
+  for (const m of text.matchAll(/[a-z0-9'-]+/g)) {
+    const word = m[0];
+    if (word.length < 3) continue;
+    if (isNegated(text, m.index ?? 0)) out.add(word);
+  }
+  return [...out];
+}
+
 export interface ParsedIntent {
   profile: Profile;
   /** Tags we detected positively, strongest first (for the reply + summary). */
   matched: Tag[];
+  /** Raw words the user negated, for lexical down-ranking in free-text search. */
+  negativeTerms: string[];
 }
 
 /** Turn free text into a weighted Profile + the ordered list of matched tags. */
 export function parseIntent(raw: string): ParsedIntent {
   const text = ` ${normalize(raw)} `;
   const weights: Partial<Record<Tag, number>> = {};
+  const negativeWeights: Partial<Record<Tag, number>> = {};
 
   for (const [tag, words] of Object.entries(TAG_KEYWORDS) as [Tag, string[]][]) {
     let hits = 0;
@@ -79,6 +94,7 @@ export function parseIntent(raw: string): ParsedIntent {
     }
     const net = hits - negatedHits;
     if (net > 0) weights[tag] = Math.min(net, 3); // cap so one word can't dominate
+    else if (negatedHits > 0) negativeWeights[tag] = Math.min(negatedHits, 3); // they don't want this
   }
 
   // Hard filters / constraints.
@@ -98,10 +114,11 @@ export function parseIntent(raw: string): ParsedIntent {
   else if (/\b(big|lots|large)\b/.test(text)) maxMods = 40;
 
   return {
-    profile: { weights, loader, gameVersion, maxMods, lowEnd },
+    profile: { weights, negativeWeights, loader, gameVersion, maxMods, lowEnd },
     matched: Object.entries(weights)
       .sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))
-      .map(([t]) => t as Tag)
+      .map(([t]) => t as Tag),
+    negativeTerms: negatedTokens(text)
   };
 }
 

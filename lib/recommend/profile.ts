@@ -5,6 +5,10 @@ import { QUESTIONS, type QuizAnswers } from "@/lib/curation/questions";
 /** A weighted preference profile plus the hard filters from the basics step. */
 export interface Profile {
   weights: Partial<Record<Tag, number>>;
+  /** Tags the user explicitly does NOT want ("no combat", "without grind").
+   *  Penalized in free-text (describe) ranking only — the quiz never sets these,
+   *  so its scoring is unchanged. */
+  negativeWeights?: Partial<Record<Tag, number>>;
   loader: Loader;
   gameVersion: string;
   maxMods: number;

@@ -15,6 +15,14 @@ describe("parseIntent", () => {
     expect(profile.weights.combat ?? 0).toBe(0);
   });
 
+  it("records what the user does NOT want as negative weights and terms", () => {
+    const { profile, negativeTerms } = parseIntent("magic but no combat");
+    expect((profile.weights.magic ?? 0)).toBeGreaterThan(0);
+    expect((profile.negativeWeights?.combat ?? 0)).toBeGreaterThan(0);
+    expect(profile.weights.combat ?? 0).toBe(0);
+    expect(negativeTerms).toContain("combat");
+  });
+
   it("reads constraints: loader, version, low-end and size", () => {
     const { profile } = parseIntent("fabric 1.20.1, my laptop is a potato, keep it minimal");
     expect(profile.loader).toBe("fabric");
