@@ -23,6 +23,27 @@ describe("parseIntent", () => {
     expect(negativeTerms).toContain("combat");
   });
 
+  it("negation reaches the whole clause, not just the next word", () => {
+    // "battling" must map to combat (stem) and the far-away cue must still negate it.
+    const { profile } = parseIntent("I dont want to be battling mobs");
+    expect((profile.negativeWeights?.combat ?? 0)).toBeGreaterThan(0);
+    expect((profile.negativeWeights?.mobs ?? 0)).toBeGreaterThan(0);
+    expect(profile.weights.mobs ?? 0).toBe(0); // NOT treated as something they want
+  });
+
+  it("tolerates typos and verb/plural forms", () => {
+    const { matched } = parseIntent("cozy buildr who loves explorin");
+    expect(matched).toContain("building");   // "buildr"
+    expect(matched).toContain("exploration"); // "explorin"
+    expect(matched).toContain("low-grind");   // "cozy"
+  });
+
+  it("scales pack size with how much was asked for", () => {
+    const one = parseIntent("just magic").profile.maxMods;
+    const many = parseIntent("magic, tech, farming, building and exploring").profile.maxMods;
+    expect(many).toBeGreaterThan(one);
+  });
+
   it("reads constraints: loader, version, low-end and size", () => {
     const { profile } = parseIntent("fabric 1.20.1, my laptop is a potato, keep it minimal");
     expect(profile.loader).toBe("fabric");

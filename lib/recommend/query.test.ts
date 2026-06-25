@@ -73,4 +73,15 @@ describe("recommendFromQuery", () => {
     expect(ids).toContain("farmers");
     expect(ids).not.toContain("tac");
   });
+
+  it("a pure-negative request still returns a pack, minus the unwanted", () => {
+    // "I don't want to be battling mobs" → broad popular pack, combat/mob mods dropped.
+    const combat = mod("combat", "Combat Plus", "weapons and fighting", { curatedTags: { combat: 1 }, downloads: 500_000 });
+    const mobMod = mod("mobs", "Mob Mania", "tons of new monsters and creatures", { curatedTags: { mobs: 1 }, downloads: 400_000 });
+    const farm = mod("farm", "Farmer's Delight", "cooking and crops", { curatedTags: { food: 1 }, downloads: 900_000 });
+    const ids = recommendFromQuery("I dont want to be battling mobs", [combat, mobMod, farm]).results.map((r) => r.mod.id);
+    expect(ids).toContain("farm");        // a sensible mod survives
+    expect(ids).not.toContain("combat");  // unwanted dropped
+    expect(ids).not.toContain("mobs");
+  });
 });

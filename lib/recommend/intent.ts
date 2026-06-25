@@ -38,29 +38,93 @@ const TAG_KEYWORDS: Record<Tag, string[]> = {
 const LOW_END_KEYWORDS = ["low end", "low-end", "potato", "old pc", "old computer", "weak", "laptop", "toaster", "bad pc", "struggle to run"];
 const LOW_END_PHRASE = "running light on older hardware";
 
-// Phrases that flip a following tag mention into a negative.
-const NEGATIONS = ["no ", "not ", "without ", "don't", "dont", "hate", "avoid", "skip ", "dislike", "less ", "minus "];
-
 const LOADERS: Loader[] = ["fabric", "forge", "neoforge", "quilt"];
 
 function normalize(text: string): string {
   return text.toLowerCase().replace(/[^\w\s'-]/g, " ").replace(/\s+/g, " ").trim();
 }
 
-/** True if `keyword` appears in `text` while preceded (within ~12 chars) by a negation. */
-function isNegated(text: string, idx: number): boolean {
-  const window = text.slice(Math.max(0, idx - 14), idx);
-  return NEGATIONS.some((n) => window.includes(n));
+// ----- Fuzzy, grammar-tolerant matching -----
+// Goal: typos and verb/plural forms still land. "battling"→battle, "explorin"→
+// explore, "magc"→magic. Used for BOTH positive and negative detection.
+
+/** Strip the most common English suffixes so verb/plural forms collapse to a stem. */
+function stem(w: string): string {
+  return w.replace(/(ing|edly|ed|ers|er|ies|es|s|y)$/, "");
 }
 
-/** Content words the user negated ("no guns", "without grinding") — used to
- *  down-rank mods whose name/description matches them, even when the word isn't a tag. */
-function negatedTokens(text: string): string[] {
+/** Levenshtein distance, capped — only used on short keyword-sized strings. */
+function editDistance(a: string, b: string): number {
+  const m = a.length, n = b.length;
+  let prev = Array.from({ length: n + 1 }, (_, i) => i);
+  for (let i = 1; i <= m; i++) {
+    const curr = [i];
+    for (let j = 1; j <= n; j++) {
+      curr[j] = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+    prev = curr;
+  }
+  return prev[n];
+}
+
+/** Does a user token match a keyword, allowing stemming and a 1-char typo? */
+function tokenMatches(tok: string, kw: string): boolean {
+  if (tok === kw) return true;
+  const a = stem(tok), b = stem(kw);
+  if (a === b) return true;
+  // prefix either way: "magic"↔"magical", "explor"↔"exploration"
+  if (a.length >= 4 && b.length >= 4 && (a.startsWith(b) || b.startsWith(a))) return true;
+  // one typo, but only for long-enough words so "car"≈"war" can't misfire
+  if (Math.max(a.length, b.length) >= 5 && Math.min(a.length, b.length) >= 4 && editDistance(a, b) <= 1) return true;
+  return false;
+}
+
+/** Count fuzzy keyword hits in a piece of text. Multiword/hyphenated keywords
+ *  match as a plain substring; single words match per-token with stem + typo tolerance. */
+function countHits(text: string, keyword: string): number {
+  if (/[\s-]/.test(keyword)) return text.includes(keyword) ? 1 : 0;
+  let hits = 0;
+  for (const tok of text.split(/[^a-z0-9]+/)) {
+    if (tok.length < 3) continue;
+    if (tokenMatches(tok, keyword)) hits++;
+  }
+  return hits;
+}
+
+// ----- Clause-level polarity -----
+// "I don't want to be battling mobs" must make battling+mobs NEGATIVE, even
+// though the cue ("don't") is far from them. So a negation cue flips the rest of
+// its clause; clauses are split on punctuation and contrast words ("but"…).
+
+const NEG_CUE_RE = /\b(no|not|without|dont|never|hate|hates|avoid|avoiding|skip|dislike|anti|cant|cannot|stop|less)\b/;
+const CLAUSE_SPLIT_RE = /[,;.!?]+|\bbut\b|\bhowever\b|\bthough\b|\byet\b|\bexcept\b|\binstead\b|\baside from\b|\bapart from\b/;
+const CUE_WORDS = new Set(["no", "not", "without", "dont", "never", "hate", "hates", "avoid", "avoiding", "skip", "dislike", "anti", "cant", "cannot", "stop", "less", "minus"]);
+
+interface Segment { text: string; negative: boolean; }
+
+/** Split normalized text into positive/negative segments by clause. */
+function polaritySegments(text: string): Segment[] {
+  const out: Segment[] = [];
+  for (const clause of text.split(CLAUSE_SPLIT_RE)) {
+    if (!clause || !clause.trim()) continue;
+    const m = clause.match(NEG_CUE_RE);
+    if (m && m.index != null) {
+      const before = clause.slice(0, m.index);
+      const after = clause.slice(m.index);
+      if (before.trim()) out.push({ text: ` ${before} `, negative: false });
+      out.push({ text: ` ${after} `, negative: true });
+    } else {
+      out.push({ text: ` ${clause} `, negative: false });
+    }
+  }
+  return out;
+}
+
+/** Content words in a piece of text, minus negation cues — for lexical matching. */
+function contentTokens(text: string): string[] {
   const out = new Set<string>();
-  for (const m of text.matchAll(/[a-z0-9'-]+/g)) {
-    const word = m[0];
-    if (word.length < 3) continue;
-    if (isNegated(text, m.index ?? 0)) out.add(word);
+  for (const tok of text.split(/[^a-z0-9'-]+/)) {
+    if (tok.length >= 3 && !CUE_WORDS.has(tok)) out.add(tok);
   }
   return [...out];
 }
@@ -69,6 +133,8 @@ export interface ParsedIntent {
   profile: Profile;
   /** Tags we detected positively, strongest first (for the reply + summary). */
   matched: Tag[];
+  /** Wanted content words (cue-free, from the positive clauses) for lexical search. */
+  positiveTerms: string[];
   /** Raw words the user negated, for lexical down-ranking in free-text search. */
   negativeTerms: string[];
 }
@@ -76,25 +142,23 @@ export interface ParsedIntent {
 /** Turn free text into a weighted Profile + the ordered list of matched tags. */
 export function parseIntent(raw: string): ParsedIntent {
   const text = ` ${normalize(raw)} `;
+  const segments = polaritySegments(text);
+  const posText = segments.filter((s) => !s.negative).map((s) => s.text).join(" ");
+  const negText = segments.filter((s) => s.negative).map((s) => s.text).join(" ");
+
   const weights: Partial<Record<Tag, number>> = {};
   const negativeWeights: Partial<Record<Tag, number>> = {};
 
   for (const [tag, words] of Object.entries(TAG_KEYWORDS) as [Tag, string[]][]) {
-    let hits = 0;
-    let negatedHits = 0;
+    let pos = 0;
+    let neg = 0;
     for (const w of words) {
-      let from = 0;
-      for (;;) {
-        const idx = text.indexOf(w, from);
-        if (idx === -1) break;
-        if (isNegated(text, idx)) negatedHits++;
-        else hits++;
-        from = idx + w.length;
-      }
+      pos += countHits(posText, w);
+      neg += countHits(negText, w);
     }
-    const net = hits - negatedHits;
+    const net = pos - neg;
     if (net > 0) weights[tag] = Math.min(net, 3); // cap so one word can't dominate
-    else if (negatedHits > 0) negativeWeights[tag] = Math.min(negatedHits, 3); // they don't want this
+    else if (net < 0) negativeWeights[tag] = Math.min(-net, 3); // they don't want this
   }
 
   // Hard filters / constraints.
@@ -106,19 +170,25 @@ export function parseIntent(raw: string): ParsedIntent {
   const ver = raw.toLowerCase().match(/1\.(?:1[0-9]|2[0-9])(?:\.\d+)?/); // 1.10–1.29(.x)
   if (ver) gameVersion = ver[0];
 
-  const lowEnd = LOW_END_KEYWORDS.some((w) => text.includes(w));
+  const lowEnd = LOW_END_KEYWORDS.some((w) => posText.includes(w));
 
-  let maxMods = 25; // text mode default: a solid set
-  if (/\b(minimal|just essentials|essentials only|few mods|lightweight|keep it small|small|light)\b/.test(text)) maxMods = 10;
-  else if (/\b(everything|all the mods|load me up|huge|massive|as many|big haul|tons)\b/.test(text)) maxMods = 60;
-  else if (/\b(big|lots|large)\b/.test(text)) maxMods = 40;
+  // Pack size scales with how much the user asked for: an explicit size word wins,
+  // otherwise grow with the number of distinct themes so a one-theme request stays
+  // tight and a rich, multi-theme one fills out — "just enough" for the request.
+  const themeCount = Object.keys(weights).length;
+  let maxMods: number;
+  if (/\b(minimal|just essentials|essentials only|few mods|lightweight|keep it small|small|light)\b/.test(posText)) maxMods = 10;
+  else if (/\b(everything|all the mods|load me up|huge|massive|as many|big haul|tons)\b/.test(posText)) maxMods = 60;
+  else if (/\b(big|lots|large)\b/.test(posText)) maxMods = 40;
+  else maxMods = Math.min(48, Math.max(10, 8 + 8 * themeCount));
 
   return {
     profile: { weights, negativeWeights, loader, gameVersion, maxMods, lowEnd },
     matched: Object.entries(weights)
       .sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))
       .map(([t]) => t as Tag),
-    negativeTerms: negatedTokens(text)
+    positiveTerms: contentTokens(posText),
+    negativeTerms: contentTokens(negText)
   };
 }
 
@@ -174,13 +244,18 @@ function pick<T>(arr: T[], seed: string): T {
   return arr[h % arr.length];
 }
 
-/** Join matched tags into a friendly clause: "magic, exploration and a cozy pace". */
-function describeMatched(matched: Tag[], lowEnd: boolean): string {
-  const phrases = matched.slice(0, 3).map((t) => TAG_PHRASES[t]);
-  if (lowEnd) phrases.push(LOW_END_PHRASE);
+/** Join phrases into a friendly clause: "magic, exploration and a cozy pace". */
+function describeList(phrases: string[]): string {
   if (phrases.length === 0) return "";
   if (phrases.length === 1) return phrases[0];
   return `${phrases.slice(0, -1).join(", ")} and ${phrases[phrases.length - 1]}`;
+}
+
+/** Join matched tags into a friendly clause. */
+function describeMatched(matched: Tag[], lowEnd: boolean): string {
+  const phrases = matched.slice(0, 3).map((t) => TAG_PHRASES[t]);
+  if (lowEnd) phrases.push(LOW_END_PHRASE);
+  return describeList(phrases);
 }
 
 export interface ConversationTurn {
@@ -209,22 +284,27 @@ export function converse(raw: string): ConversationTurn {
   const trimmed = raw.trim();
   const intent = parseIntent(trimmed);
   const terms = tokenize(trimmed);
-  const hasTags = intent.matched.length > 0 || intent.profile.lowEnd;
+  const avoidTags = Object.keys(intent.profile.negativeWeights ?? {}) as Tag[];
+  const hasTags = intent.matched.length > 0 || intent.profile.lowEnd || avoidTags.length > 0;
 
   // A greeting with no real concept attached.
   if (!hasTags && terms.length === 0 && GREETING_RE.test(trimmed) && trimmed.length < 40) {
     return { kind: "greeting", reply: pick(GREETINGS, trimmed) };
   }
 
-  // Strong tag intent — confident playstyle reply.
+  // Strong tag intent — confident playstyle reply. Handles wants, avoids, or both.
   if (hasTags) {
-    const clause = describeMatched(intent.matched, intent.profile.lowEnd);
-    const openers = [
-      `Got it. Sounds like you're into ${clause}. I'll lean your loadout that way. 👇`,
-      `Nice. ${clause.charAt(0).toUpperCase() + clause.slice(1)} it is. Hit the button and I'll assemble it.`,
-      `Love it. I'm reading ${clause}. Ready when you are.`
-    ];
-    return { kind: "intent", reply: pick(openers, trimmed), intent, canGenerate: true };
+    const wants = describeMatched(intent.matched, intent.profile.lowEnd);
+    const avoids = describeList(avoidTags.slice(0, 3).map((t) => TAG_PHRASES[t]));
+    let reply: string;
+    if (wants && avoids) reply = `Got it — leaning your loadout toward ${wants}, and keeping ${avoids} out of it. 👇`;
+    else if (wants) reply = pick([
+      `Got it. Sounds like you're into ${wants}. I'll lean your loadout that way. 👇`,
+      `Nice. ${wants.charAt(0).toUpperCase() + wants.slice(1)} it is. Hit the button and I'll assemble it.`,
+      `Love it. I'm reading ${wants}. Ready when you are.`
+    ], trimmed);
+    else reply = `Got it — I'll build a solid pack and keep ${avoids} out of it. 👇`;
+    return { kind: "intent", reply, intent, canGenerate: true };
   }
 
   // A plain question with no concept to search.

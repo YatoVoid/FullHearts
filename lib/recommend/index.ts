@@ -88,13 +88,18 @@ export function recommend(answers: QuizAnswers, mods: Mod[], limit?: number): Re
 const NEG_PENALTY = 1.5;
 
 export function recommendFromQuery(text: string, mods: Mod[], limit?: number): Recommendation {
-  const { profile, negativeTerms } = parseIntent(text);
+  const { profile, positiveTerms, negativeTerms } = parseIntent(text);
 
-  // Negated words (+ synonyms) must not boost positively, and should push down.
+  // Clean, polarity-correct term lists (cue words already stripped upstream).
+  const terms = expandTerms(positiveTerms.join(" "));
   const negTerms = expandTerms(negativeTerms.join(" "));
-  const negSet = new Set(negTerms);
-  const terms = expandTerms(text).filter((t) => !negSet.has(t));
   const negWeights = profile.negativeWeights ?? {};
+
+  const hasPositive = terms.length > 0 || Object.keys(profile.weights).length > 0;
+  const hasNegative = negTerms.length > 0 || Object.keys(negWeights).length > 0;
+  // "I don't want X" with nothing positive: don't return empty — build a broad,
+  // popular pack and sculpt it with the negatives ("just enough", minus the no's).
+  const broadenForNeg = !hasPositive && hasNegative;
 
   const scored = mods
     .filter((m) => passesHardFilters(m, profile))
@@ -102,10 +107,12 @@ export function recommendFromQuery(text: string, mods: Mod[], limit?: number): R
       const tagS = tagScore(m, profile.weights);
       const lexS = lexicalScore(m, terms);
       const negS = lexicalScore(m, negTerms) + tagScore(m, negWeights) * 1.5;
-      return { mod: m, rel: lexS + tagS * 1.5 - NEG_PENALTY * negS, lexS, tagS };
+      const base = broadenForNeg ? 1 : lexS + tagS * 1.5;
+      return { mod: m, rel: base - NEG_PENALTY * negS, lexS, tagS };
     })
-    // Must match something positive AND not be dominated by what they don't want.
-    .filter((x) => (x.lexS > 0 || x.tagS >= 0.5) && x.rel > 0)
+    // Must match something positive (or be broadening for a pure-negative request),
+    // AND not be dominated by what they don't want.
+    .filter((x) => (broadenForNeg || x.lexS > 0 || x.tagS >= 0.5) && x.rel > 0)
     .sort((a, b) => b.rel - a.rel || (b.mod.downloads ?? 0) - (a.mod.downloads ?? 0));
 
   // Don't invent filler: take only real matches, capped by the size preference
