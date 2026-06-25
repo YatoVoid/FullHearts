@@ -13,12 +13,17 @@ interface MrProject {
   loaders: string[];
   downloads?: number;
   icon_url?: string;
+  client_side?: string; // "required" | "optional" | "unsupported"
   server_side?: string; // "required" | "optional" | "unsupported"
   versions?: string[]; // version ids, ordered oldest -> newest
 }
 
-/** Modrinth says a project does nothing (or breaks) on a dedicated server. */
-const isClientOnly = (serverSide?: string): boolean => serverSide === "unsupported";
+/** A mod a dedicated SERVER doesn't need, so server-mode migration drops it:
+ *  it's unsupported on a server, OR it requires a client and only treats the
+ *  server as optional (a minimap, a recipe viewer). Mods that are optional or
+ *  required on both sides (e.g. Distant Horizons, which syncs server-side) stay. */
+const isClientOnly = (clientSide?: string, serverSide?: string): boolean =>
+  serverSide === "unsupported" || (clientSide === "required" && serverSide === "optional");
 
 interface MrDependency {
   project_id: string | null;
@@ -42,7 +47,7 @@ export function normalizeProject(p: MrProject): Enrichment {
     links: { modrinth: `https://modrinth.com/mod/${p.slug}` },
     downloads: p.downloads,
     iconUrl: p.icon_url,
-    clientOnly: isClientOnly(p.server_side)
+    clientOnly: isClientOnly(p.client_side, p.server_side)
   };
 }
 
@@ -143,6 +148,7 @@ export interface MrSearchHit {
   versions: string[];   // game versions
   downloads?: number;
   icon_url?: string;
+  client_side?: string;
   server_side?: string;
 }
 
@@ -176,7 +182,7 @@ export function normalizeSearchHit(hit: MrSearchHit): Mod {
     links: { modrinth: `https://modrinth.com/mod/${hit.slug}` },
     downloads: hit.downloads,
     iconUrl: hit.icon_url,
-    clientOnly: isClientOnly(hit.server_side)
+    clientOnly: isClientOnly(hit.client_side, hit.server_side)
   };
 }
 
@@ -277,7 +283,7 @@ function projectToMod(p: MrProject & { description?: string }): Mod {
     links: { modrinth: `https://modrinth.com/mod/${p.slug}` },
     downloads: p.downloads,
     iconUrl: p.icon_url,
-    clientOnly: isClientOnly(p.server_side)
+    clientOnly: isClientOnly(p.client_side, p.server_side)
   };
 }
 

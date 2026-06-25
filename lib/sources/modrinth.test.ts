@@ -42,11 +42,17 @@ describe("modrinth normalization", () => {
     expect(e.loaders).toEqual(["fabric"]);
   });
 
-  it("flags client-only mods from server_side 'unsupported' (for server-mode migration)", () => {
+  it("flags mods a dedicated server doesn't need (for server-mode migration)", () => {
+    // server unsupported -> drop
     expect(normalizeProject({ ...projectsFixture[0], server_side: "unsupported" }).clientOnly).toBe(true);
-    expect(normalizeProject({ ...projectsFixture[0], server_side: "required" }).clientOnly).toBe(false);
-    expect(normalizeProject(projectsFixture[0]).clientOnly).toBe(false); // unknown -> not client-only
-    expect(normalizeSearchHit({ ...searchFixture.hits[0], server_side: "unsupported" }).clientOnly).toBe(true);
+    // client-required + server-optional (a minimap) -> drop, it's a client mod
+    expect(normalizeProject({ ...projectsFixture[0], client_side: "required", server_side: "optional" }).clientOnly).toBe(true);
+    // optional on both sides (Distant Horizons syncs server-side) -> keep
+    expect(normalizeProject({ ...projectsFixture[0], client_side: "optional", server_side: "optional" }).clientOnly).toBe(false);
+    // required on the server -> keep
+    expect(normalizeProject({ ...projectsFixture[0], client_side: "required", server_side: "required" }).clientOnly).toBe(false);
+    expect(normalizeProject(projectsFixture[0]).clientOnly).toBe(false); // unknown -> keep
+    expect(normalizeSearchHit({ ...searchFixture.hits[0], client_side: "required", server_side: "optional" }).clientOnly).toBe(true);
   });
 
   it("extracts only REQUIRED dependencies as required", () => {
