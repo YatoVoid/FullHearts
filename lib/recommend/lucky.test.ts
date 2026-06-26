@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { THEMES, pickLucky } from "@/lib/recommend/lucky";
+import { THEMES, pickLucky, pickLuckyForPool, MIN_LUCKY_CONTENT } from "@/lib/recommend/lucky";
 import { recommend } from "@/lib/recommend/index";
 import { TAGS } from "@/lib/curation/tags";
 import type { Mod } from "@/lib/sources/types";
@@ -37,5 +37,30 @@ describe("lucky themes", () => {
   it("pickLucky can reach the last theme", () => {
     const { theme } = pickLucky(() => 0.999);
     expect(theme.id).toBe(THEMES[THEMES.length - 1].id);
+  });
+
+  it("has no performance/optimization/low-end theme", () => {
+    expect(THEMES.some((t) => /perf|optim|smooth|low.?end/i.test(t.id))).toBe(false);
+  });
+
+  it("pickLuckyForPool picks a content-rich theme and skips thin ones", () => {
+    // Pool rich in magic only → the only theme that clears the content bar.
+    const magicPool: Mod[] = Array.from({ length: MIN_LUCKY_CONTENT + 4 }, (_, i) => ({
+      id: `m${i}`, name: `Magic ${i}`, summary: "spells and arcane magic",
+      curatedTags: { magic: 1 }, reasonTemplate: "it fits",
+      loaders: ["fabric"], gameVersions: ["1.21.1"], dependencies: [], links: {}, downloads: 200_000
+    }));
+    const { theme } = pickLuckyForPool(magicPool, () => 0.5);
+    expect(theme.id).toBe("arcane-cozy");
+  });
+
+  it("pickLuckyForPool falls back to the richest theme on a sparse pool", () => {
+    const tiny: Mod[] = [{
+      id: "one", name: "One", summary: "a magic mod", curatedTags: { magic: 1 },
+      reasonTemplate: "x", loaders: ["fabric"], gameVersions: ["1.21.1"], dependencies: [], links: {}
+    }];
+    const { theme, answers } = pickLuckyForPool(tiny, () => 0);
+    expect(theme).toBeTruthy();
+    expect(answers.loader).toEqual(["fabric"]);
   });
 });

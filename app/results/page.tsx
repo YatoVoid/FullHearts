@@ -6,7 +6,7 @@ import type { Mod } from "@/lib/sources/types";
 import type { QuizAnswers } from "@/lib/curation/questions";
 import { buildProfile, type Profile } from "@/lib/recommend/profile";
 import { recommend, recommendFromQuery, type RankedMod, type Recommendation } from "@/lib/recommend/index";
-import { pickLucky } from "@/lib/recommend/lucky";
+import { pickLuckyForPool, DEFAULT_BASICS } from "@/lib/recommend/lucky";
 import { isContentMod, backgroundCap } from "@/lib/recommend/classify";
 import { QUERY_STORAGE_KEY, parseIntent } from "@/lib/recommend/intent";
 import { recommendedVersion, type Coverage } from "@/lib/catalog/coverage";
@@ -172,10 +172,15 @@ export default function Results() {
     // quiz returning real Forge mods instead of a Fabric-skewed top-downloads pool.
     let poolProfile: Profile | null = null;
     if (params.get("lucky")) {
-      const { theme, answers: luckyAnswers } = pickLucky();
-      setLuckyLabel(theme.label);
-      poolProfile = buildProfile(luckyAnswers);
-      compute = (mods) => recommend(luckyAnswers, mods, CANDIDATE_LIMIT);
+      // Basics (loader/version/size) are identical across all Lucky themes, so we
+      // can fetch the pool now and only THEN pick a theme that actually fills out
+      // in the live data — never a too-thin or optimization-only pack.
+      poolProfile = buildProfile(DEFAULT_BASICS);
+      compute = (mods) => {
+        const { theme, answers } = pickLuckyForPool(mods);
+        setLuckyLabel(theme.label);
+        return recommend(answers, mods, CANDIDATE_LIMIT);
+      };
     } else if (params.get("mode") === "describe") {
       const query = loadQuery();
       if (query) {
