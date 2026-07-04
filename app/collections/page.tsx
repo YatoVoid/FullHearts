@@ -8,7 +8,7 @@ import { fetchModsBySlugs } from "@/lib/sources/modrinth";
 import { modBuildsFor } from "@/lib/modpack/mrpack";
 import { parseMrpack, MrpackImportError } from "@/lib/modpack/import";
 import { VERSIONS } from "@/lib/catalog/coverage";
-import { checkCompatibility, compatibilitySummary, incompatibleMods } from "@/lib/recommend/compatibility";
+import { checkCompatibility, compatibilitySummary } from "@/lib/recommend/compatibility";
 import DownloadPack from "@/components/DownloadPack";
 import ServerCta from "@/components/ServerCta";
 import Icon from "@/components/Icon";
@@ -385,23 +385,21 @@ export default function Collections() {
                 if (resolved.length === 0) return null;
 
                 // Pinned target (imported .mrpack / migrated pack): the loader +
-                // version are authoritative, so judge against THEM instead of a
-                // fragile cross-loader intersection that one dependency library's
-                // metadata can poison. The builder drops any straggler on export.
+                // version are authoritative. DON'T re-judge per-mod support from
+                // Modrinth's project-level loaders/game_versions aggregate — it's
+                // demonstrably unreliable (e.g. Kambrik ships a Forge 1.20.1 jar
+                // but its project omits forge), which both false-conflicted the
+                // loader intersection and false-warned "no build". The export step
+                // does the real per-version resolution and reports what it drops.
                 if (c.loader && c.gameVersion) {
                   const loader = c.loader;
                   const mcVersion = c.gameVersion;
                   const label = `${loader[0].toUpperCase() + loader.slice(1)} · ${mcVersion}`;
-                  const incompat = incompatibleMods(resolved, loader, mcVersion);
                   return (
                     <>
-                      {resolved.length >= 2 && (incompat.length === 0 ? (
+                      {resolved.length >= 2 && (
                         <div className="compat compat-ok"><Icon name="check" size={15} /> Should launch together · {label}</div>
-                      ) : (
-                        <div className="compat compat-warn">
-                          <Icon name="alert" size={15} /> {incompat.length} mod{incompat.length === 1 ? "" : "s"} may have no {label} build and will be skipped when you export.
-                        </div>
-                      ))}
+                      )}
                       <DownloadPack name={c.name} mods={resolved} loader={loader} mcVersion={mcVersion} disabled={false} />
                     </>
                   );
