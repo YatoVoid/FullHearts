@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { Loader, Mod } from "@/lib/sources/types";
 import { loadPool } from "@/lib/catalog/clientPool";
 import { fetchModsBySlugs } from "@/lib/sources/modrinth";
 import { modBuildsFor } from "@/lib/modpack/mrpack";
+import { parseMrpack, MrpackImportError } from "@/lib/modpack/import";
 import { VERSIONS } from "@/lib/catalog/coverage";
 import { checkCompatibility, compatibilitySummary } from "@/lib/recommend/compatibility";
 import DownloadPack from "@/components/DownloadPack";
@@ -77,9 +78,44 @@ export default function Collections() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [upTarget, setUpTarget] = useState<string | null>(null);
   const [mig, setMig] = useState<MigrateState | null>(null);
+  const [importing, setImporting] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const { confirm: askConfirm, prompt: askPrompt, dialog } = useDialog();
 
   const refresh = useCallback(() => setCollections(listCollections()), []);
+
+  // Import an existing .mrpack: read its modrinth.index.json, resolve the
+  // Modrinth-hosted mods back to cards, and drop them into a new editable
+  // collection (loader/version pinned from the pack). External mods and
+  // overrides/ can't round-trip through a rebuilt pack, so we report their
+  // counts rather than pretend they carried over.
+  async function importMrpack(file: File) {
+    setImporting(true);
+    try {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const pack = parseMrpack(bytes);
+      const mods = await fetchModsBySlugs(pack.projectIds);
+      if (mods.length === 0) {
+        flash("Couldn't resolve any of that pack's mods from Modrinth.");
+        return;
+      }
+      const created = createCollection(pack.name, mods.map((m) => m.id));
+      setLoadout(created.id, pack.loader, pack.mcVersion);
+      refresh();
+      const extras: string[] = [];
+      const unresolved = pack.projectIds.length - mods.length;
+      if (unresolved > 0) extras.push(`${unresolved} mod${unresolved === 1 ? "" : "s"} no longer on Modrinth`);
+      if (pack.externalCount > 0) extras.push(`${pack.externalCount} non-Modrinth mod${pack.externalCount === 1 ? "" : "s"}`);
+      if (pack.hasOverrides) extras.push("config overrides");
+      const tail = extras.length ? ` Keep your original file for: ${extras.join(", ")}.` : "";
+      flash(`Imported ${mods.length} mod${mods.length === 1 ? "" : "s"} into “${pack.name}”.${tail}`);
+    } catch (e) {
+      flash(e instanceof MrpackImportError ? e.message : "Couldn't read that .mrpack.");
+    } finally {
+      setImporting(false);
+      if (fileRef.current) fileRef.current.value = ""; // allow re-importing the same file
+    }
+  }
 
   // Migrate flow: after the user picks a target version, check every mod in the
   // collection against all four loaders (real per-build check), so we can
@@ -305,6 +341,21 @@ export default function Collections() {
 
         <div className="lucky-bar">
           <Link className="btn-ghost" href="/install"><Icon name="package" size={15} /> How to install a whole loadout at once →</Link>
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => fileRef.current?.click()}
+            disabled={importing}
+          >
+            <Icon name="package" size={15} /> {importing ? "Importing…" : "Import a .mrpack to edit"}
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".mrpack,application/x-modrinth-modpack+zip"
+            style={{ display: "none" }}
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) importMrpack(f); }}
+          />
         </div>
 
         {degraded && (
