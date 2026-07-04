@@ -101,6 +101,12 @@ describe("score & hard filters", () => {
     expect(passesHardFilters(bad, forgeProfile)).toBe(false);
   });
 
+  it("never auto-picks item-obliterator even when it scores well on the profile", () => {
+    // Its Modrinth categories map to performance+qol, so it'd otherwise win a slot.
+    const obliterator = mod({ id: "item-obliterator", name: "Item Obliterator", modrinthSlug: "item-obliterator", curatedTags: { performance: 1, qol: 1 }, downloads: 3_000_000 });
+    expect(passesHardFilters(obliterator, profile)).toBe(false);
+  });
+
   it("dedupes mods that share a display name (3 different 'Dynamic Lights')", () => {
     const a = mod({ id: "dynamic-lights", name: "Dynamic Lights", modrinthSlug: "dynamic-lights", loaders: ["forge"], gameVersions: ["1.20.1"], curatedTags: { building: 1 }, downloads: 9000 });
     const b = mod({ id: "dynamic-torches", name: "Dynamic Lights", modrinthSlug: "dynamic-torches", loaders: ["forge"], gameVersions: ["1.20.1"], curatedTags: { building: 1 }, downloads: 100 });

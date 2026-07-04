@@ -54,6 +54,26 @@ const BLOCKED: Record<string, BlockRule> = {
 };
 
 /**
+ * Mods that BUILD and RUN fine but shouldn't be auto-picked into a "import one
+ * file and launch" pack: modpack-author tooling that needs hand configuration to
+ * do anything, destructive/niche utilities a new player wouldn't expect. They're
+ * still fully browsable in Explore — this only keeps them out of the recommender.
+ *
+ * item-obliterator is tagged optimization+utility+management on Modrinth, so it
+ * lands strong on BOTH performance and qol and (3.2M downloads) wins a slot in
+ * almost every generated pack — yet it does nothing until you configure item
+ * removals by hand. Keyed by Modrinth slug.
+ *
+ * ponytail: hand-maintained, one entry so far; add slugs as they surface.
+ */
+const AUTO_EXCLUDED = new Set<string>(["item-obliterator"]);
+
+/** True if this mod is fit to browse but should never be auto-recommended. */
+export function isAutoExcluded(mod: Mod): boolean {
+  return AUTO_EXCLUDED.has((mod.modrinthSlug ?? mod.id).toLowerCase());
+}
+
+/**
  * Broken LIBRARY projects pulled in as dependencies, keyed by Modrinth PROJECT
  * ID (the dependency closure resolves deps by id, not slug). When one of these is
  * required on a blocked loader/version, the .mrpack builder drops it — and any mod

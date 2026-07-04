@@ -1,6 +1,6 @@
 import type { Mod } from "@/lib/sources/types";
 import type { Profile } from "@/lib/recommend/profile";
-import { isBlocked } from "@/lib/curation/blocklist";
+import { isBlocked, isAutoExcluded } from "@/lib/curation/blocklist";
 
 /** How much a mod's popularity lifts its score. Meaningful — we PREFER widely-used,
  *  well-maintained mods (they're the most stable / least likely to break a pack) —
@@ -54,6 +54,8 @@ export function score(mod: Mod, profile: Profile): number {
  * what we must keep away from a Forge user; unknown support is treated as "no".
  */
 export function passesHardFilters(mod: Mod, profile: Profile): boolean {
+  // Fit to browse, not to auto-pick — keep out of every generated pack.
+  if (isAutoExcluded(mod)) return false;
   if (mod.verified) {
     if (mod.loaders.length > 0 && !mod.loaders.includes(profile.loader)) return false;
     if (mod.gameVersions.length > 0 && !mod.gameVersions.includes(profile.gameVersion)) return false;
