@@ -66,6 +66,24 @@ export function checkCompatibility(mods: Mod[]): CompatibilityReport {
   };
 }
 
+/**
+ * Mods that DECLARE support data and explicitly can't run on a KNOWN target
+ * loader/version. Empty loaders/versions (unenriched) count as unknown → not
+ * flagged. Used for collections with a pinned target — an imported .mrpack or a
+ * migrated pack — where the loader/version is authoritative: the naive
+ * cross-loader intersection wrongly "conflicts" the moment one auto-added
+ * dependency library's project metadata omits the target loader, even though the
+ * pack was built as a single coherent loadout. The .mrpack builder drops any
+ * straggler at export, so these are informational, not a hard block.
+ */
+export function incompatibleMods(mods: Mod[], loader?: Loader, version?: string): Mod[] {
+  return mods.filter((m) => {
+    if (loader && m.loaders.length > 0 && !m.loaders.includes(loader)) return true;
+    if (version && m.gameVersions.length > 0 && !m.gameVersions.includes(version)) return true;
+    return false;
+  });
+}
+
 /** Short positive summary, e.g. "Fabric · 1.21.1, 1.20.1". Empty if unknown. */
 export function compatibilitySummary(report: CompatibilityReport): string {
   const parts: string[] = [];

@@ -8,7 +8,7 @@ import { fetchModsBySlugs } from "@/lib/sources/modrinth";
 import { modBuildsFor } from "@/lib/modpack/mrpack";
 import { parseMrpack, MrpackImportError } from "@/lib/modpack/import";
 import { VERSIONS } from "@/lib/catalog/coverage";
-import { checkCompatibility, compatibilitySummary } from "@/lib/recommend/compatibility";
+import { checkCompatibility, compatibilitySummary, incompatibleMods } from "@/lib/recommend/compatibility";
 import DownloadPack from "@/components/DownloadPack";
 import ServerCta from "@/components/ServerCta";
 import Icon from "@/components/Icon";
@@ -383,15 +383,37 @@ export default function Collections() {
               {(() => {
                 const resolved = c.modIds.map((id) => byId[id]).filter((m): m is Mod => Boolean(m));
                 if (resolved.length === 0) return null;
+
+                // Pinned target (imported .mrpack / migrated pack): the loader +
+                // version are authoritative, so judge against THEM instead of a
+                // fragile cross-loader intersection that one dependency library's
+                // metadata can poison. The builder drops any straggler on export.
+                if (c.loader && c.gameVersion) {
+                  const loader = c.loader;
+                  const mcVersion = c.gameVersion;
+                  const label = `${loader[0].toUpperCase() + loader.slice(1)} · ${mcVersion}`;
+                  const incompat = incompatibleMods(resolved, loader, mcVersion);
+                  return (
+                    <>
+                      {resolved.length >= 2 && (incompat.length === 0 ? (
+                        <div className="compat compat-ok"><Icon name="check" size={15} /> Should launch together · {label}</div>
+                      ) : (
+                        <div className="compat compat-warn">
+                          <Icon name="alert" size={15} /> {incompat.length} mod{incompat.length === 1 ? "" : "s"} may have no {label} build and will be skipped when you export.
+                        </div>
+                      ))}
+                      <DownloadPack name={c.name} mods={resolved} loader={loader} mcVersion={mcVersion} disabled={false} />
+                    </>
+                  );
+                }
+
                 const report = checkCompatibility(resolved);
-                // Prefer the loadout the user explicitly chose; only fall back to
-                // deriving from the mods for older collections that never stored it.
+                // No pinned loadout (older / quiz-added collection): derive from the mods.
                 const loader =
-                  c.loader ??
                   report.commonLoaders.find((l) => l === "fabric") ??
                   report.commonLoaders.find((l) => l === "quilt") ??
                   report.commonLoaders[0];
-                const mcVersion = c.gameVersion ?? report.commonVersions[0];
+                const mcVersion = report.commonVersions[0];
                 const canPack = report.ok && Boolean(loader) && Boolean(mcVersion);
                 return (
                   <>
