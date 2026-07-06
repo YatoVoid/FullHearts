@@ -39,6 +39,23 @@ export function matchesFilter(m: Mod, f: ModFilter): boolean {
   return true;
 }
 
+/**
+ * Fold a name/query to punctuation-agnostic search tokens. Apostrophes are
+ * DELETED (not spaced) so a possessive matches whether or not the user types the
+ * apostrophe — "Farmer's" and "Let's" become "farmers"/"lets", matching typed
+ * "farmers"/"lets" (spacing the apostrophe would split them into "farmer s" and
+ * miss). Every other separator (spaces, colons, brackets, &) becomes a space so
+ * word order and stray punctuation don't matter. Returns lowercased words.
+ */
+export function searchTokens(s: string): string[] {
+  return s
+    .toLowerCase()
+    .replace(/['’‘`]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .split(" ")
+    .filter(Boolean);
+}
+
 /** Most-common MC versions in a pool, newest first (for the version dropdown). */
 export function versionOptions(mods: Mod[], limit = 8): string[] {
   const counts = new Map<string, number>();

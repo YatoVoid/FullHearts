@@ -11,7 +11,7 @@ import { modBuildsFor } from "@/lib/modpack/mrpack";
 import LuckyButton from "@/components/LuckyButton";
 import { useDialog } from "@/components/useDialog";
 import { isHighQuality } from "@/lib/catalog/quality";
-import { type ModFilter, DEFAULT_FILTER, loadFilter, saveFilter, matchesFilter, versionOptions } from "@/lib/catalog/filter";
+import { type ModFilter, DEFAULT_FILTER, loadFilter, saveFilter, matchesFilter, versionOptions, searchTokens } from "@/lib/catalog/filter";
 import { HEART_SRC } from "@/lib/asset";
 import Footer from "@/components/Footer";
 import AdSlot from "@/components/AdSlot";
@@ -100,17 +100,16 @@ export default function Explore() {
 
   const sections = useMemo(() => buildSections(pool), [pool]);
 
-  const term = query.trim().toLowerCase();
   // Tokenized, punctuation-agnostic match: every word must appear somewhere in
-  // name+summary, in any order. So "create new age" finds "Create: New Age"
-  // (exact-substring search was too strict — the colon broke it).
-  const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ");
-  const queryWords = normalize(term).split(" ").filter(Boolean);
+  // name+summary, in any order. So "create new age" finds "Create: New Age", and
+  // "farmers delight" / "lets do bakery" find "Farmer's Delight" / "Let's Do:
+  // Bakery" regardless of the apostrophe (see searchTokens).
+  const queryWords = searchTokens(query.trim());
   const matches = useMemo(() => {
     if (queryWords.length === 0) return null;
     return pool
       .filter((m) => {
-        const hay = normalize(`${m.name} ${m.summary ?? ""}`);
+        const hay = searchTokens(`${m.name} ${m.summary ?? ""}`).join(" ");
         return queryWords.every((w) => hay.includes(w));
       })
       .sort((a, b) => (b.downloads ?? 0) - (a.downloads ?? 0));
