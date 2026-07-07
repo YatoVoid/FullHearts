@@ -13,18 +13,25 @@ export type JarInspector = (jobs: { key: string; url: string }[], loader?: Loade
 // (a multi-loader jar parses to different deps per loader).
 const clientManifestCache = new Map<string, ManifestInfo | null>();
 
+// A single stuck jar download must never stall the whole build. On a static
+// deploy every jar is fetched in the browser, so one slow/hung CDN response
+// used to freeze the "cross-checking jar manifests" phase for minutes (a 96%
+// spinner that never finished). Bound each read; a timeout just means we fall
+// back to the Modrinth-declared dependency data for that jar (best-effort).
+const JAR_READ_TIMEOUT_MS = 8000;
+
 /** Read one jar's manifest directly in the browser, for the target loader. The
  *  Modrinth CDN allows cross-origin reads, so this works with no backend — at the
- *  cost of the user downloading the jar. */
+ *  cost of the user downloading the jar. Times out so a slow jar can't hang the build. */
 async function readJarClient(url: string, loader?: Loader): Promise<ManifestInfo | null> {
   const cacheKey = `${loader ?? ""}:${url}`;
   if (clientManifestCache.has(cacheKey)) return clientManifestCache.get(cacheKey)!;
   let info: ManifestInfo | null = null;
   try {
-    const r = await fetch(url);
+    const r = await fetch(url, { signal: AbortSignal.timeout(JAR_READ_TIMEOUT_MS) });
     if (r.ok) info = extractManifestDeps(new Uint8Array(await r.arrayBuffer()), loader);
   } catch {
-    info = null;
+    info = null; // timeout / network error — degrade to Modrinth-only closure
   }
   clientManifestCache.set(cacheKey, info);
   return info;
@@ -43,7 +50,8 @@ const defaultInspector: JarInspector = async (jobs, loader) => {
     const r = await fetch("/api/manifest-deps", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jobs, loader })
+      body: JSON.stringify({ jobs, loader }),
+      signal: AbortSignal.timeout(20000)
     });
     if (r.ok) server = (await r.json()) as Record<string, ManifestInfo | null>;
   } catch {

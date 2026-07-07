@@ -212,7 +212,9 @@ export default function Collections() {
     if (match) {
       const payload = decodeCollection(decodeURIComponent(match[1]));
       if (payload) {
-        createCollection(payload.name || "Shared loadout", payload.modIds);
+        const created = createCollection(payload.name || "Shared collection", payload.modIds);
+        // Carry the sharer's loader + version so the pack stays version-locked.
+        if (payload.loader && payload.version) setLoadout(created.id, payload.loader, payload.version);
         setNote("Imported a shared collection.");
       }
       history.replaceState(null, "", window.location.pathname);
@@ -317,7 +319,7 @@ export default function Collections() {
   }
 
   function shareUrl(c: Collection): string {
-    const encoded = encodeCollection({ name: c.name, modIds: c.modIds });
+    const encoded = encodeCollection({ name: c.name, modIds: c.modIds, loader: c.loader, version: c.gameVersion });
     return `${window.location.origin}/collections#share=${encoded}`;
   }
 

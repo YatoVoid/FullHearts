@@ -11,6 +11,18 @@ describe("share encode/decode", () => {
     expect(decodeCollection(encoded)).toEqual(payload);
   });
 
+  it("round-trips the pinned loader + version so a shared pack stays version-locked", () => {
+    const payload = { name: "Forge pack", modIds: ["create"], loader: "forge" as const, version: "1.20.1" };
+    expect(decodeCollection(encodeCollection(payload))).toEqual(payload);
+  });
+
+  it("rejects a bogus loader/version in a hostile link (falls back to unpinned)", () => {
+    const encoded = encodeCollection({ name: "x", modIds: ["a"], loader: "notaloader" as never, version: "9.9.9.9.9" });
+    const decoded = decodeCollection(encoded)!;
+    expect(decoded.loader).toBeUndefined();
+    expect(decoded.version).toBeUndefined();
+  });
+
   it("handles names with unicode and special chars", () => {
     const payload = { name: "Café build ✨ & co", modIds: ["a"] };
     expect(decodeCollection(encodeCollection(payload))).toEqual(payload);

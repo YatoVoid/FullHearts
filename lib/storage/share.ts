@@ -1,10 +1,17 @@
 import { deflateSync, inflateSync, strToU8, strFromU8 } from "fflate";
+import type { Loader } from "@/lib/sources/types";
 
-/** The shareable subset of a collection (no ids/timestamps — those are local). */
+/** The shareable subset of a collection (no ids/timestamps — those are local).
+ *  Carries the pinned loader + Minecraft version so a shared pack imports as a
+ *  fully-built loadout (version-locked on Explore), not an unpinned mod list. */
 export interface SharePayload {
   name: string;
   modIds: string[];
+  loader?: Loader;
+  version?: string;
 }
+
+const KNOWN_LOADERS = ["forge", "neoforge", "fabric", "quilt"];
 
 function bytesToBase64Url(bytes: Uint8Array): string {
   let bin = "";
@@ -36,7 +43,9 @@ const DEFLATE_MARK = "~";
  *  DEFLATE-compressed: mod-slug lists share long prefixes ("lets-do-", "create-")
  *  so this shrinks the link a lot while staying fully lossless and offline. */
 export function encodeCollection(payload: SharePayload): string {
-  const json = JSON.stringify({ n: payload.name, m: payload.modIds });
+  // undefined loader/version are dropped by JSON.stringify, so old-style links
+  // (mod list only) stay just as small.
+  const json = JSON.stringify({ n: payload.name, m: payload.modIds, l: payload.loader, v: payload.version });
   return DEFLATE_MARK + bytesToBase64Url(deflateSync(strToU8(json)));
 }
 
@@ -58,7 +67,9 @@ export function decodeCollection(encoded: string): SharePayload | null {
     const modIds = obj.m
       .filter((x: unknown): x is string => typeof x === "string" && x.length <= MAX_ID)
       .slice(0, MAX_MODS);
-    return { name: obj.n.slice(0, MAX_NAME), modIds };
+    const loader = typeof obj.l === "string" && KNOWN_LOADERS.includes(obj.l) ? (obj.l as Loader) : undefined;
+    const version = typeof obj.v === "string" && /^\d{1,2}(\.\d{1,2}){1,2}$/.test(obj.v) ? obj.v : undefined;
+    return { name: obj.n.slice(0, MAX_NAME), modIds, loader, version };
   } catch {
     return null;
   }
