@@ -116,7 +116,9 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
   // collection), never re-derived from the mods.
   const lock = target?.loader && target?.gameVersion ? { loader: target.loader, version: target.gameVersion } : null;
 
-  const needsChoice = Boolean(target) && !lock && (filter.loader === "all" || filter.version === "all");
+  // Proactive: prompt for loader + version before any add (even before the first
+  // collection exists), not only after a failed click. See Explore for rationale.
+  const needsChoice = !lock && (filter.loader === "all" || filter.version === "all");
 
   useEffect(() => {
     if (!lock) return;
@@ -211,17 +213,21 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
     }
   }
 
-  const card = (mod: Mod, i: number) => (
-    <ModCard
-      key={mod.id}
-      mod={mod}
-      i={i}
-      added={added.has(mod.id)}
-      disabled={addBusy === mod.id || (!added.has(mod.id) && !isCompatibleWithTarget(mod))}
-      onAdd={handleAdd}
-      onRemove={removeFromTarget}
-    />
-  );
+  const card = (mod: Mod, i: number) => {
+    const incompatible = !added.has(mod.id) && !isCompatibleWithTarget(mod);
+    return (
+      <ModCard
+        key={mod.id}
+        mod={mod}
+        i={i}
+        added={added.has(mod.id)}
+        disabled={addBusy === mod.id || incompatible}
+        disabledReason={incompatible && lock ? `Not for ${lock.loader.charAt(0).toUpperCase() + lock.loader.slice(1)} ${lock.version}` : undefined}
+        onAdd={handleAdd}
+        onRemove={removeFromTarget}
+      />
+    );
+  };
 
   return (
     <>
@@ -235,14 +241,13 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
             <Link href="/explore">Explore</Link>
             <Link href="/collections">Collections</Link>
           </nav>
-          <Link className="nav-cta" href="/quiz">Start the quiz</Link>
+          <Link className="nav-cta" href="/collections">View collections</Link>
         </div>
       </header>
 
       <main className="explore">
-        <div className="section-head">
-          <div className="eyebrow"><Link href="/explore" style={{ color: "var(--grass)" }}>← All themes</Link></div>
-          <h2>{TAG_LABELS[tag]}</h2>
+        <div className="section-head" style={{ textAlign: "left", marginBottom: 20 }}>
+          <Link className="back-link" href="/explore">← All themes</Link>
         </div>
 
         {status === "loading" && <p className="results-state">Loading mods…</p>}
@@ -254,7 +259,9 @@ export default function TagBrowser({ tag }: { tag: Tag }) {
             <div ref={chooserRef} className={`explore-chooser${flashChooser ? " flash" : ""}`}>
               {needsChoice && (
                 <p className="filter-prompt" role="status">
-                  Pick a mod loader and Minecraft version for <b>{target?.name}</b> before adding mods. That&apos;s what the pack is built for.
+                  {target
+                    ? <>Pick a mod loader and Minecraft version for <b>{target.name}</b> before adding mods. That&apos;s what the pack is built for.</>
+                    : <>Pick a mod loader and Minecraft version first — that&apos;s what your pack gets built for.</>}
                 </p>
               )}
               <ModFilterBar

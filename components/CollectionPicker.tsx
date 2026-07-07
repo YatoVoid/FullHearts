@@ -35,8 +35,9 @@ export default function CollectionPicker({
 
   return (
     <div className="coll-picker">
-      <label htmlFor="coll-target">Adding to</label>
+      <label htmlFor="coll-target"><b>“+ Add”</b> saves into</label>
       <select id="coll-target" value={targetId} onChange={(e) => handle(e.target.value)}>
+        {targetId === "" && <option value="" disabled>a new collection (starts on your first add)</option>}
         {collections.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name} ({c.modIds.length})

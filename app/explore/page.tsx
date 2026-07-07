@@ -184,9 +184,11 @@ export default function Explore() {
   // (stored on the collection), never re-derived from the mods themselves.
   const lock = target?.loader && target?.gameVersion ? { loader: target.loader, version: target.gameVersion } : null;
 
-  // Adding to a collection with no chosen loader/version yet: the user must pick
-  // one first (adding under "All" is meaningless — which version is it for?).
-  const needsChoice = Boolean(target) && !lock && (filter.loader === "all" || filter.version === "all");
+  // The user must pick a loader + version before adding (adding under "All" is
+  // meaningless — which version is the pack for?). Prompted PROACTIVELY (not just
+  // after a failed add): true whenever nothing is locked yet and the filter is
+  // still on "All", including before the first collection even exists.
+  const needsChoice = !lock && (filter.loader === "all" || filter.version === "all");
 
   // Once locked, force the filter to the collection's loader + version.
   useEffect(() => {
@@ -240,17 +242,21 @@ export default function Explore() {
     addToTarget(modId, loaderSel && versionSel ? { loader: loaderSel, version: versionSel } : undefined);
   }
 
-  const card = (mod: Mod, i: number) => (
-    <ModCard
-      key={mod.id}
-      mod={mod}
-      i={i}
-      added={added.has(mod.id)}
-      disabled={addBusy === mod.id || (!added.has(mod.id) && !isCompatibleWithTarget(mod))}
-      onAdd={handleAdd}
-      onRemove={removeFromTarget}
-    />
-  );
+  const card = (mod: Mod, i: number) => {
+    const incompatible = !added.has(mod.id) && !isCompatibleWithTarget(mod);
+    return (
+      <ModCard
+        key={mod.id}
+        mod={mod}
+        i={i}
+        added={added.has(mod.id)}
+        disabled={addBusy === mod.id || incompatible}
+        disabledReason={incompatible && lock ? `Not for ${lock.loader.charAt(0).toUpperCase() + lock.loader.slice(1)} ${lock.version}` : undefined}
+        onAdd={handleAdd}
+        onRemove={removeFromTarget}
+      />
+    );
+  };
 
   return (
     <>
@@ -264,7 +270,7 @@ export default function Explore() {
             <Link href="/quiz">Quiz</Link>
             <Link href="/collections">Collections</Link>
           </nav>
-          <Link className="nav-cta" href="/quiz">Start the quiz</Link>
+          <Link className="nav-cta" href="/collections">View collections</Link>
         </div>
       </header>
 
@@ -304,7 +310,9 @@ export default function Explore() {
             <div ref={chooserRef} className={`explore-chooser${flashChooser ? " flash" : ""}`}>
               {needsChoice && (
                 <p className="filter-prompt" role="status">
-                  Pick a mod loader and Minecraft version for <b>{target?.name}</b> before adding mods. That&apos;s what the pack is built for.
+                  {target
+                    ? <>Pick a mod loader and Minecraft version for <b>{target.name}</b> before adding mods. That&apos;s what the pack is built for.</>
+                    : <>Pick a mod loader and Minecraft version first — that&apos;s what your pack gets built for.</>}
                 </p>
               )}
               <ModFilterBar
@@ -339,7 +347,10 @@ export default function Explore() {
         {status === "ready" && matches && (
           <>
             <div className="row-head">
-              <h2>From our tested library</h2>
+              <div className="row-head-title">
+                <h2>From our tested library</h2>
+                <span className="row-head-sub">Hand-picked and verified by us</span>
+              </div>
               <span className="count">{matches.length} match{matches.length === 1 ? "" : "es"}</span>
             </div>
             {matches.length === 0 ? (
@@ -350,7 +361,10 @@ export default function Explore() {
 
             {/* Live Modrinth fallback for specific mods we don't curate */}
             <div className="row-head" style={{ marginTop: 40 }}>
-              <h2>More from Modrinth</h2>
+              <div className="row-head-title">
+                <h2>More from Modrinth</h2>
+                <span className="row-head-sub">Everything else on Modrinth — less vetted</span>
+              </div>
               <label className="quality-toggle">
                 <input type="checkbox" checked={qualityOn} onChange={toggleQuality} />
                 High-quality only

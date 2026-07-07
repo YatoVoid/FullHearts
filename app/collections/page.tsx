@@ -96,7 +96,7 @@ export default function Collections() {
       const pack = parseMrpack(bytes);
       const mods = await fetchModsBySlugs(pack.projectIds);
       if (mods.length === 0) {
-        flash("Couldn't resolve any of that pack's mods from Modrinth.");
+        flash("Couldn't resolve any of that pack's mods from Modrinth.", 9000);
         return;
       }
       const created = createCollection(pack.name, mods.map((m) => m.id));
@@ -108,9 +108,9 @@ export default function Collections() {
       if (pack.externalCount > 0) extras.push(`${pack.externalCount} non-Modrinth mod${pack.externalCount === 1 ? "" : "s"}`);
       if (pack.hasOverrides) extras.push("config overrides");
       const tail = extras.length ? ` Keep your original file for: ${extras.join(", ")}.` : "";
-      flash(`Imported ${mods.length} mod${mods.length === 1 ? "" : "s"} into “${pack.name}”.${tail}`);
+      flash(`Imported ${mods.length} mod${mods.length === 1 ? "" : "s"} into “${pack.name}”.${tail}`, tail ? 15000 : 6000);
     } catch (e) {
-      flash(e instanceof MrpackImportError ? e.message : "Couldn't read that .mrpack.");
+      flash(e instanceof MrpackImportError ? e.message : "Couldn't read that .mrpack.", 9000);
     } finally {
       setImporting(false);
       if (fileRef.current) fileRef.current.value = ""; // allow re-importing the same file
@@ -271,9 +271,13 @@ export default function Collections() {
     }
   }
 
-  const flash = (msg: string) => {
+  // Short toast for "Copied" etc.; import results carry must-read detail (which
+  // mods/overrides didn't come across), so they get a much longer dwell.
+  const flashTimer = useRef<number | null>(null);
+  const flash = (msg: string, ms = 2500) => {
     setNote(msg);
-    window.setTimeout(() => setNote(""), 2500);
+    if (flashTimer.current) window.clearTimeout(flashTimer.current);
+    flashTimer.current = window.setTimeout(() => setNote(""), ms);
   };
 
   async function copy(text: string, msg: string) {
@@ -336,7 +340,7 @@ export default function Collections() {
       <main className="collections">
         <div className="section-head">
           <div className="eyebrow">YOUR COLLECTIONS</div>
-          <h2>Saved loadouts</h2>
+          <h2>Saved collections</h2>
         </div>
 
         <div className="lucky-bar">
@@ -347,7 +351,7 @@ export default function Collections() {
             onClick={() => fileRef.current?.click()}
             disabled={importing}
           >
-            <Icon name="package" size={15} /> {importing ? "Importing…" : "Import a .mrpack to edit"}
+            <Icon name="package" size={15} /> {importing ? "Importing…" : "Import a modpack (.mrpack file) to edit"}
           </button>
           <input
             ref={fileRef}
@@ -365,7 +369,7 @@ export default function Collections() {
 
         {collections.length === 0 ? (
           <p className="results-state">
-            No collections yet. <Link href="/quiz" style={{ color: "var(--grass)" }}>Take the quiz</Link> and save your first loadout.
+            No collections yet. <Link href="/quiz" style={{ color: "var(--grass)" }}>Take the quiz</Link>, <Link href="/explore" style={{ color: "var(--grass)" }}>browse Explore</Link>, or import a modpack file above.
           </p>
         ) : (
           collections.map((c) => (
@@ -470,8 +474,8 @@ export default function Collections() {
                 {c.modIds.length > 0 && (
                   <button type="button" className="chip-btn" onClick={() => openAll(c)}>Open all mod pages</button>
                 )}
-                <button type="button" className="chip-btn" onClick={() => download(`${c.name}.json`, toJSON(c), "application/json")}>Export JSON</button>
-                <button type="button" className="chip-btn" onClick={() => copy(toText(c, names), "Copied text list to clipboard.")}>Copy text</button>
+                <button type="button" className="chip-btn" onClick={() => download(`${c.name}.json`, toJSON(c), "application/json")}>Backup (JSON file)</button>
+                <button type="button" className="chip-btn" onClick={() => copy(toText(c, names), "Copied mod list to clipboard.")}>Copy mod list</button>
                 <button type="button" className="chip-btn" onClick={() => copy(shareUrl(c), "Copied share link to clipboard.")}>Copy share link</button>
               </div>
             </section>
@@ -523,6 +527,7 @@ export default function Collections() {
               </>
             ) : (
               <>
+                <button type="button" className="cmodal-back" onClick={() => setMig((m) => (m ? { ...m, version: null, results: null, loader: null } : m))}>← Pick a different version</button>
                 <h3>Move to which loader?</h3>
                 <div className="migrate-env" role="group" aria-label="Pack environment">
                   <button

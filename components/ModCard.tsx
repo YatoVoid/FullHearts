@@ -9,6 +9,7 @@ export default function ModCard({
   i,
   added,
   disabled,
+  disabledReason,
   onAdd,
   onRemove
 }: {
@@ -16,6 +17,9 @@ export default function ModCard({
   i: number;
   added: boolean;
   disabled?: boolean;
+  /** Visible label shown on a disabled Add button (title tooltips don't exist on
+   *  touch), e.g. "Not for Forge 1.20.1". */
+  disabledReason?: string;
   onAdd: (id: string) => void;
   /** When provided, an added mod's button becomes a Remove button on hover. */
   onRemove?: (id: string) => void;
@@ -44,12 +48,12 @@ export default function ModCard({
         ) : (
           <button
             type="button"
-            className="add-btn"
+            className={`add-btn${disabledReason ? " add-btn-nofit" : ""}`}
             onClick={() => onAdd(mod.id)}
             disabled={disabled}
-            title={disabled ? "Does not match this collection's loader/version." : undefined}
+            title={disabledReason || undefined}
           >
-            + Add
+            {disabledReason ?? "+ Add"}
           </button>
         )}
         {mod.links.modrinth && (

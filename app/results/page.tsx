@@ -24,7 +24,7 @@ import Footer from "@/components/Footer";
 import ServerCta from "@/components/ServerCta";
 import AdSlot from "@/components/AdSlot";
 
-const DEFAULT_COLLECTION = "My loadout";
+const DEFAULT_COLLECTION = "My collection";
 
 // Rank more candidates than the loadout size so we can fill it with mods that
 // ACTUALLY build for the chosen loader+version, then bound how many we resolve
@@ -77,6 +77,9 @@ export default function Results() {
   // A save waiting on the "which collection?" modal, plus the new-loadout name field.
   const [pendingSave, setPendingSave] = useState<{ kind: "all" } | { kind: "mod"; modId: string } | null>(null);
   const [newName, setNewName] = useState("");
+  // Feedback after a save so it's never a silent no-op (a mod can be skipped for
+  // incompatibility, and "save all" may only save some).
+  const [saveNote, setSaveNote] = useState("");
 
   // Creep the validation bar up a hair each tick so it always looks alive, and
   // count elapsed seconds so the user can see it's genuinely working (not stuck).
@@ -123,18 +126,31 @@ export default function Results() {
     commitTarget(collection);
     const mods = results.map((r) => r.mod);
     if (action.kind === "all") {
+      // Track only the mods actually saved — some may not fit and get skipped,
+      // so we must NOT mark every result "Added" (that was misleading).
+      const savedIds: string[] = [];
       for (const { mod } of results) {
         const targetMods = mods.filter((m) => m.id !== mod.id && collection.modIds.includes(m.id));
-        if (checkCompatibility([...targetMods, mod]).ok) addMod(collection.id, mod.id);
+        if (checkCompatibility([...targetMods, mod]).ok) { addMod(collection.id, mod.id); savedIds.push(mod.id); }
       }
-      setAdded(new Set(results.map((r) => r.mod.id)));
+      setAdded((prev) => new Set([...prev, ...savedIds]));
+      const missed = results.length - savedIds.length;
+      setSaveNote(
+        missed > 0
+          ? `Saved ${savedIds.length} of ${results.length} to “${collection.name}” — ${missed} didn't fit this loadout.`
+          : `Saved all ${savedIds.length} mods to “${collection.name}”.`
+      );
     } else {
       const { modId } = action;
       const targetMods = mods.filter((m) => m.id !== modId && collection.modIds.includes(m.id));
       const modToAdd = results.find((r) => r.mod.id === modId)?.mod;
-      if (modToAdd && targetMods.length > 0 && !checkCompatibility([...targetMods, modToAdd]).ok) return;
+      if (modToAdd && targetMods.length > 0 && !checkCompatibility([...targetMods, modToAdd]).ok) {
+        setSaveNote(`${modToAdd.name} doesn't fit “${collection.name}” (loader/version), so it wasn't added.`);
+        return;
+      }
       addMod(collection.id, modId);
       setAdded((prev) => new Set(prev).add(modId));
+      setSaveNote(`Added ${modToAdd?.name ?? "mod"} to “${collection.name}”.`);
     }
   }
 
@@ -281,7 +297,12 @@ export default function Results() {
             <span className="heart" style={{ width: 26, height: 26, display: "inline-flex" }}>{HEART}</span>
             <span className="name">FULL<b>HEARTS</b></span>
           </Link>
-          <Link className="nav-cta" href="/quiz">Retake quiz</Link>
+          <nav className="links">
+            <Link href="/explore">Explore</Link>
+            <Link href="/collections">Collections</Link>
+            <Link href="/quiz">Retake quiz</Link>
+          </nav>
+          <Link className="nav-cta" href="/install">How to install</Link>
         </div>
       </header>
 
@@ -292,13 +313,18 @@ export default function Results() {
               <><Icon name="dice" size={13} /> FEELING LUCKY · {luckyLabel.toUpperCase()}</>
             ) : describeQuery ? (
               <><Icon name="search" size={13} /> “{describeQuery.toUpperCase()}” · AI BETA</>
-            ) : "YOUR LOADOUT"}
+            ) : "YOUR MODS"}
           </div>
           {status === "ready" && <div className="summary">{summary}</div>}
           {status === "ready" && profile && !degraded && (
-            <div className="compat compat-ok">
-              <Icon name="check" size={15} /> {contentCount} mods{essentialCount > 0 ? ` + ${essentialCount} essentials` : ""} for {profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1)} {profile.gameVersion}. Every one verified to launch, dependencies included.
-            </div>
+            <>
+              <div className="compat compat-ok">
+                <Icon name="check" size={15} /> {contentCount} mods{essentialCount > 0 ? ` + ${essentialCount} essentials` : ""} for {profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1)} {profile.gameVersion}. Every one verified to launch, dependencies included.
+              </div>
+              {essentialCount > 0 && (
+                <p className="results-essentials-note">“Essentials” are the performance &amp; bug-fix mods almost every pack needs — we add them so it runs smoothly.</p>
+              )}
+            </>
           )}
           {status === "ready" && profile && (
             <DownloadPack
@@ -309,12 +335,14 @@ export default function Results() {
             />
           )}
           {status === "ready" && (
-            <div className="results-actions">
-              <button type="button" className="btn-ghost" onClick={addAll}>Save all to collection</button>
-              <button type="button" className="btn-ghost" onClick={openAll}>Open all mod pages ({results.length})</button>
-              <Link className="btn-ghost" href="/install"><Icon name="package" size={15} /> Install guide</Link>
-              <Link className="btn-ghost" href="/collections">View collections</Link>
-            </div>
+            <>
+              <div className="results-actions">
+                <button type="button" className="btn-ghost" onClick={addAll}>Save all to collection</button>
+                <Link className="btn-ghost" href="/install"><Icon name="package" size={15} /> Install guide</Link>
+                <Link className="btn-ghost" href="/collections">View collections</Link>
+              </div>
+              {saveNote && <p className="copied-note" role="status">{saveNote}</p>}
+            </>
           )}
         </div>
 
@@ -322,7 +350,7 @@ export default function Results() {
           <div className="results-building" role="status" aria-live="polite">
             <div className="quiz-progress" aria-hidden="true"><i style={{ width: `${Math.max(6, buildProgress.pct)}%` }} /></div>
             <p className="results-building-head">
-              <span className="building-label"><span className="building-text">{buildProgress.label || "Building your loadout"}</span><span className="building-dots" aria-hidden="true" /></span>
+              <span className="building-label"><span className="building-text">{buildProgress.label || "Building your pack"}</span><span className="building-dots" aria-hidden="true" /></span>
               <span className="building-meter">{Math.round(buildProgress.pct)}% · {elapsed}s</span>
             </p>
             <p className="results-state">
@@ -339,9 +367,10 @@ export default function Results() {
         )}
 
         {status === "error" && (
-          <p className="results-state">
-            We couldn&apos;t reach the mod data. Please <Link href="/quiz" style={{ color: "var(--grass)" }}>try again</Link>.
-          </p>
+          <div className="results-state">
+            <p>We couldn&apos;t reach the mod data — your answers are saved, so a retry usually fixes it.</p>
+            <button type="button" className="btn-primary" onClick={() => window.location.reload()}>Try again</button>
+          </div>
         )}
 
         {status === "down" && (
@@ -358,7 +387,9 @@ export default function Results() {
 
         {status === "empty" && (
           <p className="results-state">
-            {profile
+            {describeQuery
+              ? <>Nothing matched “{describeQuery}”{profile ? <> for {profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1)} {profile.gameVersion}</> : ""}. <Link href="/" style={{ color: "var(--grass)" }}>Go back and describe it differently</Link>, or <Link href="/explore" style={{ color: "var(--grass)" }}>browse Explore</Link>.</>
+              : profile
               ? <>No mods build for {profile.loader.charAt(0).toUpperCase() + profile.loader.slice(1)} {profile.gameVersion}. <Link href="/quiz" style={{ color: "var(--grass)" }}>Retake the quiz</Link> with a different loader or Minecraft version.</>
               : <>No matches for those answers yet. <Link href="/quiz" style={{ color: "var(--grass)" }}>Tweak your quiz</Link> and try again.</>}
           </p>
@@ -410,6 +441,10 @@ export default function Results() {
                 );
               })}
             </div>
+            <div className="results-openall">
+              <button type="button" className="btn-ghost" onClick={openAll}>Open all mod pages ({results.length})</button>
+              <span className="results-openall-note">Opens {results.length} browser tabs — only needed for the manual install route.</span>
+            </div>
             <ServerCta />
             <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_RESULTS || "9713352410"} />
           </>
@@ -420,10 +455,10 @@ export default function Results() {
         const saveAction = pendingSave;
         const withMods = listCollections().filter((c) => c.modIds.length > 0);
         return (
-          <div className="cmodal-overlay" role="dialog" aria-modal="true" aria-label="Save to which loadout" onClick={() => setPendingSave(null)}>
+          <div className="cmodal-overlay" role="dialog" aria-modal="true" aria-label="Save to which collection" onClick={() => setPendingSave(null)}>
             <div className="cmodal" onClick={(e) => e.stopPropagation()}>
-              <h3>Save to which loadout?</h3>
-              <p className="cmodal-sub">Add these mods to one you&apos;ve already built, or start a fresh loadout.</p>
+              <h3>Save to which collection?</h3>
+              <p className="cmodal-sub">Add these mods to one you&apos;ve already built, or start a fresh collection.</p>
               <ul className="cmodal-list">
                 {withMods.map((c) => (
                   <li key={c.id}>
@@ -439,12 +474,12 @@ export default function Results() {
                   className="cmodal-input"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  aria-label="New loadout name"
-                  placeholder="New loadout name"
+                  aria-label="New collection name"
+                  placeholder="New collection name"
                   onKeyDown={(e) => { if (e.key === "Enter") { performSave(createCollection(newName.trim() || nextDefaultName()), saveAction); setPendingSave(null); } }}
                 />
                 <button type="button" className="btn-primary" onClick={() => { performSave(createCollection(newName.trim() || nextDefaultName()), saveAction); setPendingSave(null); }}>
-                  ＋ New loadout
+                  ＋ New collection
                 </button>
               </div>
               <button type="button" className="cmodal-cancel" onClick={() => setPendingSave(null)}>Cancel</button>

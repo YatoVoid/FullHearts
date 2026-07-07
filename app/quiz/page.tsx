@@ -86,7 +86,14 @@ export default function Quiz() {
   const total = QUESTIONS.length;
   const selected = answers[question.id] ?? [];
   const progress = Math.round((step / total) * 100);
-  const canAdvance = selected.length > 0;
+  // A multi question's "no preference" escape hatch: an exclusive option that
+  // carries no tag weight. Its presence means the user can legitimately skip by
+  // clicking Next (we auto-pick it), so the "or skip" help text is honest.
+  const skipOption =
+    question.kind === "multi"
+      ? question.options.find((o) => o.exclusive && (!o.tags || Object.keys(o.tags).length === 0))
+      : undefined;
+  const canAdvance = selected.length > 0 || Boolean(skipOption);
 
   // Map quiz answers -> chosen loader/version (loader option ids equal loader names).
   const chosenLoader = (answers.loader?.[0] ?? "forge") as Loader;
@@ -180,10 +187,17 @@ export default function Quiz() {
   );
 
   const next = useCallback(() => {
-    if (!canAdvance) return;
+    // Nothing chosen but the question allows "no preference": record the skip
+    // option so the profile reflects it, then advance.
+    let effective = answers;
+    if (selected.length === 0) {
+      if (!skipOption) return; // truly can't advance
+      effective = { ...answers, [question.id]: [skipOption.id] };
+      setAnswers(effective);
+    }
     if (step < total - 1) setStep((s) => s + 1);
-    else finish(answers);
-  }, [canAdvance, step, total, finish, answers]);
+    else finish(effective);
+  }, [answers, selected.length, skipOption, question.id, step, total, finish]);
 
   const back = useCallback(() => {
     if (step > 0) setStep((s) => s - 1);
@@ -217,6 +231,10 @@ export default function Quiz() {
             <span className="heart" style={{ width: 26, height: 26, display: "inline-flex" }}>{HEART}</span>
             <span className="name">FULL<b>HEARTS</b></span>
           </Link>
+          <nav className="links">
+            <Link href="/explore">Explore</Link>
+            <Link href="/collections">Collections</Link>
+          </nav>
           <Link className="nav-cta" href="/">Exit</Link>
         </div>
       </header>
@@ -269,8 +287,9 @@ export default function Quiz() {
         <div className="quiz-nav">
           <button type="button" className={`btn-ghost${step === 0 ? " btn-disabled" : ""}`} onClick={back}>Back</button>
           <span className="spacer" />
+          {!canAdvance && <span className="quiz-nav-hint" role="status">Pick at least one to continue</span>}
           <button type="button" className={`btn-primary${canAdvance ? "" : " btn-disabled"}`} onClick={next}>
-            {step < total - 1 ? "Next" : "See my loadout"}
+            {step < total - 1 ? (skipOption && selected.length === 0 ? "Skip" : "Next") : "See my mods"}
           </button>
         </div>
       </main>

@@ -81,6 +81,10 @@ export default function Install() {
             <span className="heart" style={{ width: 26, height: 26, display: "inline-flex" }}>{HEART}</span>
             <span className="name">FULL<b>HEARTS</b></span>
           </Link>
+          <nav className="links">
+            <Link href="/explore">Explore</Link>
+            <Link href="/quiz">Quiz</Link>
+          </nav>
           <Link className="nav-cta" href="/collections">My collections</Link>
         </div>
       </header>
@@ -88,7 +92,7 @@ export default function Install() {
       <main className="install">
         <div className="section-head">
           <div className="eyebrow">HOW TO INSTALL YOUR MODS</div>
-          <h2>One file. The whole loadout.</h2>
+          <h2>One file. The whole pack.</h2>
           <p className="intro-lede">
             Full Hearts builds you a single modpack file. Import it into a launcher and every mod installs at once,
             already checked to work together. No clicking through each page.
@@ -137,12 +141,16 @@ export default function Install() {
                     In your launcher choose <strong>Add instance → From file</strong> (or just drag the{" "}
                     <code>.mrpack</code> in). It downloads and installs every mod for you. Launch and play.
                   </p>
+                  <p className="install-note" style={{ marginTop: 8 }}>
+                    The file lands in your <strong>Downloads</strong> folder — don&apos;t double-click it. Import it from
+                    <em> inside</em> the launcher using the step above.
+                  </p>
                 </div>
               </div>
             </li>
           </ol>
           <div className="install-cta">
-            <Link className="btn-primary" href="/collections">Download my modpack</Link>
+            <Link className="btn-primary" href="/collections">Open my collections</Link>
           </div>
           <p className="install-note">Works for Fabric, Quilt, Forge &amp; NeoForge loadouts. Modrinth-hosted mods only.</p>
         </section>
@@ -151,7 +159,7 @@ export default function Install() {
         <section className="method method-alt">
           <div className="method-head">
             <span className="method-badge alt">MANUAL</span>
-            <h3>Prefer a Modrinth collection? (or on Forge)</h3>
+            <h3>Prefer a Modrinth collection?</h3>
           </div>
           <p className="intro-lede" style={{ marginBottom: 24 }}>
             You can also build a Modrinth collection and pull it down with a community tool. Slower, but works on any

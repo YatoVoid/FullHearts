@@ -129,7 +129,7 @@ export const QUESTIONS: Question[] = [
     // Asked BEFORE the loader so we can then recommend the loader that actually
     // has the most mods for the chosen version. Option id === the version string.
     prompt: "Which Minecraft version?",
-    help: "Pick first — we'll then recommend the mod loader with the most mods for it.",
+    help: "Not sure? Your launcher shows it on the Play button — or pick the Recommended one. We'll then recommend the mod loader with the most mods for it.",
     options: [
       { id: "1.21.1", label: "1.21.1", gameVersion: "1.21.1" },
       { id: "1.21", label: "1.21", gameVersion: "1.21" },
@@ -149,7 +149,7 @@ export const QUESTIONS: Question[] = [
     // Recommended loader is computed from the chosen version (most real builds):
     // 1.21.x -> NeoForge, older -> Forge, etc.
     prompt: "Which mod loader do you use?",
-    help: "Modern versions (1.21+) use NeoForge; older versions are richest on Forge. We flag the one with the most mods for your version.",
+    help: "A loader is the base mod that runs all the others — your launcher installs it for you. Modern versions (1.21+) use NeoForge; older versions are richest on Forge. We flag the one with the most mods for your version.",
     options: [
       { id: "forge", label: "Forge", loader: "forge" },
       { id: "neoforge", label: "NeoForge", loader: "neoforge" },

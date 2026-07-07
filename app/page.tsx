@@ -104,7 +104,7 @@ export default function Home() {
         <section className="wrap" id="how" style={{ padding: "70px 0 90px" }}>
           <div className="section-head">
             <div className="eyebrow">HOW IT WORKS</div>
-            <h2>Three steps to your loadout</h2>
+            <h2>Three steps to your pack</h2>
           </div>
           <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))" }}>
             <article className="tip r-uncommon">
@@ -113,14 +113,14 @@ export default function Home() {
               <div className="fix"><span style={{ width: 14, height: 14, display: "inline-flex" }}>{HEART}</span>No jargon, one question at a time</div>
             </article>
             <article className="tip r-rare">
-              <div className="row1"><span className="title">2 · Get your loadout</span><span className="loader">RANKED</span></div>
+              <div className="row1"><span className="title">2 · Get your pack</span><span className="loader">RANKED</span></div>
               <p className="desc">We rank compatible mods to your taste and show a plain-English reason for every pick, with dependencies flagged.</p>
 
               <div className="fix"><span style={{ width: 14, height: 14, display: "inline-flex" }}>{HEART}</span>A reason behind every mod</div>
             </article>
             <article className="tip r-epic">
               <div className="row1"><span className="title">3 · One-click install</span><span className="loader">.MRPACK</span></div>
-              <p className="desc">Download the whole loadout as one modpack file, dependencies included, and import it into your launcher. It just launches.</p>
+              <p className="desc">Download the whole pack as one modpack file, dependencies included, and import it into your launcher. It just launches.</p>
               <div className="fix"><span style={{ width: 14, height: 14, display: "inline-flex" }}>{HEART}</span>No per-mod hunting</div>
             </article>
           </div>

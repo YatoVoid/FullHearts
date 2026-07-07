@@ -14,12 +14,14 @@ import {
 import type { Loader } from "@/lib/sources/types";
 import { getLastCollectionId, setLastCollectionId } from "@/lib/storage/user";
 
-const DEFAULT_COLLECTION = "My loadout";
+const DEFAULT_COLLECTION = "My collection";
 
 /**
  * Shared "which collection am I adding to?" state for Explore / tag pages.
- * Picks the last-used collection on load (or the newest, or creates the default
- * if none exist), and exposes the list + a setter so a picker can switch target.
+ * Picks the last-used collection on load (or the newest). Does NOT create a
+ * collection just because you visited — an empty "My collection" cluttering the
+ * list on every first visit was confusing; the default is created lazily on the
+ * first actual add instead (see addToTarget). `targetId` is "" until then.
  * `added` reflects the *current target's* contents, so switching collections
  * correctly re-shows which mods are already in the one you're adding to.
  */
@@ -31,12 +33,10 @@ export function useCollectionTarget() {
   useEffect(() => {
     const list = listCollections();
     let id = getLastCollectionId();
-    if (!id || !list.some((c) => c.id === id)) {
-      id = list[0]?.id ?? ensureCollection(DEFAULT_COLLECTION).id;
-    }
-    setCollections(listCollections());
+    if (!id || !list.some((c) => c.id === id)) id = list[0]?.id ?? ""; // don't auto-create
+    setCollections(list);
     setTargetId(id);
-    setAdded(new Set(getCollection(id)?.modIds ?? []));
+    setAdded(new Set(id ? getCollection(id)?.modIds ?? [] : []));
   }, []);
 
   const selectTarget = useCallback((id: string) => {
@@ -56,11 +56,16 @@ export function useCollectionTarget() {
 
   const addToTarget = useCallback(
     (modId: string, loadout?: { loader: Loader; version: string }) => {
-      if (!targetId) return;
+      // Lazily create the default collection on the very first add.
+      let id = targetId;
+      if (!id) {
+        id = ensureCollection(DEFAULT_COLLECTION).id;
+        setTargetId(id);
+      }
       // Pin the loadout's loader/version on the first add, from the user's pick.
-      if (loadout) setLoadout(targetId, loadout.loader, loadout.version);
-      addMod(targetId, modId);
-      setLastCollectionId(targetId);
+      if (loadout) setLoadout(id, loadout.loader, loadout.version);
+      addMod(id, modId);
+      setLastCollectionId(id);
       setAdded((prev) => new Set(prev).add(modId));
       setCollections(listCollections());
     },

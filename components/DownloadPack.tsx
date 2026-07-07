@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import type { Loader, Mod } from "@/lib/sources/types";
 import { buildMrpack, MrpackError } from "@/lib/modpack/mrpack";
 import Icon from "@/components/Icon";
@@ -27,6 +28,7 @@ export default function DownloadPack({
 }) {
   const [state, setState] = useState<"idle" | "building">("idle");
   const [msg, setMsg] = useState("");
+  const [done, setDone] = useState(false);
   const [pct, setPct] = useState(0);
   const [label, setLabel] = useState("");
   const floor = useRef(0); // real phase progress; the bar creeps but never drops below it
@@ -47,6 +49,7 @@ export default function DownloadPack({
     setLabel("Starting up");
     setState("building");
     setMsg("");
+    setDone(false);
     try {
       const { blob, included, skipped, depCount, removedConflicts } = await buildMrpack({
         name,
@@ -76,6 +79,7 @@ export default function DownloadPack({
           ? ` Removed ${removedConflicts.length} conflicting mod(s) so it'll launch: ${removedConflicts.map((c) => `${c.name} (${c.reason})`).join("; ")}.`
           : "";
       setMsg(`Packed ${included.length} mods${deps}. Import the file into Modrinth App, Prism, or ATLauncher.${left}${conflicts}`);
+      setDone(true);
     } catch (e) {
       setMsg(e instanceof MrpackError ? e.message : "Couldn't build the modpack. Please try again.");
     } finally {
@@ -102,6 +106,11 @@ export default function DownloadPack({
       )}
       {disabled && hint && <p className="pack-note">{hint}</p>}
       {msg && <p className="pack-note" role="status">{msg}</p>}
+      {done && (
+        <Link className="pack-next" href="/install">
+          Next: how to import it into your launcher →
+        </Link>
+      )}
     </div>
   );
 }
