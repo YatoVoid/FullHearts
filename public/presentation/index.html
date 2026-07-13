@@ -2,193 +2,185 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
-<title>Simple Games, Serious Money — Roblox Investment Pitch</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AE</text></svg>">
+<title>Simple Games, Real Money — Roblox</title>
 <style>
   :root {
-    --ink: #10120e;
-    --panel: #ffffff;
-    --panel-2: #f4f5f0;
-    --line: #d9dbd2;
-    --text: #1a1d17;
-    --muted: #5c6154;
-    --faint: #878d7c;
-    --accent: #16b877;      /* growth green */
-    --accent-deep: #0e7a4f;
-    --gold: #c98a12;        /* money */
-    --danger: #c4483a;
-    --bg: #f7f7f1;
+    --panel: #ffffff; --panel-2: #f4f5f0; --line: #dcded4; --text: #1a1d17;
+    --muted: #5c6154; --faint: #878d7c; --accent: #16b877; --accent-deep: #0c7049;
+    --gold: #b67d0e; --danger: #bd4638; --bg: #f7f7f1;
     --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, "Liberation Mono", monospace;
     --sans: system-ui, "Segoe UI", -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
-    --slide-pad: clamp(1.5rem, 5vw, 6rem);
+    --pad: clamp(1.15rem, 5vw, 5.5rem);
+    --maxw: 1120px;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --panel: #191c16;
-      --panel-2: #21251d;
-      --line: #333829;
-      --text: #eef0e6;
-      --muted: #a7ad99;
-      --faint: #767c68;
-      --accent: #2ee69a;
-      --accent-deep: #159c66;
-      --gold: #f0b544;
-      --danger: #f0796a;
-      --bg: #10120e;
+      --panel: #191c16; --panel-2: #21251d; --line: #333829; --text: #eef0e6;
+      --muted: #a7ad99; --faint: #767c68; --accent: #2ee69a; --accent-deep: #37d792;
+      --gold: #f0b544; --danger: #f0796a; --bg: #10120e;
     }
   }
   :root[data-theme="light"] {
-    --panel: #ffffff; --panel-2: #f4f5f0; --line: #d9dbd2; --text: #1a1d17;
-    --muted: #5c6154; --faint: #878d7c; --accent: #16b877; --accent-deep: #0e7a4f;
-    --gold: #c98a12; --danger: #c4483a; --bg: #f7f7f1;
+    --panel:#ffffff;--panel-2:#f4f5f0;--line:#dcded4;--text:#1a1d17;--muted:#5c6154;
+    --faint:#878d7c;--accent:#16b877;--accent-deep:#0c7049;--gold:#b67d0e;--danger:#bd4638;--bg:#f7f7f1;
   }
   :root[data-theme="dark"] {
-    --panel: #191c16; --panel-2: #21251d; --line: #333829; --text: #eef0e6;
-    --muted: #a7ad99; --faint: #767c68; --accent: #2ee69a; --accent-deep: #159c66;
-    --gold: #f0b544; --danger: #f0796a; --bg: #10120e;
+    --panel:#191c16;--panel-2:#21251d;--line:#333829;--text:#eef0e6;--muted:#a7ad99;
+    --faint:#767c68;--accent:#2ee69a;--accent-deep:#37d792;--gold:#f0b544;--danger:#f0796a;--bg:#10120e;
   }
 
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans);
+    -webkit-font-smoothing: antialiased; line-height: 1.5; overflow-x: hidden; }
 
-  body {
-    margin: 0; background: var(--bg); color: var(--text);
-    font-family: var(--sans); -webkit-font-smoothing: antialiased;
-    line-height: 1.5;
-  }
+  .deck { height: 100svh; overflow-y: scroll; scroll-snap-type: y proximity; scroll-behavior: smooth; }
+  .slide { min-height: 100svh; scroll-snap-align: start; padding: var(--pad);
+    padding-top: max(var(--pad), 4.5rem); padding-bottom: max(var(--pad), 4rem);
+    display: flex; flex-direction: column; justify-content: center; gap: clamp(1rem,2.4vw,1.5rem);
+    max-width: var(--maxw); margin: 0 auto; }
 
-  .deck {
-    height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory;
-    scroll-behavior: smooth;
-  }
-  .slide {
-    min-height: 100vh; scroll-snap-align: start; scroll-snap-stop: always;
-    padding: var(--slide-pad);
-    display: flex; flex-direction: column; justify-content: center;
-    position: relative; gap: 1.4rem;
-    max-width: 1180px; margin: 0 auto;
-  }
-
-  /* type */
-  .eyebrow {
-    font-family: var(--mono); font-size: .72rem; letter-spacing: .22em;
+  .eyebrow { font-family: var(--mono); font-size: clamp(.64rem,1.7vw,.74rem); letter-spacing: .2em;
     text-transform: uppercase; color: var(--accent-deep); font-weight: 600;
-    display: flex; align-items: center; gap: .7rem;
-  }
-  :root[data-theme="dark"] .eyebrow, .eyebrow { }
-  @media (prefers-color-scheme: dark) { .eyebrow { color: var(--accent); } }
-  :root[data-theme="dark"] .eyebrow { color: var(--accent); }
-  :root[data-theme="light"] .eyebrow { color: var(--accent-deep); }
-  .eyebrow::before {
-    content: ""; width: 26px; height: 2px; background: var(--accent); display: inline-block;
-  }
-  h1 {
-    font-size: clamp(2.4rem, 6.5vw, 5rem); line-height: 1.02; margin: 0;
-    font-weight: 800; letter-spacing: -.03em; text-wrap: balance;
-  }
-  h2 {
-    font-size: clamp(1.7rem, 4vw, 3rem); line-height: 1.05; margin: 0;
-    font-weight: 800; letter-spacing: -.025em; text-wrap: balance;
-  }
-  h1 .hl, h2 .hl { color: var(--accent); }
+    display: flex; align-items: center; gap: .7rem; }
+  .eyebrow::before { content: ""; width: 24px; height: 2px; background: var(--accent); flex: 0 0 auto; }
+  h1 { font-size: clamp(2.2rem,9vw,4.8rem); line-height: 1.02; margin: 0; font-weight: 800;
+    letter-spacing: -.03em; text-wrap: balance; }
+  h2 { font-size: clamp(1.55rem,5.2vw,2.9rem); line-height: 1.06; margin: 0; font-weight: 800;
+    letter-spacing: -.025em; text-wrap: balance; }
+  h1 .hl, h2 .hl, .big-quote .hl { color: var(--accent); }
   h1 .gold, h2 .gold { color: var(--gold); }
-  .lede { font-size: clamp(1.05rem, 2vw, 1.4rem); color: var(--muted); max-width: 46ch; text-wrap: pretty; }
+  .lede { font-size: clamp(1rem,2.6vw,1.35rem); color: var(--muted); max-width: 48ch; text-wrap: pretty; }
   p { margin: 0; }
-
   .num { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 600; }
+  .kicker { font-family: var(--mono); font-size: clamp(.72rem,2vw,.82rem); color: var(--faint); }
+  .foot { font-size: clamp(.68rem,1.7vw,.76rem); color: var(--faint); font-family: var(--mono); line-height: 1.5; }
+  .disclaimer { font-size: clamp(.68rem,1.7vw,.74rem); color: var(--faint); max-width: 62ch; line-height: 1.5; }
+  .big-quote { font-size: clamp(1.15rem,3.6vw,1.85rem); font-weight: 700; letter-spacing: -.02em;
+    line-height: 1.25; text-wrap: balance; }
 
   /* stat grid */
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
-  .stat { background: var(--panel); padding: 1.4rem 1.3rem; display: flex; flex-direction: column; gap: .35rem; }
-  .stat .big { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: clamp(1.7rem, 3.4vw, 2.5rem); font-weight: 700; letter-spacing: -.02em; color: var(--text); }
-  .stat .big.g { color: var(--gold); }
-  .stat .big.a { color: var(--accent); }
-  .stat .lab { font-size: .82rem; color: var(--muted); line-height: 1.35; }
-  .stat .src { font-size: .68rem; color: var(--faint); font-family: var(--mono); }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 1px;
+    background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .stat { background: var(--panel); padding: clamp(.9rem,2.5vw,1.4rem); display: flex; flex-direction: column; gap: .3rem; }
+  .stat .big { font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: clamp(1.5rem,5vw,2.4rem); font-weight: 700; letter-spacing: -.02em; }
+  .stat .big.g { color: var(--gold); } .stat .big.a { color: var(--accent); }
+  .stat .lab { font-size: clamp(.76rem,2vw,.85rem); color: var(--muted); line-height: 1.35; }
+  .stat .src { font-size: .66rem; color: var(--faint); font-family: var(--mono); }
 
-  /* cards / lists */
-  .cols { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 1.3rem 1.25rem; display: flex; flex-direction: column; gap: .55rem; }
-  .card h3 { margin: 0; font-size: 1.02rem; font-weight: 700; letter-spacing: -.01em; }
-  .card .k { font-family: var(--mono); font-size: .74rem; letter-spacing: .12em; text-transform: uppercase; color: var(--accent-deep); }
-  :root[data-theme="dark"] .card .k { color: var(--accent); }
-  .card p { font-size: .92rem; color: var(--muted); }
+  /* generic card grid */
+  .cols { display: grid; gap: clamp(.7rem,1.8vw,1.1rem);
+    grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: clamp(1rem,2.6vw,1.3rem); display: flex; flex-direction: column; gap: .5rem; }
+  .card h3 { margin: 0; font-size: clamp(.98rem,2.4vw,1.05rem); font-weight: 700; letter-spacing: -.01em; }
+  .card .k { font-family: var(--mono); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--accent-deep); }
+  .card .k.r { color: var(--danger); }
+  .card p { font-size: clamp(.86rem,2.2vw,.93rem); color: var(--muted); }
 
-  ul.clean { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .8rem; }
-  ul.clean li { display: flex; gap: .75rem; font-size: clamp(.95rem, 1.6vw, 1.08rem); align-items: baseline; }
-  ul.clean li::before { content: ""; flex: 0 0 auto; width: 8px; height: 8px; border-radius: 2px; background: var(--accent); transform: translateY(1px); }
-  ul.clean li.warn::before { background: var(--danger); }
+  /* game cards */
+  .games { display: grid; gap: clamp(.7rem,1.8vw,1rem);
+    grid-template-columns: repeat(auto-fit,minmax(250px,1fr)); }
+  .game { background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: clamp(1rem,2.6vw,1.25rem); display: flex; flex-direction: column; gap: .7rem; }
+  .game-head { display: flex; align-items: center; justify-content: space-between; gap: .6rem; flex-wrap: wrap; }
+  .game-head h3 { margin: 0; font-size: clamp(1rem,2.6vw,1.15rem); font-weight: 800; letter-spacing: -.02em; }
+  .game .concept { font-size: clamp(.85rem,2.2vw,.92rem); color: var(--muted); line-height: 1.4; }
+  .game-meta { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem .8rem; margin-top: auto; }
+  .game-meta > div { display: flex; flex-direction: column; gap: .1rem; }
+  .mlab { font-size: .62rem; font-family: var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+  .mval { font-size: clamp(.8rem,2.1vw,.9rem); font-weight: 700; font-family: var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+  .mval.g { color: var(--gold); }
+  .tag { display: inline-flex; align-items: center; gap: .35rem; font-family: var(--mono);
+    font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; padding: .28rem .55rem;
+    border-radius: 999px; border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); color: var(--accent-deep); white-space: nowrap; }
+
+  /* step cards (money flow) */
+  .steps { display: grid; gap: clamp(.7rem,1.8vw,1rem); grid-template-columns: repeat(auto-fit,minmax(210px,1fr)); }
+  .step { background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: clamp(1rem,2.6vw,1.25rem); display: flex; flex-direction: column; gap: .5rem; position: relative; }
+  .step .n { font-family: var(--mono); font-size: .72rem; font-weight: 700; color: var(--accent); letter-spacing: .1em; }
+  .step h3 { margin: 0; font-size: 1rem; font-weight: 700; }
+  .step p { font-size: clamp(.84rem,2.1vw,.9rem); color: var(--muted); }
+  .step .keep { font-family: var(--mono); font-weight: 700; font-size: .95rem; color: var(--gold); margin-top: auto; }
+  .step .keep.a { color: var(--accent); }
+
+  /* clean list */
+  ul.clean { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .85rem; }
+  ul.clean li { display: flex; gap: .7rem; font-size: clamp(.9rem,2.3vw,1.06rem); align-items: baseline; line-height: 1.45; }
+  ul.clean li::before { content: ""; flex: 0 0 auto; width: 8px; height: 8px; border-radius: 2px; background: var(--accent); transform: translateY(2px); }
   ul.clean li b { font-weight: 700; }
-  ul.clean li .em { font-family: var(--mono); color: var(--gold); font-weight: 600; font-variant-numeric: tabular-nums; }
-
-  /* table */
-  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; }
-  table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: .92rem; }
-  th, td { text-align: left; padding: .85rem 1rem; border-bottom: 1px solid var(--line); }
-  thead th { background: var(--panel-2); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
-  tbody tr:last-child td { border-bottom: none; }
-  td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 600; }
-  td .g { color: var(--gold); } td .a { color: var(--accent); } td .r { color: var(--danger); }
-  tbody tr td:first-child { font-weight: 600; }
-
-  .tag { display: inline-flex; align-items: center; gap: .4rem; font-family: var(--mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; padding: .3rem .6rem; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
-  .tag.good { color: var(--accent-deep); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
-  :root[data-theme="dark"] .tag.good { color: var(--accent); }
-  .tag.risk { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
-
-  .foot { font-size: .74rem; color: var(--faint); font-family: var(--mono); }
 
   /* scenario bars */
-  .scen { display: grid; gap: .9rem; }
-  .scenrow { display: grid; grid-template-columns: 130px 1fr auto; align-items: center; gap: 1rem; }
-  .scenrow .label { font-weight: 700; font-size: .95rem; }
-  .scenrow .label small { display: block; font-weight: 400; color: var(--muted); font-size: .74rem; }
-  .bar { height: 30px; border-radius: 7px; background: var(--panel-2); position: relative; overflow: hidden; border: 1px solid var(--line); }
-  .bar span { position: absolute; inset: 0 auto 0 0; border-radius: 6px; }
-  .scenrow .val { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 700; font-size: .95rem; white-space: nowrap; }
+  .scen { display: grid; gap: .85rem; }
+  .scenrow { display: grid; grid-template-columns: 132px 1fr auto; align-items: center; gap: 1rem; }
+  .scenrow .label { font-weight: 700; font-size: clamp(.85rem,2.2vw,.95rem); }
+  .scenrow .label small { display: block; font-weight: 400; color: var(--muted); font-size: .72rem; margin-top: .1rem; }
+  .bar { height: 28px; border-radius: 7px; background: var(--panel-2); position: relative; overflow: hidden; border: 1px solid var(--line); }
+  .bar span { position: absolute; inset: 0 auto 0 0; border-radius: 6px; min-width: 6px; }
+  .scenrow .val { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 700; font-size: clamp(.85rem,2.2vw,.95rem); white-space: nowrap; }
 
   /* timeline */
-  .timeline { display: grid; gap: 0; }
-  .tl { display: grid; grid-template-columns: 88px 1fr; gap: 1.1rem; padding: .85rem 0; border-top: 1px solid var(--line); }
+  .timeline { display: grid; }
+  .tl { display: grid; grid-template-columns: 92px 1fr; gap: 1rem; padding: .8rem 0; border-top: 1px solid var(--line); }
   .tl:first-child { border-top: none; }
-  .tl .when { font-family: var(--mono); font-weight: 700; color: var(--accent); font-size: .9rem; letter-spacing: .04em; padding-top: .1rem; }
-  .tl .what { font-size: .95rem; color: var(--text); }
+  .tl .when { font-family: var(--mono); font-weight: 700; color: var(--accent); font-size: clamp(.8rem,2.1vw,.9rem); }
+  .tl .what { font-size: clamp(.88rem,2.2vw,.95rem); }
   .tl .what b { font-weight: 700; }
 
-  /* progress + nav */
-  .rail { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0; z-index: 40; transition: width .25s ease; }
-  .hud { position: fixed; right: 1.1rem; bottom: 1.05rem; z-index: 40; display: flex; align-items: center; gap: .7rem; font-family: var(--mono); font-size: .8rem; color: var(--muted); background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(6px); padding: .4rem .7rem; border: 1px solid var(--line); border-radius: 999px; }
-  .hud button { font: inherit; color: var(--text); background: none; border: none; cursor: pointer; padding: .1rem .35rem; border-radius: 6px; line-height: 1; }
+  /* fixed chrome */
+  .rail { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0; z-index: 50; transition: width .25s ease; }
+  .controls { position: fixed; top: max(.75rem, env(safe-area-inset-top)); right: .75rem; z-index: 50; display: flex; gap: .45rem; }
+  .pill { font-family: var(--mono); font-size: clamp(.66rem,1.9vw,.74rem); cursor: pointer; color: var(--muted);
+    background: color-mix(in srgb, var(--bg) 80%, transparent); backdrop-filter: blur(8px);
+    border: 1px solid var(--line); border-radius: 999px; padding: .4rem .6rem; line-height: 1; display: inline-flex; align-items: center; gap: .3rem; }
+  .pill:hover { color: var(--accent); }
+  .pill:focus-visible, .hud button:focus-visible, .dots button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .langseg .off { color: var(--faint); font-weight: 400; }
+
+  .hud { position: fixed; right: .75rem; bottom: max(.75rem, env(safe-area-inset-bottom)); z-index: 50;
+    display: flex; align-items: center; gap: .4rem; font-family: var(--mono); font-size: .78rem; color: var(--muted);
+    background: color-mix(in srgb, var(--bg) 80%, transparent); backdrop-filter: blur(8px);
+    padding: .3rem .5rem; border: 1px solid var(--line); border-radius: 999px; }
+  .hud button { font: inherit; color: var(--text); background: none; border: none; cursor: pointer;
+    padding: .35rem .5rem; border-radius: 7px; line-height: 1; min-width: 34px; }
   .hud button:hover { color: var(--accent); }
-  .hud button:focus-visible, .themebtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .hud .count { min-width: 3.2em; text-align: center; }
-  .themebtn { position: fixed; right: 1.1rem; top: 1.05rem; z-index: 40; font: inherit; font-family: var(--mono); font-size: .75rem; cursor: pointer; color: var(--muted); background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: 999px; padding: .38rem .7rem; }
-  .themebtn:hover { color: var(--accent); }
+  .hud .count { min-width: 3.4em; text-align: center; font-variant-numeric: tabular-nums; }
 
-  .dots { position: fixed; left: 1.1rem; top: 50%; transform: translateY(-50%); z-index: 40; display: flex; flex-direction: column; gap: .55rem; }
-  .dots button { width: 9px; height: 9px; padding: 0; border-radius: 50%; border: 1.5px solid var(--faint); background: transparent; cursor: pointer; transition: all .2s; }
-  .dots button.on { background: var(--accent); border-color: var(--accent); transform: scale(1.25); }
-  @media (max-width: 680px) { .dots { display: none; } }
-
-  .kicker { font-family: var(--mono); font-size: .8rem; color: var(--faint); }
-  .big-quote { font-size: clamp(1.2rem, 2.6vw, 1.9rem); font-weight: 700; letter-spacing: -.02em; line-height: 1.25; text-wrap: balance; }
-  .big-quote .hl { color: var(--accent); }
+  .dots { position: fixed; left: .8rem; top: 50%; transform: translateY(-50%); z-index: 50;
+    display: flex; flex-direction: column; gap: .5rem; }
+  .dots button { width: 9px; height: 9px; padding: 0; border-radius: 50%; border: 1.5px solid var(--faint);
+    background: transparent; cursor: pointer; transition: all .2s; }
+  .dots button.on { background: var(--accent); border-color: var(--accent); transform: scale(1.3); }
 
   /* fade-in */
   .slide > * { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
   .slide.vis > * { opacity: 1; transform: none; }
-  .slide.vis > *:nth-child(2){ transition-delay:.06s } .slide.vis > *:nth-child(3){ transition-delay:.12s }
-  .slide.vis > *:nth-child(4){ transition-delay:.18s } .slide.vis > *:nth-child(5){ transition-delay:.24s }
+  .slide.vis > *:nth-child(2){transition-delay:.05s} .slide.vis > *:nth-child(3){transition-delay:.1s}
+  .slide.vis > *:nth-child(4){transition-delay:.15s} .slide.vis > *:nth-child(5){transition-delay:.2s}
+  .slide.vis > *:nth-child(6){transition-delay:.25s}
   @media (prefers-reduced-motion: reduce) { .slide > * { opacity: 1; transform: none; transition: none; } }
 
-  .disclaimer { font-size: .72rem; color: var(--faint); max-width: 60ch; line-height: 1.45; }
+  @media (max-width: 860px) { .dots { display: none; } }
+  @media (max-width: 600px) {
+    .scenrow { grid-template-columns: 1fr; gap: .35rem; align-items: start; }
+    .scenrow .val { justify-self: start; }
+    .tl { grid-template-columns: 64px 1fr; gap: .7rem; }
+  }
 </style>
+</head>
+<body>
 
 <div class="rail" id="rail"></div>
-<button class="themebtn" id="themebtn" aria-label="Toggle light or dark theme">◐ theme</button>
+<div class="controls">
+  <button class="pill langseg" id="lang" aria-label="Switch language English / Russian"></button>
+  <button class="pill" id="theme" aria-label="Toggle light or dark theme">◐</button>
+</div>
 <div class="dots" id="dots" aria-hidden="true"></div>
 <div class="hud">
   <button id="prev" aria-label="Previous slide">←</button>
@@ -200,239 +192,465 @@
 
   <!-- 1 TITLE -->
   <section class="slide">
-    <div class="eyebrow">Investment Memo · Confidential</div>
-    <h1>Simple games,<br><span class="hl">serious</span> <span class="gold">money.</span></h1>
-    <p class="lede">A small, disciplined bet on Roblox: commission a portfolio of simple, high-retention games, keep the winners, reinvest into one real studio project.</p>
-    <div class="stats" style="margin-top:.5rem">
-      <div class="stat"><span class="big g">$20K</span><span class="lab">Requested capital</span></div>
-      <div class="stat"><span class="big a">5</span><span class="lab">Small games commissioned</span></div>
-      <div class="stat"><span class="big">~$3K</span><span class="lab">Cost to build & launch each</span></div>
-      <div class="stat"><span class="big">6–9 mo</span><span class="lab">To a go / no-go on the studio</span></div>
-    </div>
-    <p class="kicker">Scroll or press → to begin.</p>
-  </section>
-
-  <!-- 2 THESIS / WHY NOW -->
-  <section class="slide">
-    <div class="eyebrow">The thesis</div>
-    <h2>Roblox is <span class="hl">paying developers more than ever</span> — and simple games are winning.</h2>
-    <div class="cols">
-      <div class="card"><span class="k">Tailwind 01</span><h3>Payouts up ~50% YoY</h3><p>Roblox paid creators <b>over $1.5B in 2025</b>. The top 1,000 creators averaged <b>$1.3M each</b>.</p></div>
-      <div class="card"><span class="k">Tailwind 02</span><h3>Cashout rate raised twice</h3><p>Base DevEx <b>+8.5%</b> (Sept 2025), plus a new US-adult rate <b>+42%</b> (2026). They want to pay you more.</p></div>
-      <div class="card"><span class="k">Tailwind 03</span><h3>Tiny teams, biggest games</h3><p>2025's #1 game was built by a <b>16-year-old in 3 days</b>. The barrier to a hit has never been lower.</p></div>
-    </div>
-    <p class="disclaimer">Source: Roblox Q1 2026 earnings; Roblox Newsroom (2026); Sherwood News (2025). We are <b>not</b> betting on being that 16-year-old — we're buying enough shots that one connects.</p>
-  </section>
-
-  <!-- 3 MARKET SIZE -->
-  <section class="slide">
-    <div class="eyebrow">Market size</div>
-    <h2>The audience and the money are both enormous.</h2>
+    <div class="eyebrow" data-i18n="s1.eye">Roblox · Market study</div>
+    <h1 data-i18n="s1.h1">Simple games.<br>Real <span class="gold">money.</span></h1>
+    <p class="lede" data-i18n="s1.lede">Small teams building simple, addictive Roblox games — and earning serious revenue. Here's the market, the pattern, and what it takes.</p>
     <div class="stats">
-      <div class="stat"><span class="big">132M</span><span class="lab">Daily active users, Q1 2026 <span class="num">(+35% YoY)</span></span><span class="src">Roblox Q1'26</span></div>
-      <div class="stat"><span class="big">31B</span><span class="lab">Hours engaged per quarter <span class="num">(+43%)</span></span><span class="src">Roblox Q1'26</span></div>
-      <div class="stat"><span class="big g">$4.9B</span><span class="lab">Platform revenue, FY2025 <span class="num">(+36%)</span></span><span class="src">PocketGamer</span></div>
-      <div class="stat"><span class="big a">$1.5B+</span><span class="lab">Paid out to creators in 2025</span><span class="src">Roblox / SQ Mag</span></div>
+      <div class="stat"><span class="big a">132M</span><span class="lab" data-i18n="s1.k1">Players on Roblox every day</span></div>
+      <div class="stat"><span class="big g">$1.5B+</span><span class="lab" data-i18n="s1.k2">Paid to creators in 2025</span></div>
+      <div class="stat"><span class="big">1–3</span><span class="lab" data-i18n="s1.k3">People behind most hit games</span></div>
+      <div class="stat"><span class="big" data-i18n="s1.k4v">Weeks</span><span class="lab" data-i18n="s1.k4">To build a simple game</span></div>
     </div>
-    <p class="lede">This isn't a speculative market waiting to form. The players are here, spending daily, and Roblox is actively redistributing that spend to developers.</p>
+    <p class="kicker" data-i18n="s1.kick">Swipe or press → to begin.</p>
   </section>
 
-  <!-- 4 HOW MONEY FLOWS -->
+  <!-- 2 THESIS -->
   <section class="slide">
-    <div class="eyebrow">How the money reaches us</div>
-    <h2>Follow one dollar.</h2>
-    <div class="tablewrap">
-      <table>
-        <thead><tr><th>Step</th><th>What happens</th><th>What we keep</th></tr></thead>
-        <tbody>
-          <tr><td>1 · Player spends</td><td>Buys Robux, spends on our game passes & dev products</td><td class="n">—</td></tr>
-          <tr><td>2 · Roblox cut</td><td>Platform takes ~30% marketplace cut on in-game sales</td><td class="n a">~70% Robux</td></tr>
-          <tr><td>3 · DevEx cashout</td><td>Convert earned Robux to USD at <b>$0.0038</b> (US-adult spend: <b>$0.0054</b>)</td><td class="n g">$ out</td></tr>
-          <tr><td>4 · Net to us</td><td>After app-store fees + Roblox's cut</td><td class="n g">~$0.25–0.30</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <ul class="clean">
-      <li>Cashout minimum is <span class="em">30,000 Robux (~$114)</span> — trivial for any game with traction.</li>
-      <li class="warn">Payouts process ~monthly with a hold, so <b>first real cash lands ~60–90 days</b> after first revenue. We plan for this.</li>
-    </ul>
-    <p class="foot">Rule of thumb per RoWatcher "DevEx Math" (2026): ~$0.25–0.30 of every player dollar reaches the developer.</p>
-  </section>
-
-  <!-- 5 OUTLIERS -->
-  <section class="slide">
-    <div class="eyebrow">What simple games earn · the ceiling</div>
-    <h2>The biggest games on Earth are <span class="gold">mechanically trivial.</span></h2>
-    <div class="tablewrap">
-      <table>
-        <thead><tr><th>Game</th><th>Idea</th><th>Peak scale</th><th>Est. revenue</th><th>Origin</th></tr></thead>
-        <tbody>
-          <tr><td>Grow a Garden</td><td>Plant, wait, harvest</td><td class="n">22M CCU</td><td class="n g">~$12M / month</td><td>16-yr-old, 3 days</td></tr>
-          <tr><td>Steal a Brainrot</td><td>Steal meme pets</td><td class="n">25.8M CCU</td><td class="n g">~$550M lifetime</td><td>Small indie team</td></tr>
-          <tr><td>Brookhaven</td><td>Hang out / roleplay</td><td class="n">120M MAU</td><td class="n g">acq. ~$100M+</td><td>Started as ~2 people</td></tr>
-          <tr><td>Adopt Me</td><td>Trade pets</td><td class="n">1.9M CCU</td><td class="n g">~$50M+ / yr peak</td><td>2 devs → studio</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="big-quote">25.8M concurrent players made <span class="hl">Steal a Brainrot the most-played video game ever</span> — a game about stealing cartoon animals.</p>
-    <p class="foot">These are the ceiling, not the plan. Shown to prove the upside is real — the tail is uncapped. Sources: GameDeveloper, PocketGamer, Voldex, profitable.app (2025–26).</p>
-  </section>
-
-  <!-- 6 THE HONEST TARGET -->
-  <section class="slide">
-    <div class="eyebrow">What we actually aim for · the floor</div>
-    <h2>We don't need a miracle. <span class="hl">One game at 1,000 players</span> is a real asset.</h2>
-    <div class="tablewrap">
-      <table>
-        <thead><tr><th>Outcome</th><th>Sustained players</th><th>Developer take / yr</th></tr></thead>
-        <tbody>
-          <tr><td>Mid-tier hit (Fisch-class)</td><td class="n">~110K CCU</td><td class="n g">$3–6M</td></tr>
-          <tr><td>Solid simulator / tycoon</td><td class="n">~1,000 CCU</td><td class="n a">$70–139K</td></tr>
-          <tr><td>Modest earner</td><td class="n">~800 CCU</td><td class="n">~$15K</td></tr>
-          <tr><td>Weak launch</td><td class="n">&lt;50 CCU</td><td class="n r">~$0</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="lede"><b>The honest target:</b> one game in five reaches 500–1,500 sustained players — a <span class="num" style="color:var(--gold)">$50–150K/yr</span> asset built for <span class="num" style="color:var(--gold)">~$3K</span>. Everything above that is upside we didn't pay for.</p>
-    <p class="foot">Benchmarks: RoWatcher income ladder, generalistprogrammer monetization data (2026).</p>
-  </section>
-
-  <!-- 7 THE PATTERN -->
-  <section class="slide">
-    <div class="eyebrow">The pattern</div>
-    <h2>Complexity doesn't monetize. <span class="hl">Loops and social pressure do.</span></h2>
+    <div class="eyebrow" data-i18n="s2.eye">The thesis</div>
+    <h2 data-i18n="s2.h2">Roblox is paying developers more than ever — and <span class="hl">simple games are winning.</span></h2>
     <div class="cols">
-      <div class="card"><span class="k">Loop</span><h3>60-second compulsion</h3><p>Plant → wait → harvest → buy. One-thumb, mobile-first, instantly re-playable.</p></div>
-      <div class="card"><span class="k">Social</span><h3>Other players are the content</h3><p>Stealing, trading, showing off. The core verb involves someone else — free retention.</p></div>
-      <div class="card"><span class="k">Scarcity</span><h3>Rarity & FOMO</h3><p>Limited eggs, timed events, tradeable pets. Adopt Me turned scarcity into years of play.</p></div>
-      <div class="card"><span class="k">Trend</span><h3>Ride the meme</h3><p>Kids arrive already wanting the theme. YouTube & TikTok become free marketing.</p></div>
-      <div class="card"><span class="k">Idle</span><h3>Offline progression</h3><p>It grows while they're logged off — a guaranteed reason to come back tomorrow.</p></div>
-      <div class="card"><span class="k">Monetize</span><h3>Repeat-purchase products</h3><p>Dev products &gt; game passes. Only <b>1–3%</b> pay, so build rarity ladders for the whales.</p></div>
+      <div class="card"><span class="k">01</span><h3 data-i18n="s2.c1t">Payouts up ~50%</h3><p data-i18n="s2.c1b">Roblox paid creators over $1.5B in 2025. The top 1,000 creators averaged $1.3M each.</p></div>
+      <div class="card"><span class="k">02</span><h3 data-i18n="s2.c2t">Cash-out rate raised</h3><p data-i18n="s2.c2b">The developer exchange rate went up in 2025, with a new, higher rate for adult players in 2026.</p></div>
+      <div class="card"><span class="k">03</span><h3 data-i18n="s2.c3t">Tiny teams win</h3><p data-i18n="s2.c3b">2025's single biggest game was built by one 16-year-old in three days.</p></div>
+    </div>
+    <p class="foot" data-i18n="s2.foot">Sources: Roblox 2025–26 earnings; Fortune (2025). We're not betting on being that teenager — we're studying why simple games win.</p>
+  </section>
+
+  <!-- 3 MARKET -->
+  <section class="slide">
+    <div class="eyebrow" data-i18n="s3.eye">The market</div>
+    <h2 data-i18n="s3.h2">The audience and the money are both enormous.</h2>
+    <div class="stats">
+      <div class="stat"><span class="big">132M</span><span class="lab" data-i18n="s3.k1">Daily active users <span class="num">(+35%)</span></span><span class="src">Roblox Q1'26</span></div>
+      <div class="stat"><span class="big">31B</span><span class="lab" data-i18n="s3.k2">Hours played per quarter <span class="num">(+43%)</span></span><span class="src">Roblox Q1'26</span></div>
+      <div class="stat"><span class="big g">$4.9B</span><span class="lab" data-i18n="s3.k3">Platform revenue, 2025 <span class="num">(+36%)</span></span><span class="src">PocketGamer</span></div>
+      <div class="stat"><span class="big a">$1.5B+</span><span class="lab" data-i18n="s3.k4">Paid to creators in 2025</span><span class="src">Roblox / SQ Mag</span></div>
+    </div>
+    <p class="lede" data-i18n="s3.lede">The players are already here, spending daily — and Roblox actively redistributes that spend to developers.</p>
+  </section>
+
+  <!-- 4 MONEY FLOW -->
+  <section class="slide">
+    <div class="eyebrow" data-i18n="s4.eye">How the money reaches a developer</div>
+    <h2 data-i18n="s4.h2">Follow one dollar.</h2>
+    <div class="steps">
+      <div class="step"><span class="n">01</span><h3 data-i18n="s4.s1t">Player spends</h3><p data-i18n="s4.s1b">Buys Robux, spends it on your game passes and items.</p><span class="keep" data-i18n="s4.s1k">$1.00</span></div>
+      <div class="step"><span class="n">02</span><h3 data-i18n="s4.s2t">Roblox's cut</h3><p data-i18n="s4.s2b">The platform keeps ~30% of in-game sales.</p><span class="keep a" data-i18n="s4.s2k">~70% left</span></div>
+      <div class="step"><span class="n">03</span><h3 data-i18n="s4.s3t">Cash out (DevEx)</h3><p data-i18n="s4.s3b">Convert earned Robux to real money at Roblox's exchange rate.</p><span class="keep a" data-i18n="s4.s3k">→ USD</span></div>
+      <div class="step"><span class="n">04</span><h3 data-i18n="s4.s4t">Net to you</h3><p data-i18n="s4.s4b">After app-store fees and Roblox's cut.</p><span class="keep" data-i18n="s4.s4k">~$0.25–0.30</span></div>
+    </div>
+    <p class="foot" data-i18n="s4.foot">Rule of thumb: about 25–30 cents of every dollar a player spends reaches the developer.</p>
+  </section>
+
+  <!-- 5 GAMES — OUTLIERS -->
+  <section class="slide">
+    <div class="eyebrow" data-i18n="s5.eye">What simple games earn · the ceiling</div>
+    <h2 data-i18n="s5.h2">The biggest games on Roblox are <span class="gold">mechanically trivial.</span></h2>
+    <div class="games">
+      <div class="game">
+        <div class="game-head"><h3>Grow a Garden</h3><span class="tag" data-i18n="tag.simple">still simple</span></div>
+        <p class="concept" data-i18n="g.gag">Plant seeds, wait, sell — it grows while you're offline.</p>
+        <div class="game-meta">
+          <div><span class="mlab" data-i18n="m.players">Players</span><span class="mval" data-i18n="g.gag.p">22.3M peak</span></div>
+          <div><span class="mlab" data-i18n="m.made">Made</span><span class="mval g" data-i18n="g.gag.m">~$12M / month</span></div>
+          <div><span class="mlab" data-i18n="m.team">Team</span><span class="mval" data-i18n="g.gag.t">1 teen · 3 days</span></div>
+          <div><span class="mlab" data-i18n="m.visits">Visits</span><span class="mval" data-i18n="g.gag.v">10B+</span></div>
+        </div>
+      </div>
+      <div class="game">
+        <div class="game-head"><h3>Steal a Brainrot</h3><span class="tag" data-i18n="tag.simple">still simple</span></div>
+        <p class="concept" data-i18n="g.sab">Buy meme pets, then steal them from other players' bases.</p>
+        <div class="game-meta">
+          <div><span class="mlab" data-i18n="m.players">Players</span><span class="mval" data-i18n="g.sab.p">25.8M peak</span></div>
+          <div><span class="mlab" data-i18n="m.made">Made</span><span class="mval g" data-i18n="g.sab.m">~$11M / month</span></div>
+          <div><span class="mlab" data-i18n="m.team">Team</span><span class="mval" data-i18n="g.sab.t">2 devs</span></div>
+          <div><span class="mlab" data-i18n="m.record">Record</span><span class="mval" data-i18n="g.sab.r">#1 ever</span></div>
+        </div>
+      </div>
+      <div class="game">
+        <div class="game-head"><h3>Brookhaven</h3><span class="tag" data-i18n="tag.simple">still simple</span></div>
+        <p class="concept" data-i18n="g.bh">A town where kids just hang out and roleplay. No goals.</p>
+        <div class="game-meta">
+          <div><span class="mlab" data-i18n="m.visits">Visits</span><span class="mval" data-i18n="g.bh.v">80B+</span></div>
+          <div><span class="mlab" data-i18n="m.made">Made</span><span class="mval g" data-i18n="g.bh.m">~$2.3M / month</span></div>
+          <div><span class="mlab" data-i18n="m.team">Team</span><span class="mval" data-i18n="g.bh.t">1 dev</span></div>
+          <div><span class="mlab" data-i18n="m.players">Players</span><span class="mval" data-i18n="g.bh.p">490K steady</span></div>
+        </div>
+      </div>
+      <div class="game">
+        <div class="game-head"><h3>99 Nights in the Forest</h3><span class="tag" data-i18n="tag.simple">still simple</span></div>
+        <p class="concept" data-i18n="g.99">Co-op: survive the nights, keep the fire lit, rescue lost kids.</p>
+        <div class="game-meta">
+          <div><span class="mlab" data-i18n="m.players">Players</span><span class="mval" data-i18n="g.99.p">14.2M peak</span></div>
+          <div><span class="mlab" data-i18n="m.made">Made</span><span class="mval g" data-i18n="g.99.m">6-figures+ / dev</span></div>
+          <div><span class="mlab" data-i18n="m.team">Team</span><span class="mval" data-i18n="g.99.t">3 friends</span></div>
+          <div><span class="mlab" data-i18n="m.extra">Extra</span><span class="mval" data-i18n="g.99.x">a movie deal</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="foot" data-i18n="s5.foot">These are lottery-ticket outliers — shown to prove the tail is uncapped, not as the plan.</p>
+  </section>
+
+  <!-- 6 GAMES — ACHIEVABLE -->
+  <section class="slide">
+    <div class="eyebrow" data-i18n="s6.eye">What simple games earn · the achievable tier</div>
+    <h2 data-i18n="s6.h2">And the realistic wins are built by <span class="hl">1–3 people in weeks.</span></h2>
+    <div class="games">
+      <div class="game">
+        <div class="game-head"><h3>Fisch</h3><span class="tag" data-i18n="tag.simple">still simple</span></div>
+        <p class="concept" data-i18n="g.fisch">Cast the rod, catch a fish, sell it, buy a better rod.</p>
+        <div class="game-meta">
+          <div><span class="mlab" data-i18n="m.players">Players</span><span class="mval" data-i18n="g.fisch.p">1.2M peak</span></div>
+          <div><span class="mlab" data-i18n="m.made">Made</span><span class="mval g" data-i18n="g.fisch.m">millions / yr</span></div>
+          <div><span class="mlab" data-i18n="m.team">Team</span><span class="mval" data-i18n="g.fisch.t">1 dev · ~4 mo</span></div>
+          <div><span class="mlab" data-i18n="m.visits">Visits</span><span class="mval" data-i18n="g.fisch.v">4.5B+</span></div>
+        </div>
+      </div>
+      <div class="game">
+        <div class="game-head"><h3>Sol's RNG</h3><span class="tag" data-i18n="tag.simple">still simple</span></div>
+        <p class="concept" data-i18n="g.sol">Press a button, roll for rare auras. It rolls while you're AFK.</p>
+        <div class="game-meta">
+          <div><span class="mlab" data-i18n="m.players">Players</span><span class="mval" data-i18n="g.sol.p">~70K steady</span></div>
+          <div><span class="mlab" data-i18n="m.made">Made</span><span class="mval g" data-i18n="g.sol.m">multi-million</span></div>
+          <div><span class="mlab" data-i18n="m.team">Team</span><span class="mval" data-i18n="g.sol.t">small team</span></div>
+          <div><span class="mlab" data-i18n="m.held">Held</span><span class="mval" data-i18n="g.sol.h">2+ years</span></div>
+        </div>
+      </div>
+      <div class="game">
+        <div class="game-head"><h3>Dead Rails</h3><span class="tag" data-i18n="tag.simple">still simple</span></div>
+        <p class="concept" data-i18n="g.dr">Co-op: ride a train west through zombies. Don't die.</p>
+        <div class="game-meta">
+          <div><span class="mlab" data-i18n="m.players">Players</span><span class="mval" data-i18n="g.dr.p">1.3M peak</span></div>
+          <div><span class="mlab" data-i18n="m.made">Made</span><span class="mval g" data-i18n="g.dr.m">millions / mo</span></div>
+          <div><span class="mlab" data-i18n="m.team">Team</span><span class="mval" data-i18n="g.dr.t">2 devs</span></div>
+          <div><span class="mlab" data-i18n="m.extra">Rank</span><span class="mval" data-i18n="g.dr.x">~top 12</span></div>
+        </div>
+      </div>
+      <div class="game">
+        <div class="game-head"><h3>Tower of Hell</h3><span class="tag" data-i18n="tag.simple">still simple</span></div>
+        <p class="concept" data-i18n="g.toh">Climb a randomly-built tower. No checkpoints, 8-minute timer.</p>
+        <div class="game-meta">
+          <div><span class="mlab" data-i18n="m.visits">Visits</span><span class="mval" data-i18n="g.toh.v">28B+</span></div>
+          <div><span class="mlab" data-i18n="m.made">Made</span><span class="mval g" data-i18n="g.toh.m">~$200M+ life</span></div>
+          <div><span class="mlab" data-i18n="m.team">Team</span><span class="mval" data-i18n="g.toh.t">tiny team</span></div>
+          <div><span class="mlab" data-i18n="m.since">Since</span><span class="mval" data-i18n="g.toh.s">2018</span></div>
+        </div>
+      </div>
+      <div class="game">
+        <div class="game-head"><h3>A Dusty Trip</h3><span class="tag" data-i18n="tag.simple">still simple</span></div>
+        <p class="concept" data-i18n="g.adt">Build a junk car from parts, drive as far as you can before it breaks.</p>
+        <div class="game-meta">
+          <div><span class="mlab" data-i18n="m.players">Players</span><span class="mval" data-i18n="g.adt.p">573K peak</span></div>
+          <div><span class="mlab" data-i18n="m.made">Made</span><span class="mval g" data-i18n="g.adt.m">millions life</span></div>
+          <div><span class="mlab" data-i18n="m.team">Team</span><span class="mval" data-i18n="g.adt.t">1 hobbyist</span></div>
+          <div><span class="mlab" data-i18n="m.visits">Visits</span><span class="mval" data-i18n="g.adt.v">2.4B+</span></div>
+        </div>
+      </div>
+      <div class="game">
+        <div class="game-head"><h3>Doors</h3><span class="tag" data-i18n="tag.simple">still simple</span></div>
+        <p class="concept" data-i18n="g.doors">Walk through 100 numbered doors, hide from what's inside.</p>
+        <div class="game-meta">
+          <div><span class="mlab" data-i18n="m.speed">Speed</span><span class="mval" data-i18n="g.doors.sp">1B in ~3 mo</span></div>
+          <div><span class="mlab" data-i18n="m.made">Made</span><span class="mval g" data-i18n="g.doors.m">tens of millions</span></div>
+          <div><span class="mlab" data-i18n="m.team">Team</span><span class="mval" data-i18n="g.doors.t">2 devs</span></div>
+          <div><span class="mlab" data-i18n="m.genre">Genre</span><span class="mval" data-i18n="g.doors.gn">linear horror</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="foot" data-i18n="s6.foot">1–3 person teams, weeks-to-months of work, single-digit millions over a game's life. This is the tier we aim for.</p>
+  </section>
+
+  <!-- 7 PATTERN -->
+  <section class="slide">
+    <div class="eyebrow" data-i18n="s7.eye">The pattern</div>
+    <h2 data-i18n="s7.h2">Complexity doesn't pay. <span class="hl">Loops, social pressure, and luck do.</span></h2>
+    <div class="cols">
+      <div class="card"><span class="k" data-i18n="s7.c1k">Loop</span><h3 data-i18n="s7.c1t">A 30-second cycle</h3><p data-i18n="s7.c1b">Explainable in one breath. Short cycles mean more sessions and constant small purchases.</p></div>
+      <div class="card"><span class="k" data-i18n="s7.c2k">Social</span><h3 data-i18n="s7.c2t">Players are the content</h3><p data-i18n="s7.c2b">Stealing, co-op, roleplay — the drama is player-made, so a tiny team never out-produces a big studio.</p></div>
+      <div class="card"><span class="k" data-i18n="s7.c3k">Luck</span><h3 data-i18n="s7.c3t">RNG + scarcity</h3><p data-i18n="s7.c3b">Rare auras, pets, fish, limited seeds. Spending pressure without any new mechanics.</p></div>
+      <div class="card"><span class="k" data-i18n="s7.c4k">Offline</span><h3 data-i18n="s7.c4t">Progress while away</h3><p data-i18n="s7.c4b">It grows while they're logged off — a reason to come back tomorrow.</p></div>
+      <div class="card"><span class="k" data-i18n="s7.c5k">Trend</span><h3 data-i18n="s7.c5t">Ride, don't invent</h3><p data-i18n="s7.c5b">"Steal a X", "Grow a X", horror mascots — fast-following a proven template is repeatable.</p></div>
+      <div class="card"><span class="k" data-i18n="s7.c6k">Mobile</span><h3 data-i18n="s7.c6t">One thumb</h3><p data-i18n="s7.c6b">Most players are on phones. Simple controls reach the widest possible audience.</p></div>
     </div>
   </section>
 
-  <!-- 8 WHAT $20K BUYS -->
+  <!-- 8 COST/TIME -->
   <section class="slide">
-    <div class="eyebrow">Cost, time & the portfolio</div>
-    <h2>A simple game costs <span class="gold">$500–$5K</span> and takes 2–6 weeks. $20K buys a real portfolio.</h2>
-    <div class="tablewrap">
-      <table>
-        <thead><tr><th>Bucket</th><th>Detail</th><th>Budget</th></tr></thead>
-        <tbody>
-          <tr><td>5 commissioned games</td><td>Scripter + builder + UI, ~$2.5–3K each, 3–5 wks</td><td class="n g">$13–15K</td></tr>
-          <tr><td>Launch marketing</td><td>Roblox sponsored ads + micro-creator promos</td><td class="n g">$2.5–4K</td></tr>
-          <tr><td>Assets & buffer</td><td>Thumbnails/icons (CTR is life-or-death), analytics, contingency</td><td class="n g">$2–3K</td></tr>
-        </tbody>
-      </table>
+    <div class="eyebrow" data-i18n="s8.eye">Cost, time &amp; difficulty</div>
+    <h2 data-i18n="s8.h2">A simple game costs little and ships in weeks.</h2>
+    <div class="stats">
+      <div class="stat"><span class="big g">$500–5K</span><span class="lab" data-i18n="s8.k1">To commission one simple game from freelancers</span></div>
+      <div class="stat"><span class="big a">2–6</span><span class="lab" data-i18n="s8.k2">Weeks of build time per game</span></div>
+      <div class="stat"><span class="big">1–3</span><span class="lab" data-i18n="s8.k3">People: a scripter, a builder, some UI</span></div>
     </div>
-    <ul class="clean">
-      <li><b>Portfolio split:</b> 2 fast trend-riders · 2 proven simulators/tycoons · 1 idle-with-trading.</li>
-      <li><b>Discipline:</b> kill losers fast; pour extra marketing only into anything hitting <span class="em">&gt;100 CCU</span> organically.</li>
-    </ul>
-    <p class="foot">Rates & costs: Game-Ace, Flexiple (2025). Many devs also work rev-share, stretching capital further.</p>
+    <p class="lede" data-i18n="s8.lede">The hard part isn't building — it's picking the right idea and marketing it. So the smart move is several small bets, not one big one.</p>
+    <p class="foot" data-i18n="s8.foot">Rates: freelance Roblox developers, Game-Ace &amp; Flexiple (2025). Many also work for revenue-share, stretching a budget further.</p>
   </section>
 
   <!-- 9 RISKS -->
   <section class="slide">
-    <div class="eyebrow">Risks · the honest version</div>
-    <h2>This is a hit-driven, power-law business. We treat it like one.</h2>
+    <div class="eyebrow" data-i18n="s9.eye">Risks · the honest version</div>
+    <h2 data-i18n="s9.h2">This is a hit-driven business. We treat it like one.</h2>
     <div class="cols">
-      <div class="card"><span class="k" style="color:var(--danger)">Risk</span><h3>Most games earn ~nothing</h3><p>Assume 3–4 of 5 return under $500. The model already prices this in.</p></div>
-      <div class="card"><span class="k" style="color:var(--danger)">Risk</span><h3>Platform dependency</h3><p>Roblox controls discovery, rates & rules. A 2026 policy change cut 12M DAUs in a quarter.</p></div>
-      <div class="card"><span class="k" style="color:var(--danger)">Risk</span><h3>Cashout delay</h3><p>30K-Robux minimum + ~monthly hold. First cash is 60–90 days out — a timing risk, not a loss.</p></div>
-      <div class="card"><span class="k" style="color:var(--danger)">Risk</span><h3>IP / moderation</h3><p>Meme games flirt with copyright. Mitigation: original characters in a trend-adjacent style.</p></div>
-      <div class="card"><span class="k" style="color:var(--danger)">Risk</span><h3>Discovery algorithm</h3><p>It rewards games that already retain. Mitigation: soft-launch, measure D1/D7, then spend.</p></div>
-      <div class="card"><span class="k" style="color:var(--danger)">Risk</span><h3>Freelancer variance</h3><p>Quality & ghosting. Mitigation: milestone pay, IP-assignment contracts, small paid test tasks first.</p></div>
+      <div class="card"><span class="k r" data-i18n="s9.risk">Risk</span><h3 data-i18n="s9.c1t">Most games earn little</h3><p data-i18n="s9.c1b">Assume most of a batch return little. Making several bets is exactly how we handle that.</p></div>
+      <div class="card"><span class="k r" data-i18n="s9.risk">Risk</span><h3 data-i18n="s9.c2t">Platform dependency</h3><p data-i18n="s9.c2b">Roblox controls discovery, rates and rules. One policy change can move millions of players.</p></div>
+      <div class="card"><span class="k r" data-i18n="s9.risk">Risk</span><h3 data-i18n="s9.c3t">Cash-out delay</h3><p data-i18n="s9.c3b">There's a minimum and a ~monthly payout hold — first real cash is roughly 2–3 months out.</p></div>
+      <div class="card"><span class="k r" data-i18n="s9.risk">Risk</span><h3 data-i18n="s9.c4t">Trends fade</h3><p data-i18n="s9.c4b">A viral format cools off. We move fast and don't over-invest in any single theme.</p></div>
+      <div class="card"><span class="k r" data-i18n="s9.risk">Risk</span><h3 data-i18n="s9.c5t">Discovery algorithm</h3><p data-i18n="s9.c5b">It rewards games that already retain players. We soft-launch, measure, then spend on marketing.</p></div>
+      <div class="card"><span class="k r" data-i18n="s9.risk">Risk</span><h3 data-i18n="s9.c6t">Freelancer variance</h3><p data-i18n="s9.c6b">Quality and reliability differ. We use milestone payments and small paid test tasks first.</p></div>
     </div>
   </section>
 
-  <!-- 10 THE GAP -->
+  <!-- 10 GAP -->
   <section class="slide">
-    <div class="eyebrow">The gap</div>
-    <h2>Where the opening is <span class="hl">right now.</span></h2>
+    <div class="eyebrow" data-i18n="s10.eye">The opening</div>
+    <h2 data-i18n="s10.h2">Where the opportunity is <span class="hl">right now.</span></h2>
     <ul class="clean">
-      <li><b>The 18+ premium nobody optimizes for.</b> Roblox's new US-adult DevEx rate pays <span class="em">+42%</span>, and adults already monetize <span class="em">50%+</span> higher than under-18s — a segment almost no simple-game maker targets.</li>
-      <li><b>Trend windows stay open for weeks.</b> Fast followers of a viral format ("Steal a ___", "Grow a ___") captured real revenue in 2025. Speed is the moat.</li>
-      <li><b>Under-served lanes:</b> idle/incremental with deep trading, and casual co-op survival — 99 Nights in the Forest proved the co-op lane in 2025 with 17B+ visits.</li>
+      <li data-i18n="s10.l1"><b>The adult audience nobody targets.</b> Roblox now pays a premium for age-verified adult players, who spend far more than kids — and almost no simple-game maker aims for them.</li>
+      <li data-i18n="s10.l2"><b>Trend windows stay open for weeks.</b> Fast-followers of a viral format still captured real money in 2025. Speed is the edge.</li>
+      <li data-i18n="s10.l3"><b>Under-served lanes.</b> Co-op survival and idle-with-trading both proved themselves in 2025 and aren't crowded yet.</li>
     </ul>
-    <p class="big-quote">Our edge isn't a better engine. It's <span class="hl">speed, discipline, and buying enough shots</span> to catch a window.</p>
+    <p class="big-quote" data-i18n="s10.q">Our edge isn't a better engine. It's <span class="hl">speed, discipline, and enough shots to catch a window.</span></p>
   </section>
 
-  <!-- 11 FINANCIAL MODEL -->
+  <!-- 11 WHAT A BUDGET COULD DO -->
   <section class="slide">
-    <div class="eyebrow">The model · $20K across 5 games</div>
-    <h2>Median outcome returns the capital. The upside is free.</h2>
+    <div class="eyebrow" data-i18n="s11.eye">For context · what a budget could do</div>
+    <h2 data-i18n="s11.h2">Put a small budget to work — here's the shape of it.</h2>
+    <p class="lede" data-i18n="s11.lede">Illustrative, not a request. A figure around <span class="num" style="color:var(--gold)">$20K</span> could commission ~5 simple games plus marketing. Here's the range of outcomes over a year.</p>
     <div class="scen">
       <div class="scenrow">
-        <div class="label">Conservative<small>No real hit</small></div>
+        <div class="label" data-i18n="s11.sc1">Conservative<small data-i18n="s11.sc1s">no real hit</small></div>
         <div class="bar"><span style="width:18%;background:var(--danger)"></span></div>
         <div class="val" style="color:var(--danger)">$8–15K</div>
       </div>
       <div class="scenrow">
-        <div class="label">Base<small>1 modest hit + 2 earners</small></div>
+        <div class="label" data-i18n="s11.sc2">Base<small data-i18n="s11.sc2s">1 modest hit + 2 earners</small></div>
         <div class="bar"><span style="width:50%;background:var(--accent)"></span></div>
         <div class="val" style="color:var(--accent)">$40–90K</div>
       </div>
       <div class="scenrow">
-        <div class="label">Upside<small>1 game catches a trend</small></div>
+        <div class="label" data-i18n="s11.sc3">Upside<small data-i18n="s11.sc3s">one game catches a trend</small></div>
         <div class="bar"><span style="width:100%;background:var(--gold)"></span></div>
-        <div class="val" style="color:var(--gold)">$250–600K+</div>
+        <div class="val" style="color:var(--gold)">$250K+</div>
       </div>
     </div>
     <div class="stats">
-      <div class="stat"><span class="big a">≈ $19K</span><span class="lab">Expected year-1 revenue — roughly break-even in the <i>median</i> case</span></div>
-      <div class="stat"><span class="big g">10x+</span><span class="lab">If any single game hits, it funds the studio outright</span></div>
-      <div class="stat"><span class="big">Month 8–10</span><span class="lab">Profitable in the base case</span></div>
+      <div class="stat"><span class="big a" data-i18n="s11.m1v">≈ break-even</span><span class="lab" data-i18n="s11.m1">Median outcome roughly returns the money</span></div>
+      <div class="stat"><span class="big g">10×+</span><span class="lab" data-i18n="s11.m2">If any single game hits, it changes everything</span></div>
+      <div class="stat"><span class="big" data-i18n="s11.m3v">Month 8–10</span><span class="lab" data-i18n="s11.m3">Profitable in the base case</span></div>
     </div>
-    <p class="disclaimer"><b>Stated assumptions:</b> 1-in-5 reaches ≥500 sustained CCU; 2-in-5 muddle at 50–150; 2-in-5 flop. Developer take ~$0.25–0.30/player-$. EV ≈ (20%×$65K)+(40%×$12K)+(40%×$2K) ≈ $19K. All figures are reasoned estimates built on the cited per-CCU benchmarks — ranges, not promises.</p>
+    <p class="disclaimer" data-i18n="s11.disc"><b>Assumptions:</b> ~1 in 5 games reaches meaningful traction; ~2 muddle along; ~2 flop. Developer keeps ~25–30¢ per player-dollar. All figures are reasoned estimates and ranges — not promises.</p>
   </section>
 
-  <!-- 12 TIMELINE + ASK -->
+  <!-- 12 TIMELINE + CLOSE -->
   <section class="slide">
-    <div class="eyebrow">The plan & the ask</div>
-    <h2>Six to nine months to a clear go / no-go.</h2>
+    <div class="eyebrow" data-i18n="s12.eye">How it would run</div>
+    <h2 data-i18n="s12.h2">Six to nine months to know what we have.</h2>
     <div class="timeline">
-      <div class="tl"><div class="when">M1</div><div class="what">Contract 3 freelance teams (<b>paid test tasks first</b>); games 1–2 into production; concepts locked from live trend data.</div></div>
-      <div class="tl"><div class="when">M2–3</div><div class="what">Soft-launch, measure D1/D7 retention, put ad spend only on what retains; kill or pivot the rest.</div></div>
-      <div class="tl"><div class="when">M4–5</div><div class="what">First DevEx cashout window opens — <b>first real dollars land.</b></div></div>
-      <div class="tl"><div class="when">M6</div><div class="what"><b>Decision gate:</b> revenue run-rate vs. base case → green-light the studio project, or run a smarter second batch.</div></div>
-      <div class="tl"><div class="when">M7–9</div><div class="what">Reinvest into a 2–3 person semi-pro team for the one larger project.</div></div>
+      <div class="tl"><div class="when">M1</div><div class="what" data-i18n="s12.t1">Contract 2–3 freelance teams (small <b>paid test tasks first</b>); first games into production; concepts picked from live trend data.</div></div>
+      <div class="tl"><div class="when">M2–3</div><div class="what" data-i18n="s12.t2">Soft-launch, measure how many players come back day 1 and day 7, put marketing only behind what retains.</div></div>
+      <div class="tl"><div class="when">M4–5</div><div class="what" data-i18n="s12.t3">First cash-out window opens — <b>first real money arrives.</b></div></div>
+      <div class="tl"><div class="when">M6</div><div class="what" data-i18n="s12.t4">Review the numbers: <b>double down on winners,</b> quietly retire the rest.</div></div>
+      <div class="tl"><div class="when">M7–9</div><div class="what" data-i18n="s12.t5">Reinvest the earnings into a small pro team for one larger project.</div></div>
     </div>
-    <div class="cols">
-      <div class="card"><span class="k">The ask</span><h3>$20K</h3><p>Cleanest structure for a friend: <b>revenue-share until 1.5–2× returned</b>, then equity in the studio.</p></div>
-      <div class="card"><span class="k">Transparency</span><h3>Live dashboard</h3><p>Roblox analytics are fully open — you see CCU, revenue & DevEx balance per game, monthly.</p></div>
-      <div class="card"><span class="k">Why now</span><h3>The window is open</h3><p>Payouts +50% YoY, DevEx raised twice, and tiny teams are making the biggest games alive.</p></div>
-    </div>
-    <p class="big-quote">The cost of finding out is <span class="hl">5 × $3K.</span> The upside is a studio.</p>
-    <p class="foot">Sources: Roblox Q1 2026 earnings; Roblox Newsroom (2026); PocketGamer, GameDeveloper, RoWatcher, generalistprogrammer, Game-Ace, Flexiple, RoMonitor, Voldex (2025–26). Estimates flagged throughout.</p>
+    <p class="big-quote" data-i18n="s12.q">Small, simple, fast — and <span class="hl">one hit changes everything.</span></p>
+    <p class="foot" data-i18n="s12.foot">Sources: Roblox Q1 2026 earnings; Fortune, PC Gamer, PocketGamer, RoWatcher, GameAnalytics, Variety, Game-Ace, Flexiple (2024–26). Estimates flagged throughout.</p>
   </section>
 
 </div>
 
 <script>
 (function () {
+  var RU = {
+    "s1.eye": "Roblox · Исследование рынка",
+    "s1.h1": "Простые игры.<br>Реальные <span class=\"gold\">деньги.</span>",
+    "s1.lede": "Маленькие команды делают простые, затягивающие игры в Roblox — и зарабатывают серьёзные деньги. Вот рынок, закономерность и что для этого нужно.",
+    "s1.k1": "Игроков в Roblox каждый день",
+    "s1.k2": "Выплачено создателям в 2025",
+    "s1.k3": "Человек за большинством хитов",
+    "s1.k4v": "Недели",
+    "s1.k4": "Чтобы сделать простую игру",
+    "s1.kick": "Свайп или → чтобы начать.",
+
+    "s2.eye": "Главная идея",
+    "s2.h2": "Roblox платит разработчикам больше, чем когда-либо — и <span class=\"hl\">простые игры побеждают.</span>",
+    "s2.c1t": "Выплаты выросли ~50%",
+    "s2.c1b": "Roblox выплатил создателям более $1.5 млрд в 2025. Топ-1000 в среднем получили по $1.3 млн.",
+    "s2.c2t": "Курс выплат подняли",
+    "s2.c2b": "Курс обмена для разработчиков вырос в 2025, а в 2026 появился новый, более высокий курс за взрослых игроков.",
+    "s2.c3t": "Побеждают крошечные команды",
+    "s2.c3b": "Самую крупную игру 2025 года сделал один 16-летний подросток за три дня.",
+    "s2.foot": "Источники: отчёты Roblox 2025–26; Fortune (2025). Мы не ставим на то, чтобы стать тем подростком — мы изучаем, почему простые игры побеждают.",
+
+    "s3.eye": "Рынок",
+    "s3.h2": "И аудитория, и деньги — огромны.",
+    "s3.k1": "Активных игроков в день <span class=\"num\">(+35%)</span>",
+    "s3.k2": "Часов игры за квартал <span class=\"num\">(+43%)</span>",
+    "s3.k3": "Выручка платформы, 2025 <span class=\"num\">(+36%)</span>",
+    "s3.k4": "Выплачено создателям в 2025",
+    "s3.lede": "Игроки уже здесь и тратят деньги каждый день — а Roblox активно перераспределяет эти траты разработчикам.",
+
+    "s4.eye": "Как деньги доходят до разработчика",
+    "s4.h2": "Проследим за одним долларом.",
+    "s4.s1t": "Игрок тратит",
+    "s4.s1b": "Покупает Robux и тратит на ваши гейм-пассы и предметы.",
+    "s4.s1k": "$1.00",
+    "s4.s2t": "Доля Roblox",
+    "s4.s2b": "Платформа забирает ~30% с внутриигровых продаж.",
+    "s4.s2k": "~70% осталось",
+    "s4.s3t": "Вывод (DevEx)",
+    "s4.s3b": "Заработанные Robux обмениваются на реальные деньги по курсу Roblox.",
+    "s4.s3k": "→ USD",
+    "s4.s4t": "Чистыми вам",
+    "s4.s4b": "После комиссий магазинов приложений и доли Roblox.",
+    "s4.s4k": "~$0.25–0.30",
+    "s4.foot": "Правило: примерно 25–30 центов с каждого потраченного игроком доллара доходит до разработчика.",
+
+    "s5.eye": "Сколько зарабатывают простые игры · потолок",
+    "s5.h2": "Крупнейшие игры Roblox — <span class=\"gold\">механически примитивны.</span>",
+    "s5.foot": "Это выигрышные лотерейные билеты — показаны, чтобы доказать: верхнего предела нет. Это не план.",
+
+    "s6.eye": "Сколько зарабатывают простые игры · достижимый уровень",
+    "s6.h2": "А реальные победы делают <span class=\"hl\">1–3 человека за недели.</span>",
+    "s6.foot": "Команды из 1–3 человек, недели–месяцы работы, единицы миллионов за жизнь игры. Именно на этот уровень мы целимся.",
+
+    "tag.simple": "всё ещё просто",
+    "m.players": "Игроки", "m.made": "Заработок", "m.team": "Команда", "m.visits": "Заходы",
+    "m.record": "Рекорд", "m.extra": "Бонус", "m.held": "Удержание", "m.since": "С года",
+    "m.speed": "Скорость", "m.genre": "Жанр",
+
+    "g.gag": "Сажай семена, жди, продавай — растёт, пока тебя нет в игре.",
+    "g.gag.p": "22.3M пик", "g.gag.m": "~$12M / мес", "g.gag.t": "1 подросток · 3 дня", "g.gag.v": "10B+",
+    "g.sab": "Покупай мем-питомцев и кради их с баз других игроков.",
+    "g.sab.p": "25.8M пик", "g.sab.m": "~$11M / мес", "g.sab.t": "2 разраб.", "g.sab.r": "#1 в истории",
+    "g.bh": "Город, где дети просто тусуются и отыгрывают роли. Без целей.",
+    "g.bh.v": "80B+", "g.bh.m": "~$2.3M / мес", "g.bh.t": "1 разраб.", "g.bh.p": "490K стабильно",
+    "g.99": "Кооп: переживи ночи, поддерживай костёр, спасай потерявшихся детей.",
+    "g.99.p": "14.2M пик", "g.99.m": "6-знач.+ / чел", "g.99.t": "3 друга", "g.99.x": "контракт на фильм",
+
+    "g.fisch": "Забрось удочку, поймай рыбу, продай, купи удочку получше.",
+    "g.fisch.p": "1.2M пик", "g.fisch.m": "миллионы / год", "g.fisch.t": "1 разраб. · ~4 мес", "g.fisch.v": "4.5B+",
+    "g.sol": "Жми кнопку, выбивай редкие ауры. Крутится, даже когда ты AFK.",
+    "g.sol.p": "~70K стабильно", "g.sol.m": "мультимиллион", "g.sol.t": "малая команда", "g.sol.h": "2+ года",
+    "g.dr": "Кооп: едь на поезде на запад сквозь зомби. Не умри.",
+    "g.dr.p": "1.3M пик", "g.dr.m": "миллионы / мес", "g.dr.t": "2 разраб.", "g.dr.x": "~топ-12",
+    "g.toh": "Взбирайся по случайной башне. Без чекпоинтов, таймер 8 минут.",
+    "g.toh.v": "28B+", "g.toh.m": "~$200M+ всего", "g.toh.t": "малая команда", "g.toh.s": "2018",
+    "g.adt": "Собери машину из хлама и проедь как можно дальше, пока она не развалится.",
+    "g.adt.p": "573K пик", "g.adt.m": "миллионы всего", "g.adt.t": "1 любитель", "g.adt.v": "2.4B+",
+    "g.doors": "Пройди 100 пронумерованных дверей, прячась от того, что внутри.",
+    "g.doors.sp": "1B за ~3 мес", "g.doors.m": "десятки миллионов", "g.doors.t": "2 разраб.", "g.doors.gn": "линейный хоррор",
+
+    "s7.eye": "Закономерность",
+    "s7.h2": "Сложность не приносит денег. <span class=\"hl\">Приносят цикл, соц. давление и удача.</span>",
+    "s7.c1k": "Цикл", "s7.c1t": "30-секундный цикл", "s7.c1b": "Объясняется на одном дыхании. Короткие циклы = больше сессий и постоянные мелкие покупки.",
+    "s7.c2k": "Соц.", "s7.c2t": "Контент — сами игроки", "s7.c2b": "Кражи, кооп, отыгрыш — драму создают игроки, поэтому крошечной команде не нужно обгонять большую студию по контенту.",
+    "s7.c3k": "Удача", "s7.c3t": "RNG + дефицит", "s7.c3b": "Редкие ауры, питомцы, рыба, лимитные семена. Давление на кошелёк без единой новой механики.",
+    "s7.c4k": "Офлайн", "s7.c4t": "Прогресс, пока тебя нет", "s7.c4b": "Растёт, пока игрок вышел — повод вернуться завтра.",
+    "s7.c5k": "Тренд", "s7.c5t": "Оседлай, а не изобретай", "s7.c5b": "«Steal a X», «Grow a X», хоррор-маскоты — быстро повторить проверенный шаблон реально снова и снова.",
+    "s7.c6k": "Моб.", "s7.c6t": "Один палец", "s7.c6b": "Большинство играет с телефона. Простое управление = максимально широкая аудитория.",
+
+    "s8.eye": "Стоимость, время и сложность",
+    "s8.h2": "Простая игра стоит немного и выходит за недели.",
+    "s8.k1": "Заказать одну простую игру у фрилансеров",
+    "s8.k2": "Недель на сборку одной игры",
+    "s8.k3": "Человека: скриптер, билдер, немного UI",
+    "s8.lede": "Сложно не собрать игру — сложно выбрать правильную идею и продвинуть её. Поэтому умный ход — несколько маленьких ставок, а не одна большая.",
+    "s8.foot": "Ставки: фриланс-разработчики Roblox, Game-Ace и Flexiple (2025). Многие также работают за долю от дохода, растягивая бюджет.",
+
+    "s9.eye": "Риски · честная версия",
+    "s9.h2": "Это бизнес, где всё решают хиты. Мы так к нему и относимся.",
+    "s9.risk": "Риск",
+    "s9.c1t": "Большинство игр заработают мало", "s9.c1b": "Считаем, что большая часть партии принесёт немного. Несколько ставок — именно так мы это компенсируем.",
+    "s9.c2t": "Зависимость от платформы", "s9.c2b": "Roblox контролирует выдачу, курсы и правила. Одно изменение политики может подвинуть миллионы игроков.",
+    "s9.c3t": "Задержка вывода", "s9.c3b": "Есть минимум и ~месячная задержка выплат — первые реальные деньги примерно через 2–3 месяца.",
+    "s9.c4t": "Тренды угасают", "s9.c4b": "Вирусный формат остывает. Мы действуем быстро и не вкладываемся сверх меры в одну тему.",
+    "s9.c5t": "Алгоритм выдачи", "s9.c5b": "Он продвигает игры, которые уже удерживают игроков. Мы делаем мягкий запуск, замеряем, потом тратим на маркетинг.",
+    "s9.c6t": "Разброс у фрилансеров", "s9.c6b": "Качество и надёжность разнятся. Мы платим по этапам и сначала даём маленькие оплачиваемые тест-задания.",
+
+    "s10.eye": "Окно возможностей",
+    "s10.h2": "Где возможность <span class=\"hl\">прямо сейчас.</span>",
+    "s10.l1": "<b>Взрослая аудитория, за которой никто не идёт.</b> Roblox теперь платит премию за подтверждённых взрослых игроков, которые тратят намного больше детей — и почти никто из авторов простых игр на них не целится.",
+    "s10.l2": "<b>Окна трендов держатся неделями.</b> Быстрые последователи вирусного формата и в 2025 забирали реальные деньги. Скорость — это преимущество.",
+    "s10.l3": "<b>Недозаполненные ниши.</b> Кооп-выживание и «idle с торговлей» доказали себя в 2025 и пока не переполнены.",
+    "s10.q": "Наше преимущество — не лучший движок. Это <span class=\"hl\">скорость, дисциплина и достаточно попыток, чтобы поймать окно.</span>",
+
+    "s11.eye": "Для контекста · что может дать бюджет",
+    "s11.h2": "Пустим небольшой бюджет в дело — вот как это выглядит.",
+    "s11.lede": "Для иллюстрации, не просьба. Сумма около <span class=\"num\" style=\"color:var(--gold)\">$20K</span> могла бы оплатить ~5 простых игр плюс маркетинг. Вот диапазон исходов за год.",
+    "s11.sc1": "Осторожный", "s11.sc1s": "ни одного хита",
+    "s11.sc2": "Базовый", "s11.sc2s": "1 умеренный хит + 2 доходных",
+    "s11.sc3": "Оптимистичный", "s11.sc3s": "одна игра ловит тренд",
+    "s11.m1v": "≈ в ноль", "s11.m1": "Медианный исход примерно возвращает деньги",
+    "s11.m2": "Если выстрелит хоть одна игра — меняется всё",
+    "s11.m3v": "8–10 месяц", "s11.m3": "Выход в прибыль в базовом сценарии",
+    "s11.disc": "<b>Допущения:</b> ~1 игра из 5 набирает заметную тягу; ~2 идут ни шатко ни валко; ~2 проваливаются. Разработчик оставляет ~25–30¢ с игрового доллара. Все цифры — обоснованные оценки и диапазоны, а не обещания.",
+
+    "s12.eye": "Как это работало бы",
+    "s12.h2": "Шесть–девять месяцев, чтобы понять, что у нас есть.",
+    "s12.t1": "Нанять 2–3 команды фрилансеров (сначала небольшие <b>оплачиваемые тест-задания</b>); первые игры в производство; концепты — по живым данным трендов.",
+    "s12.t2": "Мягкий запуск, замеряем, сколько игроков возвращается на 1-й и 7-й день, вкладываем маркетинг только в то, что удерживает.",
+    "s12.t3": "Открывается первое окно вывода — <b>приходят первые реальные деньги.</b>",
+    "s12.t4": "Смотрим на цифры: <b>усиливаем победителей,</b> тихо сворачиваем остальное.",
+    "s12.t5": "Реинвестируем заработок в маленькую про-команду под один более крупный проект.",
+    "s12.q": "Просто, быстро, маленькими шагами — и <span class=\"hl\">один хит меняет всё.</span>",
+    "s12.foot": "Источники: отчёт Roblox Q1 2026; Fortune, PC Gamer, PocketGamer, RoWatcher, GameAnalytics, Variety, Game-Ace, Flexiple (2024–26). Оценки отмечены по тексту."
+  };
+
+  var els = Array.prototype.slice.call(document.querySelectorAll('[data-i18n]'));
+  var EN = {};
+  els.forEach(function (el) { EN[el.dataset.i18n] = el.innerHTML; });
+
+  var langBtn = document.getElementById('lang');
+  function render(lang) {
+    var dict = lang === 'ru' ? RU : EN;
+    els.forEach(function (el) {
+      var k = el.dataset.i18n;
+      el.innerHTML = (dict[k] != null) ? dict[k] : EN[k];
+    });
+    document.documentElement.lang = lang;
+    langBtn.innerHTML = lang === 'ru'
+      ? '<b>RU</b> <span class="off">/ EN</span>'
+      : '<b>EN</b> <span class="off">/ RU</span>';
+    try { localStorage.setItem('pres-lang', lang); } catch (e) {}
+  }
+  var saved = null;
+  try { saved = localStorage.getItem('pres-lang'); } catch (e) {}
+  var initial = saved || ((navigator.language || '').toLowerCase().indexOf('ru') === 0 ? 'ru' : 'en');
+  render(initial);
+  langBtn.addEventListener('click', function () {
+    render(document.documentElement.lang === 'ru' ? 'en' : 'ru');
+  });
+
+  // theme
+  var root = document.documentElement;
+  document.getElementById('theme').addEventListener('click', function () {
+    var dark = root.getAttribute('data-theme') === 'dark'
+      || (!root.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+    root.setAttribute('data-theme', dark ? 'light' : 'dark');
+  });
+
+  // navigation
   var deck = document.getElementById('deck');
   var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
   var total = slides.length;
+  document.getElementById('total').textContent = String(total).padStart(2, '0');
   var cur = document.getElementById('cur');
   var rail = document.getElementById('rail');
   var dotsWrap = document.getElementById('dots');
-  document.getElementById('total').textContent = String(total).padStart(2, '0');
-
-  // dots
   slides.forEach(function (s, i) {
     var b = document.createElement('button');
-    b.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+    b.setAttribute('aria-label', 'Slide ' + (i + 1));
     b.addEventListener('click', function () { slides[i].scrollIntoView(); });
     dotsWrap.appendChild(b);
   });
   var dots = Array.prototype.slice.call(dotsWrap.children);
-
   var active = 0;
   var io = new IntersectionObserver(function (entries) {
     entries.forEach(function (e) {
-      var i = slides.indexOf(e.target);
-      if (e.isIntersecting && e.intersectionRatio > 0.55) {
+      if (e.isIntersecting && e.intersectionRatio > 0.34) {
+        var i = slides.indexOf(e.target);
         e.target.classList.add('vis');
         active = i;
         cur.textContent = String(i + 1).padStart(2, '0');
@@ -440,13 +658,9 @@
         dots.forEach(function (d, di) { d.classList.toggle('on', di === i); });
       }
     });
-  }, { root: deck, threshold: [0.55] });
+  }, { root: deck, threshold: [0.34, 0.6] });
   slides.forEach(function (s) { io.observe(s); });
-
-  function go(dir) {
-    var t = Math.max(0, Math.min(total - 1, active + dir));
-    slides[t].scrollIntoView();
-  }
+  function go(d) { slides[Math.max(0, Math.min(total - 1, active + d))].scrollIntoView(); }
   document.getElementById('next').addEventListener('click', function () { go(1); });
   document.getElementById('prev').addEventListener('click', function () { go(-1); });
   document.addEventListener('keydown', function (e) {
@@ -454,14 +668,6 @@
     else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); go(-1); }
     else if (e.key === 'Home') { e.preventDefault(); slides[0].scrollIntoView(); }
     else if (e.key === 'End') { e.preventDefault(); slides[total - 1].scrollIntoView(); }
-  });
-
-  // theme toggle
-  var root = document.documentElement;
-  document.getElementById('themebtn').addEventListener('click', function () {
-    var isDark = getComputedStyle(root).getPropertyValue('--bg').trim() === '#10120e'
-      || root.getAttribute('data-theme') === 'dark';
-    root.setAttribute('data-theme', isDark ? 'light' : 'dark');
   });
 })();
 </script>
