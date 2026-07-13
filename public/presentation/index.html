@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AE</text></svg>">
-<title>Simple Games, Real Money — Roblox</title>
+<title>Simple Games, Real Money on Roblox</title>
 <style>
   :root {
     --panel: #ffffff; --panel-2: #f4f5f0; --line: #dcded4; --text: #1a1d17;
@@ -63,17 +63,15 @@
   .big-quote { font-size: clamp(1.15rem,3.6vw,1.85rem); font-weight: 700; letter-spacing: -.02em;
     line-height: 1.25; text-wrap: balance; }
 
-  /* stat grid */
   .stats { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 1px;
     background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
   .stat { background: var(--panel); padding: clamp(.9rem,2.5vw,1.4rem); display: flex; flex-direction: column; gap: .3rem; }
   .stat .big { font-family: var(--mono); font-variant-numeric: tabular-nums;
-    font-size: clamp(1.5rem,5vw,2.4rem); font-weight: 700; letter-spacing: -.02em; }
+    font-size: clamp(1.4rem,4.6vw,2.3rem); font-weight: 700; letter-spacing: -.02em; }
   .stat .big.g { color: var(--gold); } .stat .big.a { color: var(--accent); }
   .stat .lab { font-size: clamp(.76rem,2vw,.85rem); color: var(--muted); line-height: 1.35; }
   .stat .src { font-size: .66rem; color: var(--faint); font-family: var(--mono); }
 
-  /* generic card grid */
   .cols { display: grid; gap: clamp(.7rem,1.8vw,1.1rem);
     grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
@@ -83,7 +81,6 @@
   .card .k.r { color: var(--danger); }
   .card p { font-size: clamp(.86rem,2.2vw,.93rem); color: var(--muted); }
 
-  /* game cards */
   .games { display: grid; gap: clamp(.7rem,1.8vw,1rem);
     grid-template-columns: repeat(auto-fit,minmax(250px,1fr)); }
   .game { background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
@@ -100,7 +97,6 @@
     font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; padding: .28rem .55rem;
     border-radius: 999px; border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); color: var(--accent-deep); white-space: nowrap; }
 
-  /* step cards (money flow) */
   .steps { display: grid; gap: clamp(.7rem,1.8vw,1rem); grid-template-columns: repeat(auto-fit,minmax(210px,1fr)); }
   .step { background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
     padding: clamp(1rem,2.6vw,1.25rem); display: flex; flex-direction: column; gap: .5rem; position: relative; }
@@ -110,13 +106,11 @@
   .step .keep { font-family: var(--mono); font-weight: 700; font-size: .95rem; color: var(--gold); margin-top: auto; }
   .step .keep.a { color: var(--accent); }
 
-  /* clean list */
   ul.clean { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .85rem; }
   ul.clean li { display: flex; gap: .7rem; font-size: clamp(.9rem,2.3vw,1.06rem); align-items: baseline; line-height: 1.45; }
   ul.clean li::before { content: ""; flex: 0 0 auto; width: 8px; height: 8px; border-radius: 2px; background: var(--accent); transform: translateY(2px); }
   ul.clean li b { font-weight: 700; }
 
-  /* scenario bars */
   .scen { display: grid; gap: .85rem; }
   .scenrow { display: grid; grid-template-columns: 132px 1fr auto; align-items: center; gap: 1rem; }
   .scenrow .label { font-weight: 700; font-size: clamp(.85rem,2.2vw,.95rem); }
@@ -125,15 +119,13 @@
   .bar span { position: absolute; inset: 0 auto 0 0; border-radius: 6px; min-width: 6px; }
   .scenrow .val { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 700; font-size: clamp(.85rem,2.2vw,.95rem); white-space: nowrap; }
 
-  /* timeline */
   .timeline { display: grid; }
-  .tl { display: grid; grid-template-columns: 92px 1fr; gap: 1rem; padding: .8rem 0; border-top: 1px solid var(--line); }
+  .tl { display: grid; grid-template-columns: 68px 1fr; gap: 1rem; padding: .8rem 0; border-top: 1px solid var(--line); }
   .tl:first-child { border-top: none; }
-  .tl .when { font-family: var(--mono); font-weight: 700; color: var(--accent); font-size: clamp(.8rem,2.1vw,.9rem); }
+  .tl .when { font-family: var(--mono); font-weight: 700; color: var(--accent); font-size: clamp(.85rem,2.2vw,.95rem); }
   .tl .what { font-size: clamp(.88rem,2.2vw,.95rem); }
   .tl .what b { font-weight: 700; }
 
-  /* fixed chrome */
   .rail { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0; z-index: 50; transition: width .25s ease; }
   .controls { position: fixed; top: max(.75rem, env(safe-area-inset-top)); right: .75rem; z-index: 50; display: flex; gap: .45rem; }
   .pill { font-family: var(--mono); font-size: clamp(.66rem,1.9vw,.74rem); cursor: pointer; color: var(--muted);
@@ -158,7 +150,6 @@
     background: transparent; cursor: pointer; transition: all .2s; }
   .dots button.on { background: var(--accent); border-color: var(--accent); transform: scale(1.3); }
 
-  /* fade-in */
   .slide > * { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
   .slide.vis > * { opacity: 1; transform: none; }
   .slide.vis > *:nth-child(2){transition-delay:.05s} .slide.vis > *:nth-child(3){transition-delay:.1s}
@@ -170,7 +161,7 @@
   @media (max-width: 600px) {
     .scenrow { grid-template-columns: 1fr; gap: .35rem; align-items: start; }
     .scenrow .val { justify-self: start; }
-    .tl { grid-template-columns: 64px 1fr; gap: .7rem; }
+    .tl { grid-template-columns: 56px 1fr; gap: .7rem; }
   }
 </style>
 </head>
@@ -178,7 +169,7 @@
 
 <div class="rail" id="rail"></div>
 <div class="controls">
-  <button class="pill langseg" id="lang" aria-label="Switch language English / Russian"></button>
+  <button class="pill langseg" id="lang" aria-label="Switch language English or Russian"></button>
   <button class="pill" id="theme" aria-label="Toggle light or dark theme">◐</button>
 </div>
 <div class="dots" id="dots" aria-hidden="true"></div>
@@ -192,13 +183,13 @@
 
   <!-- 1 TITLE -->
   <section class="slide">
-    <div class="eyebrow" data-i18n="s1.eye">Roblox · Market study</div>
+    <div class="eyebrow" data-i18n="s1.eye">Roblox market study</div>
     <h1 data-i18n="s1.h1">Simple games.<br>Real <span class="gold">money.</span></h1>
-    <p class="lede" data-i18n="s1.lede">Small teams building simple, addictive Roblox games — and earning serious revenue. Here's the market, the pattern, and what it takes.</p>
+    <p class="lede" data-i18n="s1.lede">Small teams build simple, addictive Roblox games and earn serious money. This covers the market, the pattern behind it, and what it takes.</p>
     <div class="stats">
       <div class="stat"><span class="big a">132M</span><span class="lab" data-i18n="s1.k1">Players on Roblox every day</span></div>
       <div class="stat"><span class="big g">$1.5B+</span><span class="lab" data-i18n="s1.k2">Paid to creators in 2025</span></div>
-      <div class="stat"><span class="big">1–3</span><span class="lab" data-i18n="s1.k3">People behind most hit games</span></div>
+      <div class="stat"><span class="big">1 to 3</span><span class="lab" data-i18n="s1.k3">People behind most hit games</span></div>
       <div class="stat"><span class="big" data-i18n="s1.k4v">Weeks</span><span class="lab" data-i18n="s1.k4">To build a simple game</span></div>
     </div>
     <p class="kicker" data-i18n="s1.kick">Swipe or press → to begin.</p>
@@ -207,13 +198,13 @@
   <!-- 2 THESIS -->
   <section class="slide">
     <div class="eyebrow" data-i18n="s2.eye">The thesis</div>
-    <h2 data-i18n="s2.h2">Roblox is paying developers more than ever — and <span class="hl">simple games are winning.</span></h2>
+    <h2 data-i18n="s2.h2">Roblox is paying developers more than ever, and <span class="hl">simple games are the ones winning.</span></h2>
     <div class="cols">
-      <div class="card"><span class="k">01</span><h3 data-i18n="s2.c1t">Payouts up ~50%</h3><p data-i18n="s2.c1b">Roblox paid creators over $1.5B in 2025. The top 1,000 creators averaged $1.3M each.</p></div>
-      <div class="card"><span class="k">02</span><h3 data-i18n="s2.c2t">Cash-out rate raised</h3><p data-i18n="s2.c2b">The developer exchange rate went up in 2025, with a new, higher rate for adult players in 2026.</p></div>
-      <div class="card"><span class="k">03</span><h3 data-i18n="s2.c3t">Tiny teams win</h3><p data-i18n="s2.c3b">2025's single biggest game was built by one 16-year-old in three days.</p></div>
+      <div class="card"><span class="k">01</span><h3 data-i18n="s2.c1t">Payouts up about 50%</h3><p data-i18n="s2.c1b">Roblox paid creators over $1.5B in 2025. The top 1,000 creators averaged $1.3M each.</p></div>
+      <div class="card"><span class="k">02</span><h3 data-i18n="s2.c2t">Cash out rate raised</h3><p data-i18n="s2.c2b">The developer exchange rate went up in 2025, with a new, higher rate for adult players in 2026.</p></div>
+      <div class="card"><span class="k">03</span><h3 data-i18n="s2.c3t">Tiny teams win</h3><p data-i18n="s2.c3b">The single biggest game of 2025 was built by one 16 year old in three days.</p></div>
     </div>
-    <p class="foot" data-i18n="s2.foot">Sources: Roblox 2025–26 earnings; Fortune (2025). We're not betting on being that teenager — we're studying why simple games win.</p>
+    <p class="foot" data-i18n="s2.foot">Sources: Roblox 2025 to 2026 earnings; Fortune (2025). The point is not to be that teenager. It is to understand why simple games win.</p>
   </section>
 
   <!-- 3 MARKET -->
@@ -221,12 +212,12 @@
     <div class="eyebrow" data-i18n="s3.eye">The market</div>
     <h2 data-i18n="s3.h2">The audience and the money are both enormous.</h2>
     <div class="stats">
-      <div class="stat"><span class="big">132M</span><span class="lab" data-i18n="s3.k1">Daily active users <span class="num">(+35%)</span></span><span class="src">Roblox Q1'26</span></div>
-      <div class="stat"><span class="big">31B</span><span class="lab" data-i18n="s3.k2">Hours played per quarter <span class="num">(+43%)</span></span><span class="src">Roblox Q1'26</span></div>
+      <div class="stat"><span class="big">132M</span><span class="lab" data-i18n="s3.k1">Daily active users <span class="num">(+35%)</span></span><span class="src">Roblox Q1 2026</span></div>
+      <div class="stat"><span class="big">31B</span><span class="lab" data-i18n="s3.k2">Hours played per quarter <span class="num">(+43%)</span></span><span class="src">Roblox Q1 2026</span></div>
       <div class="stat"><span class="big g">$4.9B</span><span class="lab" data-i18n="s3.k3">Platform revenue, 2025 <span class="num">(+36%)</span></span><span class="src">PocketGamer</span></div>
       <div class="stat"><span class="big a">$1.5B+</span><span class="lab" data-i18n="s3.k4">Paid to creators in 2025</span><span class="src">Roblox / SQ Mag</span></div>
     </div>
-    <p class="lede" data-i18n="s3.lede">The players are already here, spending daily — and Roblox actively redistributes that spend to developers.</p>
+    <p class="lede" data-i18n="s3.lede">The players are already here and spending every day. Roblox then passes a large share of that spending to developers.</p>
   </section>
 
   <!-- 4 MONEY FLOW -->
@@ -234,26 +225,26 @@
     <div class="eyebrow" data-i18n="s4.eye">How the money reaches a developer</div>
     <h2 data-i18n="s4.h2">Follow one dollar.</h2>
     <div class="steps">
-      <div class="step"><span class="n">01</span><h3 data-i18n="s4.s1t">Player spends</h3><p data-i18n="s4.s1b">Buys Robux, spends it on your game passes and items.</p><span class="keep" data-i18n="s4.s1k">$1.00</span></div>
-      <div class="step"><span class="n">02</span><h3 data-i18n="s4.s2t">Roblox's cut</h3><p data-i18n="s4.s2b">The platform keeps ~30% of in-game sales.</p><span class="keep a" data-i18n="s4.s2k">~70% left</span></div>
-      <div class="step"><span class="n">03</span><h3 data-i18n="s4.s3t">Cash out (DevEx)</h3><p data-i18n="s4.s3b">Convert earned Robux to real money at Roblox's exchange rate.</p><span class="keep a" data-i18n="s4.s3k">→ USD</span></div>
-      <div class="step"><span class="n">04</span><h3 data-i18n="s4.s4t">Net to you</h3><p data-i18n="s4.s4b">After app-store fees and Roblox's cut.</p><span class="keep" data-i18n="s4.s4k">~$0.25–0.30</span></div>
+      <div class="step"><span class="n">01</span><h3 data-i18n="s4.s1t">Player spends</h3><p data-i18n="s4.s1b">Buys Robux and spends it on your game passes and items.</p><span class="keep" data-i18n="s4.s1k">$1.00</span></div>
+      <div class="step"><span class="n">02</span><h3 data-i18n="s4.s2t">Roblox takes a cut</h3><p data-i18n="s4.s2b">The platform keeps about 30% of sales made inside the game.</p><span class="keep a" data-i18n="s4.s2k">70% left</span></div>
+      <div class="step"><span class="n">03</span><h3 data-i18n="s4.s3t">Cash out (DevEx)</h3><p data-i18n="s4.s3b">Turn earned Robux into real money at Roblox's exchange rate.</p><span class="keep a" data-i18n="s4.s3k">to USD</span></div>
+      <div class="step"><span class="n">04</span><h3 data-i18n="s4.s4t">Net to you</h3><p data-i18n="s4.s4b">After app store fees and Roblox's cut.</p><span class="keep" data-i18n="s4.s4k">≈ 28¢</span></div>
     </div>
-    <p class="foot" data-i18n="s4.foot">Rule of thumb: about 25–30 cents of every dollar a player spends reaches the developer.</p>
+    <p class="foot" data-i18n="s4.foot">As a rule of thumb, about 25 to 30 cents of every dollar a player spends reaches the developer.</p>
   </section>
 
   <!-- 5 GAMES — OUTLIERS -->
   <section class="slide">
-    <div class="eyebrow" data-i18n="s5.eye">What simple games earn · the ceiling</div>
+    <div class="eyebrow" data-i18n="s5.eye">How high it can go</div>
     <h2 data-i18n="s5.h2">The biggest games on Roblox are <span class="gold">mechanically trivial.</span></h2>
     <div class="games">
       <div class="game">
         <div class="game-head"><h3>Grow a Garden</h3><span class="tag" data-i18n="tag.simple">still simple</span></div>
-        <p class="concept" data-i18n="g.gag">Plant seeds, wait, sell — it grows while you're offline.</p>
+        <p class="concept" data-i18n="g.gag">Plant seeds, wait, then sell. It grows while you are offline.</p>
         <div class="game-meta">
           <div><span class="mlab" data-i18n="m.players">Players</span><span class="mval" data-i18n="g.gag.p">22.3M peak</span></div>
           <div><span class="mlab" data-i18n="m.made">Made</span><span class="mval g" data-i18n="g.gag.m">~$12M / month</span></div>
-          <div><span class="mlab" data-i18n="m.team">Team</span><span class="mval" data-i18n="g.gag.t">1 teen · 3 days</span></div>
+          <div><span class="mlab" data-i18n="m.team">Team</span><span class="mval" data-i18n="g.gag.t">1 teen, 3 days</span></div>
           <div><span class="mlab" data-i18n="m.visits">Visits</span><span class="mval" data-i18n="g.gag.v">10B+</span></div>
         </div>
       </div>
@@ -279,22 +270,22 @@
       </div>
       <div class="game">
         <div class="game-head"><h3>99 Nights in the Forest</h3><span class="tag" data-i18n="tag.simple">still simple</span></div>
-        <p class="concept" data-i18n="g.99">Co-op: survive the nights, keep the fire lit, rescue lost kids.</p>
+        <p class="concept" data-i18n="g.99">Survive the nights together, keep the fire lit, rescue lost kids.</p>
         <div class="game-meta">
           <div><span class="mlab" data-i18n="m.players">Players</span><span class="mval" data-i18n="g.99.p">14.2M peak</span></div>
-          <div><span class="mlab" data-i18n="m.made">Made</span><span class="mval g" data-i18n="g.99.m">6-figures+ / dev</span></div>
+          <div><span class="mlab" data-i18n="m.made">Made</span><span class="mval g" data-i18n="g.99.m">6 figures+ / dev</span></div>
           <div><span class="mlab" data-i18n="m.team">Team</span><span class="mval" data-i18n="g.99.t">3 friends</span></div>
           <div><span class="mlab" data-i18n="m.extra">Extra</span><span class="mval" data-i18n="g.99.x">a movie deal</span></div>
         </div>
       </div>
     </div>
-    <p class="foot" data-i18n="s5.foot">These are lottery-ticket outliers — shown to prove the tail is uncapped, not as the plan.</p>
+    <p class="foot" data-i18n="s5.foot">These are rare, once in a while winners. They show how high the ceiling goes. They are not the plan.</p>
   </section>
 
   <!-- 6 GAMES — ACHIEVABLE -->
   <section class="slide">
-    <div class="eyebrow" data-i18n="s6.eye">What simple games earn · the achievable tier</div>
-    <h2 data-i18n="s6.h2">And the realistic wins are built by <span class="hl">1–3 people in weeks.</span></h2>
+    <div class="eyebrow" data-i18n="s6.eye">The realistic tier</div>
+    <h2 data-i18n="s6.h2">The realistic wins are built by <span class="hl">1 to 3 people in a few weeks.</span></h2>
     <div class="games">
       <div class="game">
         <div class="game-head"><h3>Fisch</h3><span class="tag" data-i18n="tag.simple">still simple</span></div>
@@ -302,23 +293,23 @@
         <div class="game-meta">
           <div><span class="mlab" data-i18n="m.players">Players</span><span class="mval" data-i18n="g.fisch.p">1.2M peak</span></div>
           <div><span class="mlab" data-i18n="m.made">Made</span><span class="mval g" data-i18n="g.fisch.m">millions / yr</span></div>
-          <div><span class="mlab" data-i18n="m.team">Team</span><span class="mval" data-i18n="g.fisch.t">1 dev · ~4 mo</span></div>
+          <div><span class="mlab" data-i18n="m.team">Team</span><span class="mval" data-i18n="g.fisch.t">1 dev, ~4 mo</span></div>
           <div><span class="mlab" data-i18n="m.visits">Visits</span><span class="mval" data-i18n="g.fisch.v">4.5B+</span></div>
         </div>
       </div>
       <div class="game">
         <div class="game-head"><h3>Sol's RNG</h3><span class="tag" data-i18n="tag.simple">still simple</span></div>
-        <p class="concept" data-i18n="g.sol">Press a button, roll for rare auras. It rolls while you're AFK.</p>
+        <p class="concept" data-i18n="g.sol">Press a button, roll for rare auras. It rolls while you are AFK.</p>
         <div class="game-meta">
           <div><span class="mlab" data-i18n="m.players">Players</span><span class="mval" data-i18n="g.sol.p">~70K steady</span></div>
-          <div><span class="mlab" data-i18n="m.made">Made</span><span class="mval g" data-i18n="g.sol.m">multi-million</span></div>
+          <div><span class="mlab" data-i18n="m.made">Made</span><span class="mval g" data-i18n="g.sol.m">multi million</span></div>
           <div><span class="mlab" data-i18n="m.team">Team</span><span class="mval" data-i18n="g.sol.t">small team</span></div>
           <div><span class="mlab" data-i18n="m.held">Held</span><span class="mval" data-i18n="g.sol.h">2+ years</span></div>
         </div>
       </div>
       <div class="game">
         <div class="game-head"><h3>Dead Rails</h3><span class="tag" data-i18n="tag.simple">still simple</span></div>
-        <p class="concept" data-i18n="g.dr">Co-op: ride a train west through zombies. Don't die.</p>
+        <p class="concept" data-i18n="g.dr">Ride a train west through the zombies with friends. Don't die.</p>
         <div class="game-meta">
           <div><span class="mlab" data-i18n="m.players">Players</span><span class="mval" data-i18n="g.dr.p">1.3M peak</span></div>
           <div><span class="mlab" data-i18n="m.made">Made</span><span class="mval g" data-i18n="g.dr.m">millions / mo</span></div>
@@ -328,7 +319,7 @@
       </div>
       <div class="game">
         <div class="game-head"><h3>Tower of Hell</h3><span class="tag" data-i18n="tag.simple">still simple</span></div>
-        <p class="concept" data-i18n="g.toh">Climb a randomly-built tower. No checkpoints, 8-minute timer.</p>
+        <p class="concept" data-i18n="g.toh">Climb a tower that rebuilds every round. No checkpoints, 8 minute timer.</p>
         <div class="game-meta">
           <div><span class="mlab" data-i18n="m.visits">Visits</span><span class="mval" data-i18n="g.toh.v">28B+</span></div>
           <div><span class="mlab" data-i18n="m.made">Made</span><span class="mval g" data-i18n="g.toh.m">~$200M+ life</span></div>
@@ -357,46 +348,46 @@
         </div>
       </div>
     </div>
-    <p class="foot" data-i18n="s6.foot">1–3 person teams, weeks-to-months of work, single-digit millions over a game's life. This is the tier we aim for.</p>
+    <p class="foot" data-i18n="s6.foot">Teams of 1 to 3 people, a few weeks to a few months of work, and low single digit millions over a game's life. This is the tier we aim for.</p>
   </section>
 
   <!-- 7 PATTERN -->
   <section class="slide">
     <div class="eyebrow" data-i18n="s7.eye">The pattern</div>
-    <h2 data-i18n="s7.h2">Complexity doesn't pay. <span class="hl">Loops, social pressure, and luck do.</span></h2>
+    <h2 data-i18n="s7.h2">The money comes from a <span class="hl">tight loop, social pressure, and luck,</span> not from complex systems.</h2>
     <div class="cols">
-      <div class="card"><span class="k" data-i18n="s7.c1k">Loop</span><h3 data-i18n="s7.c1t">A 30-second cycle</h3><p data-i18n="s7.c1b">Explainable in one breath. Short cycles mean more sessions and constant small purchases.</p></div>
-      <div class="card"><span class="k" data-i18n="s7.c2k">Social</span><h3 data-i18n="s7.c2t">Players are the content</h3><p data-i18n="s7.c2b">Stealing, co-op, roleplay — the drama is player-made, so a tiny team never out-produces a big studio.</p></div>
-      <div class="card"><span class="k" data-i18n="s7.c3k">Luck</span><h3 data-i18n="s7.c3t">RNG + scarcity</h3><p data-i18n="s7.c3b">Rare auras, pets, fish, limited seeds. Spending pressure without any new mechanics.</p></div>
-      <div class="card"><span class="k" data-i18n="s7.c4k">Offline</span><h3 data-i18n="s7.c4t">Progress while away</h3><p data-i18n="s7.c4b">It grows while they're logged off — a reason to come back tomorrow.</p></div>
-      <div class="card"><span class="k" data-i18n="s7.c5k">Trend</span><h3 data-i18n="s7.c5t">Ride, don't invent</h3><p data-i18n="s7.c5b">"Steal a X", "Grow a X", horror mascots — fast-following a proven template is repeatable.</p></div>
+      <div class="card"><span class="k" data-i18n="s7.c1k">Loop</span><h3 data-i18n="s7.c1t">A 30 second cycle</h3><p data-i18n="s7.c1b">You can explain it in one breath. Short cycles mean more sessions and constant small purchases.</p></div>
+      <div class="card"><span class="k" data-i18n="s7.c2k">Social</span><h3 data-i18n="s7.c2t">Players are the content</h3><p data-i18n="s7.c2b">Stealing, teaming up, roleplay. The drama comes from players, so a tiny team never has to out build a large studio.</p></div>
+      <div class="card"><span class="k" data-i18n="s7.c3k">Luck</span><h3 data-i18n="s7.c3t">Chance and scarcity</h3><p data-i18n="s7.c3b">Rare auras, pets, fish, limited seeds. Spending pressure without any new mechanics.</p></div>
+      <div class="card"><span class="k" data-i18n="s7.c4k">Offline</span><h3 data-i18n="s7.c4t">Progress while away</h3><p data-i18n="s7.c4b">It keeps growing while they are logged off, which gives them a reason to come back tomorrow.</p></div>
+      <div class="card"><span class="k" data-i18n="s7.c5k">Trend</span><h3 data-i18n="s7.c5t">Ride, don't invent</h3><p data-i18n="s7.c5b">Steal a X, Grow a X, horror mascots. Copying a proven format quickly works again and again.</p></div>
       <div class="card"><span class="k" data-i18n="s7.c6k">Mobile</span><h3 data-i18n="s7.c6t">One thumb</h3><p data-i18n="s7.c6b">Most players are on phones. Simple controls reach the widest possible audience.</p></div>
     </div>
   </section>
 
   <!-- 8 COST/TIME -->
   <section class="slide">
-    <div class="eyebrow" data-i18n="s8.eye">Cost, time &amp; difficulty</div>
+    <div class="eyebrow" data-i18n="s8.eye">Cost, time and difficulty</div>
     <h2 data-i18n="s8.h2">A simple game costs little and ships in weeks.</h2>
     <div class="stats">
-      <div class="stat"><span class="big g">$500–5K</span><span class="lab" data-i18n="s8.k1">To commission one simple game from freelancers</span></div>
-      <div class="stat"><span class="big a">2–6</span><span class="lab" data-i18n="s8.k2">Weeks of build time per game</span></div>
-      <div class="stat"><span class="big">1–3</span><span class="lab" data-i18n="s8.k3">People: a scripter, a builder, some UI</span></div>
+      <div class="stat"><span class="big g">$500 to $5K</span><span class="lab" data-i18n="s8.k1">To commission one simple game from freelancers</span></div>
+      <div class="stat"><span class="big a">2 to 6</span><span class="lab" data-i18n="s8.k2">Weeks of build time per game</span></div>
+      <div class="stat"><span class="big">1 to 3</span><span class="lab" data-i18n="s8.k3">People: a scripter, a builder, some UI</span></div>
     </div>
-    <p class="lede" data-i18n="s8.lede">The hard part isn't building — it's picking the right idea and marketing it. So the smart move is several small bets, not one big one.</p>
-    <p class="foot" data-i18n="s8.foot">Rates: freelance Roblox developers, Game-Ace &amp; Flexiple (2025). Many also work for revenue-share, stretching a budget further.</p>
+    <p class="lede" data-i18n="s8.lede">The hard part is not building the game. It is picking the right idea and marketing it. So we make several small bets instead of one big one.</p>
+    <p class="foot" data-i18n="s8.foot">Rates: freelance Roblox developers, Game-Ace and Flexiple (2025). Many also work for a share of revenue, which stretches a budget further.</p>
   </section>
 
   <!-- 9 RISKS -->
   <section class="slide">
-    <div class="eyebrow" data-i18n="s9.eye">Risks · the honest version</div>
-    <h2 data-i18n="s9.h2">This is a hit-driven business. We treat it like one.</h2>
+    <div class="eyebrow" data-i18n="s9.eye">The honest risks</div>
+    <h2 data-i18n="s9.h2">This is a hit driven business, and we plan for that.</h2>
     <div class="cols">
       <div class="card"><span class="k r" data-i18n="s9.risk">Risk</span><h3 data-i18n="s9.c1t">Most games earn little</h3><p data-i18n="s9.c1b">Assume most of a batch return little. Making several bets is exactly how we handle that.</p></div>
       <div class="card"><span class="k r" data-i18n="s9.risk">Risk</span><h3 data-i18n="s9.c2t">Platform dependency</h3><p data-i18n="s9.c2b">Roblox controls discovery, rates and rules. One policy change can move millions of players.</p></div>
-      <div class="card"><span class="k r" data-i18n="s9.risk">Risk</span><h3 data-i18n="s9.c3t">Cash-out delay</h3><p data-i18n="s9.c3b">There's a minimum and a ~monthly payout hold — first real cash is roughly 2–3 months out.</p></div>
-      <div class="card"><span class="k r" data-i18n="s9.risk">Risk</span><h3 data-i18n="s9.c4t">Trends fade</h3><p data-i18n="s9.c4b">A viral format cools off. We move fast and don't over-invest in any single theme.</p></div>
-      <div class="card"><span class="k r" data-i18n="s9.risk">Risk</span><h3 data-i18n="s9.c5t">Discovery algorithm</h3><p data-i18n="s9.c5b">It rewards games that already retain players. We soft-launch, measure, then spend on marketing.</p></div>
+      <div class="card"><span class="k r" data-i18n="s9.risk">Risk</span><h3 data-i18n="s9.c3t">Cash out delay</h3><p data-i18n="s9.c3b">There is a minimum balance and a payout hold of about a month, so the first real cash lands roughly 2 to 3 months in.</p></div>
+      <div class="card"><span class="k r" data-i18n="s9.risk">Risk</span><h3 data-i18n="s9.c4t">Trends fade</h3><p data-i18n="s9.c4b">A viral format cools off. We move fast and do not put too much into any single theme.</p></div>
+      <div class="card"><span class="k r" data-i18n="s9.risk">Risk</span><h3 data-i18n="s9.c5t">Discovery algorithm</h3><p data-i18n="s9.c5b">It rewards games that already keep players. We soft launch, measure, then spend on marketing.</p></div>
       <div class="card"><span class="k r" data-i18n="s9.risk">Risk</span><h3 data-i18n="s9.c6t">Freelancer variance</h3><p data-i18n="s9.c6b">Quality and reliability differ. We use milestone payments and small paid test tasks first.</p></div>
     </div>
   </section>
@@ -406,28 +397,28 @@
     <div class="eyebrow" data-i18n="s10.eye">The opening</div>
     <h2 data-i18n="s10.h2">Where the opportunity is <span class="hl">right now.</span></h2>
     <ul class="clean">
-      <li data-i18n="s10.l1"><b>The adult audience nobody targets.</b> Roblox now pays a premium for age-verified adult players, who spend far more than kids — and almost no simple-game maker aims for them.</li>
-      <li data-i18n="s10.l2"><b>Trend windows stay open for weeks.</b> Fast-followers of a viral format still captured real money in 2025. Speed is the edge.</li>
-      <li data-i18n="s10.l3"><b>Under-served lanes.</b> Co-op survival and idle-with-trading both proved themselves in 2025 and aren't crowded yet.</li>
+      <li data-i18n="s10.l1"><b>The adult audience nobody targets.</b> Roblox now pays a premium for verified adult players, who spend far more than kids, and almost no maker of simple games goes after them.</li>
+      <li data-i18n="s10.l2"><b>Trend windows stay open for weeks.</b> Fast followers of a viral format still captured real money in 2025. Speed is the edge.</li>
+      <li data-i18n="s10.l3"><b>Underserved genres.</b> Team survival games and idle games with trading both proved themselves in 2025 and are not crowded yet.</li>
     </ul>
-    <p class="big-quote" data-i18n="s10.q">Our edge isn't a better engine. It's <span class="hl">speed, discipline, and enough shots to catch a window.</span></p>
+    <p class="big-quote" data-i18n="s10.q">Our edge is <span class="hl">speed, discipline, and taking enough shots</span> to catch a trend while its window is open.</p>
   </section>
 
   <!-- 11 WHAT A BUDGET COULD DO -->
   <section class="slide">
-    <div class="eyebrow" data-i18n="s11.eye">For context · what a budget could do</div>
-    <h2 data-i18n="s11.h2">Put a small budget to work — here's the shape of it.</h2>
-    <p class="lede" data-i18n="s11.lede">Illustrative, not a request. A figure around <span class="num" style="color:var(--gold)">$20K</span> could commission ~5 simple games plus marketing. Here's the range of outcomes over a year.</p>
+    <div class="eyebrow" data-i18n="s11.eye">What a budget could do</div>
+    <h2 data-i18n="s11.h2">Putting a small budget to work.</h2>
+    <p class="lede" data-i18n="s11.lede">This is only an illustration, not a request. A figure around <span class="num" style="color:var(--gold)">$20K</span> could pay for about 5 simple games plus marketing. Below is the range of outcomes over a year.</p>
     <div class="scen">
       <div class="scenrow">
         <div class="label" data-i18n="s11.sc1">Conservative<small data-i18n="s11.sc1s">no real hit</small></div>
         <div class="bar"><span style="width:18%;background:var(--danger)"></span></div>
-        <div class="val" style="color:var(--danger)">$8–15K</div>
+        <div class="val" style="color:var(--danger)">$8K to $15K</div>
       </div>
       <div class="scenrow">
-        <div class="label" data-i18n="s11.sc2">Base<small data-i18n="s11.sc2s">1 modest hit + 2 earners</small></div>
+        <div class="label" data-i18n="s11.sc2">Base<small data-i18n="s11.sc2s">1 modest hit plus 2 earners</small></div>
         <div class="bar"><span style="width:50%;background:var(--accent)"></span></div>
-        <div class="val" style="color:var(--accent)">$40–90K</div>
+        <div class="val" style="color:var(--accent)">$40K to $90K</div>
       </div>
       <div class="scenrow">
         <div class="label" data-i18n="s11.sc3">Upside<small data-i18n="s11.sc3s">one game catches a trend</small></div>
@@ -436,11 +427,11 @@
       </div>
     </div>
     <div class="stats">
-      <div class="stat"><span class="big a" data-i18n="s11.m1v">≈ break-even</span><span class="lab" data-i18n="s11.m1">Median outcome roughly returns the money</span></div>
-      <div class="stat"><span class="big g">10×+</span><span class="lab" data-i18n="s11.m2">If any single game hits, it changes everything</span></div>
-      <div class="stat"><span class="big" data-i18n="s11.m3v">Month 8–10</span><span class="lab" data-i18n="s11.m3">Profitable in the base case</span></div>
+      <div class="stat"><span class="big a" data-i18n="s11.m1v">About even</span><span class="lab" data-i18n="s11.m1">Median outcome roughly returns the money</span></div>
+      <div class="stat"><span class="big g">10×+</span><span class="lab" data-i18n="s11.m2">If any single game hits, it pays for all the rest</span></div>
+      <div class="stat"><span class="big" data-i18n="s11.m3v">By month 9</span><span class="lab" data-i18n="s11.m3">Profitable in the base case</span></div>
     </div>
-    <p class="disclaimer" data-i18n="s11.disc"><b>Assumptions:</b> ~1 in 5 games reaches meaningful traction; ~2 muddle along; ~2 flop. Developer keeps ~25–30¢ per player-dollar. All figures are reasoned estimates and ranges — not promises.</p>
+    <p class="disclaimer" data-i18n="s11.disc"><b>Assumptions:</b> about 1 in 5 games reaches real traction, about 2 do okay, and about 2 fail. The developer keeps roughly 25 to 30 cents per dollar a player spends. All figures are estimates and ranges, not promises.</p>
   </section>
 
   <!-- 12 TIMELINE + CLOSE -->
@@ -448,14 +439,14 @@
     <div class="eyebrow" data-i18n="s12.eye">How it would run</div>
     <h2 data-i18n="s12.h2">Six to nine months to know what we have.</h2>
     <div class="timeline">
-      <div class="tl"><div class="when">M1</div><div class="what" data-i18n="s12.t1">Contract 2–3 freelance teams (small <b>paid test tasks first</b>); first games into production; concepts picked from live trend data.</div></div>
-      <div class="tl"><div class="when">M2–3</div><div class="what" data-i18n="s12.t2">Soft-launch, measure how many players come back day 1 and day 7, put marketing only behind what retains.</div></div>
-      <div class="tl"><div class="when">M4–5</div><div class="what" data-i18n="s12.t3">First cash-out window opens — <b>first real money arrives.</b></div></div>
-      <div class="tl"><div class="when">M6</div><div class="what" data-i18n="s12.t4">Review the numbers: <b>double down on winners,</b> quietly retire the rest.</div></div>
-      <div class="tl"><div class="when">M7–9</div><div class="what" data-i18n="s12.t5">Reinvest the earnings into a small pro team for one larger project.</div></div>
+      <div class="tl"><div class="when">M1</div><div class="what" data-i18n="s12.t1">Contract 2 or 3 freelance teams, starting with small <b>paid test tasks.</b> First games go into production, with concepts picked from current trends.</div></div>
+      <div class="tl"><div class="when">M3</div><div class="what" data-i18n="s12.t2">Soft launch and measure how many players come back on day 1 and day 7. Marketing goes only to the games that keep players.</div></div>
+      <div class="tl"><div class="when">M5</div><div class="what" data-i18n="s12.t3">The first cash out window opens and <b>the first real money arrives.</b></div></div>
+      <div class="tl"><div class="when">M6</div><div class="what" data-i18n="s12.t4">Review the numbers. <b>Put more into the winners</b> and quietly retire the rest.</div></div>
+      <div class="tl"><div class="when">M8</div><div class="what" data-i18n="s12.t5">Reinvest the earnings into a small professional team for one larger project.</div></div>
     </div>
-    <p class="big-quote" data-i18n="s12.q">Small, simple, fast — and <span class="hl">one hit changes everything.</span></p>
-    <p class="foot" data-i18n="s12.foot">Sources: Roblox Q1 2026 earnings; Fortune, PC Gamer, PocketGamer, RoWatcher, GameAnalytics, Variety, Game-Ace, Flexiple (2024–26). Estimates flagged throughout.</p>
+    <p class="big-quote" data-i18n="s12.q">Small, simple, and fast, with the whole plan built around <span class="hl">catching one winner.</span></p>
+    <p class="foot" data-i18n="s12.foot">Sources: Roblox Q1 2026 earnings; Fortune, PC Gamer, PocketGamer, RoWatcher, GameAnalytics, Variety, Game-Ace, Flexiple (2024 to 2026). Estimates flagged throughout.</p>
   </section>
 
 </div>
@@ -463,9 +454,9 @@
 <script>
 (function () {
   var RU = {
-    "s1.eye": "Roblox · Исследование рынка",
+    "s1.eye": "Исследование рынка Roblox",
     "s1.h1": "Простые игры.<br>Реальные <span class=\"gold\">деньги.</span>",
-    "s1.lede": "Маленькие команды делают простые, затягивающие игры в Roblox — и зарабатывают серьёзные деньги. Вот рынок, закономерность и что для этого нужно.",
+    "s1.lede": "Маленькие команды делают простые, затягивающие игры в Roblox и зарабатывают серьёзные деньги. Здесь рынок, закономерность за ним и то, что для этого нужно.",
     "s1.k1": "Игроков в Roblox каждый день",
     "s1.k2": "Выплачено создателям в 2025",
     "s1.k3": "Человек за большинством хитов",
@@ -474,68 +465,68 @@
     "s1.kick": "Свайп или → чтобы начать.",
 
     "s2.eye": "Главная идея",
-    "s2.h2": "Roblox платит разработчикам больше, чем когда-либо — и <span class=\"hl\">простые игры побеждают.</span>",
-    "s2.c1t": "Выплаты выросли ~50%",
-    "s2.c1b": "Roblox выплатил создателям более $1.5 млрд в 2025. Топ-1000 в среднем получили по $1.3 млн.",
+    "s2.h2": "Roblox платит разработчикам больше, чем раньше, и побеждают именно <span class=\"hl\">простые игры.</span>",
+    "s2.c1t": "Выплаты выросли примерно на 50%",
+    "s2.c1b": "Roblox выплатил создателям более $1.5 млрд в 2025. Тысяча лучших в среднем получили по $1.3 млн.",
     "s2.c2t": "Курс выплат подняли",
     "s2.c2b": "Курс обмена для разработчиков вырос в 2025, а в 2026 появился новый, более высокий курс за взрослых игроков.",
     "s2.c3t": "Побеждают крошечные команды",
-    "s2.c3b": "Самую крупную игру 2025 года сделал один 16-летний подросток за три дня.",
-    "s2.foot": "Источники: отчёты Roblox 2025–26; Fortune (2025). Мы не ставим на то, чтобы стать тем подростком — мы изучаем, почему простые игры побеждают.",
+    "s2.c3b": "Самую крупную игру 2025 года один шестнадцатилетний подросток сделал за три дня.",
+    "s2.foot": "Источники: отчёты Roblox 2025 и 2026; Fortune (2025). Задача не в том, чтобы стать тем подростком, а в том, чтобы понять, почему простые игры побеждают.",
 
     "s3.eye": "Рынок",
-    "s3.h2": "И аудитория, и деньги — огромны.",
+    "s3.h2": "И аудитория, и деньги огромны.",
     "s3.k1": "Активных игроков в день <span class=\"num\">(+35%)</span>",
     "s3.k2": "Часов игры за квартал <span class=\"num\">(+43%)</span>",
     "s3.k3": "Выручка платформы, 2025 <span class=\"num\">(+36%)</span>",
     "s3.k4": "Выплачено создателям в 2025",
-    "s3.lede": "Игроки уже здесь и тратят деньги каждый день — а Roblox активно перераспределяет эти траты разработчикам.",
+    "s3.lede": "Игроки уже здесь и тратят деньги каждый день. Roblox передаёт большую часть этих трат разработчикам.",
 
     "s4.eye": "Как деньги доходят до разработчика",
     "s4.h2": "Проследим за одним долларом.",
     "s4.s1t": "Игрок тратит",
     "s4.s1b": "Покупает Robux и тратит на ваши гейм-пассы и предметы.",
     "s4.s1k": "$1.00",
-    "s4.s2t": "Доля Roblox",
-    "s4.s2b": "Платформа забирает ~30% с внутриигровых продаж.",
-    "s4.s2k": "~70% осталось",
+    "s4.s2t": "Roblox берёт долю",
+    "s4.s2b": "Платформа забирает около 30% с продаж внутри игры.",
+    "s4.s2k": "70% осталось",
     "s4.s3t": "Вывод (DevEx)",
-    "s4.s3b": "Заработанные Robux обмениваются на реальные деньги по курсу Roblox.",
-    "s4.s3k": "→ USD",
+    "s4.s3b": "Заработанные Robux превращаются в реальные деньги по курсу Roblox.",
+    "s4.s3k": "в USD",
     "s4.s4t": "Чистыми вам",
     "s4.s4b": "После комиссий магазинов приложений и доли Roblox.",
-    "s4.s4k": "~$0.25–0.30",
-    "s4.foot": "Правило: примерно 25–30 центов с каждого потраченного игроком доллара доходит до разработчика.",
+    "s4.s4k": "≈ 28¢",
+    "s4.foot": "Как правило, до разработчика доходит примерно от 25 до 30 центов с каждого потраченного игроком доллара.",
 
-    "s5.eye": "Сколько зарабатывают простые игры · потолок",
-    "s5.h2": "Крупнейшие игры Roblox — <span class=\"gold\">механически примитивны.</span>",
-    "s5.foot": "Это выигрышные лотерейные билеты — показаны, чтобы доказать: верхнего предела нет. Это не план.",
+    "s5.eye": "Насколько высоко это заходит",
+    "s5.h2": "Крупнейшие игры Roblox <span class=\"gold\">механически примитивны.</span>",
+    "s5.foot": "Это редкие, единичные победители. Они показывают, насколько высок потолок. Это не план.",
 
-    "s6.eye": "Сколько зарабатывают простые игры · достижимый уровень",
-    "s6.h2": "А реальные победы делают <span class=\"hl\">1–3 человека за недели.</span>",
-    "s6.foot": "Команды из 1–3 человек, недели–месяцы работы, единицы миллионов за жизнь игры. Именно на этот уровень мы целимся.",
+    "s6.eye": "Реалистичный уровень",
+    "s6.h2": "Реальные победы делают <span class=\"hl\">от 1 до 3 человек за несколько недель.</span>",
+    "s6.foot": "Команды от 1 до 3 человек, от нескольких недель до нескольких месяцев работы и единицы миллионов за жизнь игры. Именно на этот уровень мы целимся.",
 
     "tag.simple": "всё ещё просто",
     "m.players": "Игроки", "m.made": "Заработок", "m.team": "Команда", "m.visits": "Заходы",
     "m.record": "Рекорд", "m.extra": "Бонус", "m.held": "Удержание", "m.since": "С года",
     "m.speed": "Скорость", "m.genre": "Жанр",
 
-    "g.gag": "Сажай семена, жди, продавай — растёт, пока тебя нет в игре.",
-    "g.gag.p": "22.3M пик", "g.gag.m": "~$12M / мес", "g.gag.t": "1 подросток · 3 дня", "g.gag.v": "10B+",
+    "g.gag": "Сажай семена, жди, потом продавай. Растёт, пока тебя нет в игре.",
+    "g.gag.p": "22.3M пик", "g.gag.m": "~$12M / мес", "g.gag.t": "1 подросток, 3 дня", "g.gag.v": "10B+",
     "g.sab": "Покупай мем-питомцев и кради их с баз других игроков.",
     "g.sab.p": "25.8M пик", "g.sab.m": "~$11M / мес", "g.sab.t": "2 разраб.", "g.sab.r": "#1 в истории",
     "g.bh": "Город, где дети просто тусуются и отыгрывают роли. Без целей.",
     "g.bh.v": "80B+", "g.bh.m": "~$2.3M / мес", "g.bh.t": "1 разраб.", "g.bh.p": "490K стабильно",
-    "g.99": "Кооп: переживи ночи, поддерживай костёр, спасай потерявшихся детей.",
-    "g.99.p": "14.2M пик", "g.99.m": "6-знач.+ / чел", "g.99.t": "3 друга", "g.99.x": "контракт на фильм",
+    "g.99": "Вместе переживайте ночи, поддерживайте костёр, спасайте потерявшихся детей.",
+    "g.99.p": "14.2M пик", "g.99.m": "6 знач.+ / чел", "g.99.t": "3 друга", "g.99.x": "контракт на фильм",
 
     "g.fisch": "Забрось удочку, поймай рыбу, продай, купи удочку получше.",
-    "g.fisch.p": "1.2M пик", "g.fisch.m": "миллионы / год", "g.fisch.t": "1 разраб. · ~4 мес", "g.fisch.v": "4.5B+",
+    "g.fisch.p": "1.2M пик", "g.fisch.m": "миллионы / год", "g.fisch.t": "1 разраб., ~4 мес", "g.fisch.v": "4.5B+",
     "g.sol": "Жми кнопку, выбивай редкие ауры. Крутится, даже когда ты AFK.",
     "g.sol.p": "~70K стабильно", "g.sol.m": "мультимиллион", "g.sol.t": "малая команда", "g.sol.h": "2+ года",
-    "g.dr": "Кооп: едь на поезде на запад сквозь зомби. Не умри.",
-    "g.dr.p": "1.3M пик", "g.dr.m": "миллионы / мес", "g.dr.t": "2 разраб.", "g.dr.x": "~топ-12",
-    "g.toh": "Взбирайся по случайной башне. Без чекпоинтов, таймер 8 минут.",
+    "g.dr": "Езжайте на поезде на запад сквозь зомби вместе с друзьями. Не умри.",
+    "g.dr.p": "1.3M пик", "g.dr.m": "миллионы / мес", "g.dr.t": "2 разраб.", "g.dr.x": "~топ 12",
+    "g.toh": "Взбирайся по башне, которая перестраивается каждый раунд. Без чекпоинтов, таймер 8 минут.",
     "g.toh.v": "28B+", "g.toh.m": "~$200M+ всего", "g.toh.t": "малая команда", "g.toh.s": "2018",
     "g.adt": "Собери машину из хлама и проедь как можно дальше, пока она не развалится.",
     "g.adt.p": "573K пик", "g.adt.m": "миллионы всего", "g.adt.t": "1 любитель", "g.adt.v": "2.4B+",
@@ -543,59 +534,59 @@
     "g.doors.sp": "1B за ~3 мес", "g.doors.m": "десятки миллионов", "g.doors.t": "2 разраб.", "g.doors.gn": "линейный хоррор",
 
     "s7.eye": "Закономерность",
-    "s7.h2": "Сложность не приносит денег. <span class=\"hl\">Приносят цикл, соц. давление и удача.</span>",
-    "s7.c1k": "Цикл", "s7.c1t": "30-секундный цикл", "s7.c1b": "Объясняется на одном дыхании. Короткие циклы = больше сессий и постоянные мелкие покупки.",
-    "s7.c2k": "Соц.", "s7.c2t": "Контент — сами игроки", "s7.c2b": "Кражи, кооп, отыгрыш — драму создают игроки, поэтому крошечной команде не нужно обгонять большую студию по контенту.",
-    "s7.c3k": "Удача", "s7.c3t": "RNG + дефицит", "s7.c3b": "Редкие ауры, питомцы, рыба, лимитные семена. Давление на кошелёк без единой новой механики.",
-    "s7.c4k": "Офлайн", "s7.c4t": "Прогресс, пока тебя нет", "s7.c4b": "Растёт, пока игрок вышел — повод вернуться завтра.",
-    "s7.c5k": "Тренд", "s7.c5t": "Оседлай, а не изобретай", "s7.c5b": "«Steal a X», «Grow a X», хоррор-маскоты — быстро повторить проверенный шаблон реально снова и снова.",
-    "s7.c6k": "Моб.", "s7.c6t": "Один палец", "s7.c6b": "Большинство играет с телефона. Простое управление = максимально широкая аудитория.",
+    "s7.h2": "Деньги приносят <span class=\"hl\">плотный цикл, социальное давление и удача,</span> а не сложные системы.",
+    "s7.c1k": "Цикл", "s7.c1t": "Цикл на 30 секунд", "s7.c1b": "Его можно объяснить на одном дыхании. Короткие циклы дают больше сессий и постоянные мелкие покупки.",
+    "s7.c2k": "Соц.", "s7.c2t": "Контент это сами игроки", "s7.c2b": "Кражи, командная игра, отыгрыш. Драму создают игроки, поэтому крошечной команде не нужно обгонять большую студию по контенту.",
+    "s7.c3k": "Удача", "s7.c3t": "Случай и дефицит", "s7.c3b": "Редкие ауры, питомцы, рыба, лимитные семена. Давление на кошелёк без единой новой механики.",
+    "s7.c4k": "Офлайн", "s7.c4t": "Прогресс, пока тебя нет", "s7.c4b": "Растёт, пока игрок вышел, и это повод вернуться завтра.",
+    "s7.c5k": "Тренд", "s7.c5t": "Оседлай, не изобретай", "s7.c5b": "Steal a X, Grow a X, маскоты из хорроров. Быстро повторить проверенный формат получается снова и снова.",
+    "s7.c6k": "Моб.", "s7.c6t": "Один палец", "s7.c6b": "Большинство играет с телефона. Простое управление даёт максимально широкую аудиторию.",
 
     "s8.eye": "Стоимость, время и сложность",
     "s8.h2": "Простая игра стоит немного и выходит за недели.",
     "s8.k1": "Заказать одну простую игру у фрилансеров",
     "s8.k2": "Недель на сборку одной игры",
     "s8.k3": "Человека: скриптер, билдер, немного UI",
-    "s8.lede": "Сложно не собрать игру — сложно выбрать правильную идею и продвинуть её. Поэтому умный ход — несколько маленьких ставок, а не одна большая.",
-    "s8.foot": "Ставки: фриланс-разработчики Roblox, Game-Ace и Flexiple (2025). Многие также работают за долю от дохода, растягивая бюджет.",
+    "s8.lede": "Сложно не собрать игру. Сложно выбрать правильную идею и продвинуть её. Поэтому мы делаем несколько маленьких ставок вместо одной большой.",
+    "s8.foot": "Ставки: разработчики Roblox на фрилансе, Game-Ace и Flexiple (2025). Многие также работают за долю от дохода, что растягивает бюджет.",
 
-    "s9.eye": "Риски · честная версия",
-    "s9.h2": "Это бизнес, где всё решают хиты. Мы так к нему и относимся.",
+    "s9.eye": "Честные риски",
+    "s9.h2": "Это бизнес, где всё решают хиты, и мы это учитываем.",
     "s9.risk": "Риск",
-    "s9.c1t": "Большинство игр заработают мало", "s9.c1b": "Считаем, что большая часть партии принесёт немного. Несколько ставок — именно так мы это компенсируем.",
+    "s9.c1t": "Большинство игр заработают мало", "s9.c1b": "Считаем, что большая часть партии принесёт немного. Несколько ставок это ровно то, как мы это компенсируем.",
     "s9.c2t": "Зависимость от платформы", "s9.c2b": "Roblox контролирует выдачу, курсы и правила. Одно изменение политики может подвинуть миллионы игроков.",
-    "s9.c3t": "Задержка вывода", "s9.c3b": "Есть минимум и ~месячная задержка выплат — первые реальные деньги примерно через 2–3 месяца.",
-    "s9.c4t": "Тренды угасают", "s9.c4b": "Вирусный формат остывает. Мы действуем быстро и не вкладываемся сверх меры в одну тему.",
+    "s9.c3t": "Задержка вывода", "s9.c3b": "Есть минимальный баланс и задержка выплат около месяца, поэтому первые реальные деньги приходят примерно через 2 или 3 месяца.",
+    "s9.c4t": "Тренды угасают", "s9.c4b": "Вирусный формат остывает. Мы действуем быстро и не вкладываем слишком много в одну тему.",
     "s9.c5t": "Алгоритм выдачи", "s9.c5b": "Он продвигает игры, которые уже удерживают игроков. Мы делаем мягкий запуск, замеряем, потом тратим на маркетинг.",
-    "s9.c6t": "Разброс у фрилансеров", "s9.c6b": "Качество и надёжность разнятся. Мы платим по этапам и сначала даём маленькие оплачиваемые тест-задания.",
+    "s9.c6t": "Разброс у фрилансеров", "s9.c6b": "Качество и надёжность разнятся. Мы платим по этапам и сначала даём маленькие оплачиваемые тестовые задания.",
 
     "s10.eye": "Окно возможностей",
     "s10.h2": "Где возможность <span class=\"hl\">прямо сейчас.</span>",
-    "s10.l1": "<b>Взрослая аудитория, за которой никто не идёт.</b> Roblox теперь платит премию за подтверждённых взрослых игроков, которые тратят намного больше детей — и почти никто из авторов простых игр на них не целится.",
-    "s10.l2": "<b>Окна трендов держатся неделями.</b> Быстрые последователи вирусного формата и в 2025 забирали реальные деньги. Скорость — это преимущество.",
-    "s10.l3": "<b>Недозаполненные ниши.</b> Кооп-выживание и «idle с торговлей» доказали себя в 2025 и пока не переполнены.",
-    "s10.q": "Наше преимущество — не лучший движок. Это <span class=\"hl\">скорость, дисциплина и достаточно попыток, чтобы поймать окно.</span>",
+    "s10.l1": "<b>Взрослая аудитория, за которой никто не идёт.</b> Roblox теперь платит премию за подтверждённых взрослых игроков, которые тратят намного больше детей, и почти никто из авторов простых игр за ними не идёт.",
+    "s10.l2": "<b>Окна трендов держатся неделями.</b> Быстрые последователи вирусного формата и в 2025 забирали реальные деньги. Скорость это преимущество.",
+    "s10.l3": "<b>Недозаполненные жанры.</b> Кооперативное выживание и idle игры с торговлей доказали себя в 2025 и пока не переполнены.",
+    "s10.q": "Наше преимущество это <span class=\"hl\">скорость, дисциплина и достаточно попыток,</span> чтобы поймать тренд, пока его окно открыто.",
 
-    "s11.eye": "Для контекста · что может дать бюджет",
-    "s11.h2": "Пустим небольшой бюджет в дело — вот как это выглядит.",
-    "s11.lede": "Для иллюстрации, не просьба. Сумма около <span class=\"num\" style=\"color:var(--gold)\">$20K</span> могла бы оплатить ~5 простых игр плюс маркетинг. Вот диапазон исходов за год.",
+    "s11.eye": "Что может дать бюджет",
+    "s11.h2": "Пустим небольшой бюджет в дело.",
+    "s11.lede": "Это только иллюстрация, а не просьба. Сумма около <span class=\"num\" style=\"color:var(--gold)\">$20K</span> могла бы оплатить примерно 5 простых игр плюс маркетинг. Ниже диапазон исходов за год.",
     "s11.sc1": "Осторожный", "s11.sc1s": "ни одного хита",
-    "s11.sc2": "Базовый", "s11.sc2s": "1 умеренный хит + 2 доходных",
+    "s11.sc2": "Базовый", "s11.sc2s": "1 умеренный хит плюс 2 доходных",
     "s11.sc3": "Оптимистичный", "s11.sc3s": "одна игра ловит тренд",
-    "s11.m1v": "≈ в ноль", "s11.m1": "Медианный исход примерно возвращает деньги",
-    "s11.m2": "Если выстрелит хоть одна игра — меняется всё",
-    "s11.m3v": "8–10 месяц", "s11.m3": "Выход в прибыль в базовом сценарии",
-    "s11.disc": "<b>Допущения:</b> ~1 игра из 5 набирает заметную тягу; ~2 идут ни шатко ни валко; ~2 проваливаются. Разработчик оставляет ~25–30¢ с игрового доллара. Все цифры — обоснованные оценки и диапазоны, а не обещания.",
+    "s11.m1v": "Примерно в ноль", "s11.m1": "Медианный исход примерно возвращает деньги",
+    "s11.m2": "Если выстрелит хоть одна игра, она окупит все остальные",
+    "s11.m3v": "К 9 месяцу", "s11.m3": "Выход в прибыль в базовом сценарии",
+    "s11.disc": "<b>Допущения:</b> примерно 1 игра из 5 набирает реальную тягу, примерно 2 идут средне, примерно 2 проваливаются. Разработчик оставляет примерно от 25 до 30 центов с каждого потраченного игроком доллара. Все цифры это оценки и диапазоны, а не обещания.",
 
     "s12.eye": "Как это работало бы",
-    "s12.h2": "Шесть–девять месяцев, чтобы понять, что у нас есть.",
-    "s12.t1": "Нанять 2–3 команды фрилансеров (сначала небольшие <b>оплачиваемые тест-задания</b>); первые игры в производство; концепты — по живым данным трендов.",
-    "s12.t2": "Мягкий запуск, замеряем, сколько игроков возвращается на 1-й и 7-й день, вкладываем маркетинг только в то, что удерживает.",
-    "s12.t3": "Открывается первое окно вывода — <b>приходят первые реальные деньги.</b>",
-    "s12.t4": "Смотрим на цифры: <b>усиливаем победителей,</b> тихо сворачиваем остальное.",
-    "s12.t5": "Реинвестируем заработок в маленькую про-команду под один более крупный проект.",
-    "s12.q": "Просто, быстро, маленькими шагами — и <span class=\"hl\">один хит меняет всё.</span>",
-    "s12.foot": "Источники: отчёт Roblox Q1 2026; Fortune, PC Gamer, PocketGamer, RoWatcher, GameAnalytics, Variety, Game-Ace, Flexiple (2024–26). Оценки отмечены по тексту."
+    "s12.h2": "От шести до девяти месяцев, чтобы понять, что у нас есть.",
+    "s12.t1": "Нанять 2 или 3 команды на фрилансе, начиная с небольших <b>оплачиваемых тестовых заданий.</b> Первые игры идут в производство, концепты берём из текущих трендов.",
+    "s12.t2": "Мягкий запуск и замер, сколько игроков возвращается на 1 и 7 день. Маркетинг идёт только в те игры, что удерживают.",
+    "s12.t3": "Открывается первое окно вывода, и <b>приходят первые реальные деньги.</b>",
+    "s12.t4": "Смотрим на цифры. <b>Вкладываем больше в победителей</b> и тихо сворачиваем остальное.",
+    "s12.t5": "Реинвестируем заработок в маленькую профессиональную команду под один более крупный проект.",
+    "s12.q": "Просто, быстро, маленькими шагами, и весь план построен вокруг того, чтобы <span class=\"hl\">поймать одного победителя.</span>",
+    "s12.foot": "Источники: отчёт Roblox Q1 2026; Fortune, PC Gamer, PocketGamer, RoWatcher, GameAnalytics, Variety, Game-Ace, Flexiple (2024 по 2026). Оценки отмечены по тексту."
   };
 
   var els = Array.prototype.slice.call(document.querySelectorAll('[data-i18n]'));
@@ -623,7 +614,6 @@
     render(document.documentElement.lang === 'ru' ? 'en' : 'ru');
   });
 
-  // theme
   var root = document.documentElement;
   document.getElementById('theme').addEventListener('click', function () {
     var dark = root.getAttribute('data-theme') === 'dark'
@@ -631,7 +621,6 @@
     root.setAttribute('data-theme', dark ? 'light' : 'dark');
   });
 
-  // navigation
   var deck = document.getElementById('deck');
   var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
   var total = slides.length;
