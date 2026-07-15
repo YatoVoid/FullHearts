@@ -108,16 +108,17 @@
   .vid iframe { width: 100%; aspect-ratio: 16/9; border: 0; display: block; }
   .vid .vcap { padding: .6rem .8rem; font-size: clamp(.8rem,2vw,.9rem); font-weight: 700; }
   .vid .vcap small { display: block; font-weight: 400; font-family: var(--mono); font-size: .68rem; color: var(--faint); margin-top: .15rem; }
-  .swipe-nav { position: absolute; top: 50%; right: .5rem; transform: translateY(-50%); z-index: 6;
-    display: flex; flex-direction: column; align-items: center; gap: .55rem;
-    background: color-mix(in srgb, var(--bg) 78%, transparent); backdrop-filter: blur(8px);
-    border: 1px solid var(--line); border-radius: 999px; padding: .55rem .42rem; }
-  .swipe-nav .chev { font-size: 1.15rem; font-weight: 700; color: var(--accent); line-height: 1; animation: nudge 1.4s ease-in-out infinite; }
-  @keyframes nudge { 0%,100% { transform: translateX(0); } 50% { transform: translateX(3px); } }
-  .swipe-nav .sdot { width: 9px; height: 9px; padding: 0; border-radius: 50%; border: 1.5px solid var(--faint); background: transparent; cursor: pointer; transition: all .2s; }
-  .swipe-nav .sdot.on { background: var(--accent); border-color: var(--accent); transform: scale(1.25); }
+  .swipe-tabs { display: inline-flex; align-self: start; gap: 3px; padding: 3px;
+    border: 1px solid var(--line); border-radius: 999px; background: var(--panel-2); }
+  .swipe-tabs button { font-family: var(--mono); font-size: clamp(.72rem,1.9vw,.82rem); font-weight: 600;
+    border: none; background: none; color: var(--muted); cursor: pointer; padding: .5rem 1rem;
+    border-radius: 999px; display: inline-flex; align-items: center; gap: .4rem; white-space: nowrap; transition: background .2s, color .2s; }
+  .swipe-tabs button:hover { color: var(--text); }
+  .swipe-tabs button.on { background: var(--accent); color: #08150e; }
   .swipe-tip { font-family: var(--mono); font-size: clamp(.66rem,1.7vw,.72rem); color: var(--faint); }
-  @media (prefers-reduced-motion: reduce) { .swipe-nav .chev { animation: none; } .swipe { scroll-behavior: auto; } }
+  .swipe-tip .arrow { display: inline-block; color: var(--accent); animation: nudge 1.4s ease-in-out infinite; }
+  @keyframes nudge { 0%,100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
+  @media (prefers-reduced-motion: reduce) { .swipe-tip .arrow { animation: none; } .swipe { scroll-behavior: auto; } }
   .game-meta { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem .8rem; margin-top: auto; }
   .game-meta > div { display: flex; flex-direction: column; gap: .1rem; }
   .mlab { font-size: .62rem; font-family: var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
@@ -483,6 +484,10 @@
   <section class="slide">
     <div class="eyebrow" data-i18n="s13.eye">The plan in practice</div>
     <h2 data-i18n="s13.h2">Our first three bets: <span class="hl">tiny, cheap, trend-riding.</span></h2>
+    <div class="swipe-tabs" id="gtabs" role="tablist">
+      <button class="on" type="button" role="tab" aria-selected="true" data-i18n="s13.tab1">Our games</button>
+      <button type="button" role="tab" aria-selected="false" data-i18n="s13.tab2">&#9654; Real gameplay</button>
+    </div>
     <div class="swipe-wrap">
     <div class="swipe" id="gswipe">
     <div class="pane">
@@ -540,13 +545,8 @@
       </div>
     </div>
     </div><!-- /swipe -->
-    <div class="swipe-nav" aria-label="Switch between game cards and gameplay videos">
-      <span class="chev" aria-hidden="true">&#8250;</span>
-      <button class="sdot on" type="button" aria-label="Show game cards"></button>
-      <button class="sdot" type="button" aria-label="Show gameplay videos"></button>
-    </div>
     </div><!-- /swipe-wrap -->
-    <p class="swipe-tip" data-i18n="s13.swipe">Swipe left, or tap the dots, to watch real gameplay of the proven games these copy &#8594;</p>
+    <p class="swipe-tip" data-i18n="s13.swipe">Tap <b>Real gameplay</b> above, or swipe, to see the games these copy in action <span class="arrow">&#8594;</span></p>
     <p class="foot" data-i18n="s13.foot">Each is a low-cost test riding a proven, fresh trend. The one that catches the algorithm gets the winner fund. The others are killed fast, with no emotional attachment.</p>
   </section>
 
@@ -720,7 +720,9 @@
     "g.sf.gn": "коллекция + ночной рейд", "g.sf.c": "$800 – $1.2K", "g.sf.tm": "3 – 4 недели", "g.sf.b": "$1K – $4K",
     "g.sf.ref": "По образцу <b>Grow a Garden 2</b> + <b>Steal a Brainrot</b>, оба рекордсмены.",
     "s13.foot": "Каждая это дешёвый тест на проверенном свежем тренде. Та, что поймает алгоритм, получает фонд победителя. Остальные быстро закрываем, без привязанности.",
-    "s13.swipe": "Свайпни влево или нажми на кружки, чтобы посмотреть реальный геймплей игр, которые мы копируем &#8594;",
+    "s13.tab1": "Наши игры",
+    "s13.tab2": "&#9654; Реальный геймплей",
+    "s13.swipe": "Нажми <b>Реальный геймплей</b> сверху или свайпни, чтобы увидеть игры-образцы в деле <span class=\"arrow\">&#8594;</span>",
     "v.aa": "Animal Hospital (Anomaly)<small>Проверенная игра-аномалия &mdash; образец нашей Aquarium Anomaly</small>",
     "v.rr": "Sol's RNG<small>Проверенный RNG-роллер &mdash; образец нашей Roll a Relic</small>",
     "v.sf": "Steal a Brainrot<small>Проверенный цикл кражи &mdash; образец нашей Steal a Fossil</small>",
@@ -810,21 +812,15 @@
   // slide 13 gameplay swiper
   var gswipe = document.getElementById('gswipe');
   if (gswipe) {
-    var nav = gswipe.parentNode.querySelector('.swipe-nav');
-    var sdots = Array.prototype.slice.call(nav.querySelectorAll('.sdot'));
-    var chev = nav.querySelector('.chev');
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('#gtabs button'));
     function paneIdx() { return Math.round(gswipe.scrollLeft / gswipe.clientWidth); }
     function syncSwipe() {
       var i = paneIdx();
-      sdots.forEach(function (d, di) { d.classList.toggle('on', di === i); });
-      if (chev) chev.textContent = i === 0 ? '›' : '‹';
+      tabs.forEach(function (t, ti) { t.classList.toggle('on', ti === i); t.setAttribute('aria-selected', ti === i ? 'true' : 'false'); });
     }
     gswipe.addEventListener('scroll', syncSwipe, { passive: true });
-    sdots.forEach(function (d, di) {
-      d.addEventListener('click', function () { gswipe.scrollTo({ left: di * gswipe.clientWidth, behavior: 'smooth' }); });
-    });
-    chev.addEventListener('click', function () {
-      gswipe.scrollTo({ left: (paneIdx() === 0 ? 1 : 0) * gswipe.clientWidth, behavior: 'smooth' });
+    tabs.forEach(function (t, ti) {
+      t.addEventListener('click', function () { gswipe.scrollTo({ left: ti * gswipe.clientWidth, behavior: 'smooth' }); });
     });
     Array.prototype.slice.call(gswipe.querySelectorAll('.vfacade')).forEach(function (b) {
       b.addEventListener('click', function () {
