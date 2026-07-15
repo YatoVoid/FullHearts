@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%90%9F</text></svg>">
-<title>Aquarium Anomaly — Game Design Document</title>
+<title>Aquarium Anomaly: Game Design Document</title>
 <style>
   :root {
     --panel: #ffffff; --panel-2: #f4f5f0; --line: #dcded4; --text: #1a1d17;
@@ -111,290 +111,290 @@
 <div class="hero">
   <div class="eyebrow">Game Design Document</div>
   <h1>Aquarium Anomaly</h1>
-  <p class="sub">Night-shift anomaly-detection horror-lite &middot; Roblox &middot; Pre-production, greenlit for trend-test build</p>
+  <p class="sub">Night-shift anomaly game &middot; horror-lite &middot; Roblox &middot; pre-production, greenlit for a trend-test build</p>
 </div>
 
 <article>
 
-<p class="lede"><strong>Aquarium Anomaly</strong> is a night-shift anomaly-detection horror-lite game set in a dimly lit public aquarium. Each shift, the player patrols a loop of tanks and exhibits, comparing what they see against what <em>should</em> be there — a shark with human teeth, a jellyfish tank that's suddenly bone dry, an octopus pressed against the glass watching <em>them</em>. Spot the wrong thing, report it before the timer runs out, get paid, buy better tools, take harder shifts. It's built for the proven Roblox anomaly-checker audience (the "Animal Hospital (Anomaly)" wave), designed to be cheap to build ($600–$1,000, 2–3 weeks), data-driven so new anomalies cost minutes not days, and engineered for the two things that decide a Roblox game's fate: Day-1 retention and clippable scare moments.</p>
+<p class="lede"><strong>Aquarium Anomaly</strong> is a night-shift game set in a dark public aquarium. Each shift you patrol a loop of tanks and check whether anything looks wrong. A shark with human teeth. A jellyfish tank that has gone dry. An octopus pressed to the glass, watching you. Spot the wrong thing, report it before the timer runs out, get paid, buy better tools, take a harder shift. It targets the anomaly-checker audience that grew fast on Roblox in 2026 (the "Animal Hospital" wave). It is cheap to build (roughly $600 to $1,000 over two to three weeks), the anomalies are stored as data so new ones take minutes to add, and the whole thing is built around the two numbers that decide a Roblox game's life: how many players come back on day one, and how many clips it produces.</p>
 
 <h2 id="s1"><span class="n">01</span>Design Pillars</h2>
 <div class="pillars">
-  <div class="pillar"><b>"Wait… was that always there?"</b>Every anomaly must create a genuine double-take. Tension comes from <em>uncertainty</em>, not jump scares alone. The player's own memory is the primary game mechanic.</div>
-  <div class="pillar"><b>One thumb, 90 seconds to fun</b>A brand-new mobile player must understand the game and hit their first anomaly within 90 seconds of spawning. Zero tutorial walls.</div>
-  <div class="pillar"><b>Content is data, not builds</b>Anomalies are rows in a table, not new maps. Adding 10 anomalies post-launch should take under a day. This is the entire economic thesis of the project.</div>
-  <div class="pillar"><b>Filmable by design</b>Every rare anomaly is a potential TikTok. Reveals are staged for a camera: slow burns, glass-tap moments, one "signature creature" people will thumbnail.</div>
+  <div class="pillar"><b>"Wait, was that always there?"</b>Every anomaly should make the player second-guess themselves. The tension comes from not being sure, not only from jump scares. The player's own memory is the main mechanic.</div>
+  <div class="pillar"><b>One thumb, 90 seconds to fun</b>A new mobile player should understand the game and find their first anomaly inside 90 seconds. No long tutorial.</div>
+  <div class="pillar"><b>Content is data, not new maps</b>Anomalies are rows in a table. Adding ten more after launch should take under a day. That is what keeps the game cheap to run.</div>
+  <div class="pillar"><b>Made to be filmed</b>Every rare anomaly is a possible clip. The reveals are set up for a camera: slow builds, glass-tap moments, one signature creature people put on thumbnails.</div>
 </div>
 
 <h2 id="s2"><span class="n">02</span>Core Gameplay Loop</h2>
-<h3>Moment-to-moment (the 30-second loop)</h3>
+<h3>Moment to moment (the 30 second loop)</h3>
 <ol>
-  <li>Walk to the next tank on the patrol route (tanks are numbered T1–T8 around a single loop corridor).</li>
-  <li><strong>Observe</strong>: compare the tank against its baseline state (learned through play; a "Reference Tablet" tool shows a photo of the normal state for players who buy/earn it).</li>
-  <li><strong>Decide</strong>: normal → move on. Suspicious → open the <strong>Report</strong> interface.</li>
-  <li><strong>Report</strong>: aim reticle at the tank, tap Report, pick a category from 4 large buttons (<em>Creature / Tank / Environment / Entity</em>).</li>
-  <li><strong>Resolve</strong>: correct report → satisfying "ANOMALY CONTAINED" stinger, cash ping, anomaly reverts or is "escorted out." Wrong report → strike, alarm blares briefly, small pay deduction.</li>
+  <li>Walk to the next tank on the route. Tanks are numbered T1 to T8 around one loop corridor.</li>
+  <li><strong>Observe.</strong> Compare the tank to how it normally looks. Players learn the baselines through play, and a "Reference Tablet" tool shows a photo of the normal state for anyone who buys or earns it.</li>
+  <li><strong>Decide.</strong> Looks normal, move on. Looks off, open the <strong>Report</strong> screen.</li>
+  <li><strong>Report.</strong> Aim the reticle at the tank, tap Report, pick one of four big buttons: <em>Creature, Tank, Environment, Entity.</em></li>
+  <li><strong>Resolve.</strong> A correct report plays an "ANOMALY CONTAINED" sound, pays out, and the anomaly reverts or gets escorted out. A wrong report gives a strike, a short alarm, and a small pay cut.</li>
 </ol>
 
-<h3>A shift's exact structure</h3>
+<h3>How one shift runs</h3>
 <div class="table-wrap"><table>
 <thead><tr><th>Phase</th><th>Duration</th><th>What happens</th></tr></thead>
 <tbody>
-<tr><td>Clock-in</td><td>10 s</td><td>Elevator doors open onto the floor. Shift number + modifier shown ("NIGHT 4 — CAMERAS OFFLINE").</td></tr>
-<tr><td>Patrol window</td><td>4–7 min (scales by night)</td><td>2–6 anomalies are live somewhere on the loop. Timer visible. Anomalies can also <em>spawn mid-shift</em> (a tank fine on your first pass isn't on your second — the core dread engine).</td></tr>
-<tr><td>Final sweep warning</td><td>Last 60 s</td><td>Lights dim further, heartbeat audio layer, timer turns red.</td></tr>
-<tr><td>Clock-out</td><td>15 s</td><td>Results screen: anomalies found / missed / false reports, pay breakdown, grade (S/A/B/C/F).</td></tr>
+<tr><td>Clock in</td><td>10 s</td><td>Elevator doors open onto the floor. Shift number and modifier shown, such as "NIGHT 4, CAMERAS OFFLINE".</td></tr>
+<tr><td>Patrol window</td><td>4 to 7 min (scales by night)</td><td>Two to six anomalies are live somewhere on the loop. Timer is visible. Some anomalies also appear mid-shift, so a tank that was fine on your first pass may not be on your second. This is where most of the dread comes from.</td></tr>
+<tr><td>Final sweep warning</td><td>Last 60 s</td><td>Lights dim further, a heartbeat layer comes in, the timer turns red.</td></tr>
+<tr><td>Clock out</td><td>15 s</td><td>Results screen: anomalies found, missed, false reports, pay breakdown, grade (S, A, B, C, F).</td></tr>
 </tbody></table></div>
 
-<p><strong>Win</strong>: report all live anomalies (or enough — see §4) before the timer ends. <strong>Lose</strong>: 3 strikes in one shift, or miss too many anomalies → "TERMINATED" screen (clippable — the signature creature appears behind the player during the termination cutaway).</p>
+<p><strong>Win:</strong> report enough of the live anomalies (see §4) before the timer ends. <strong>Lose:</strong> take 3 strikes in one shift, or miss too many anomalies, and you get the "TERMINATED" screen. That screen is a clip in itself, since the signature creature shows up behind the player as it plays.</p>
 
-<h3>Session &amp; meta loops</h3>
-<p><strong>Session (10–20 min):</strong> Play 2–4 shifts → spend earnings in the break-room shop → attempt next night tier → hit a wall or a scare → "one more shift."</p>
-<p><strong>Meta (days):</strong> Unlock night tiers (1–15+ at launch) → collect the <strong>Anomaly Log</strong> (a codex page per anomaly ever witnessed — the collection driver) → chase daily bonus shift → cosmetic flashlight/uniform flex in the lobby.</p>
+<h3>Session and long-term loops</h3>
+<p><strong>Session, about 10 to 20 minutes.</strong> Play a few shifts, spend earnings in the break-room shop, try the next night tier, hit a wall or a scare, run one more shift.</p>
+<p><strong>Long-term, over days.</strong> Unlock night tiers (1 to 15 and up at launch), fill the <strong>Anomaly Log</strong> with a page for every anomaly you have seen, chase the daily bonus shift, and show off flashlight and uniform cosmetics in the lobby.</p>
 
 <h2 id="s3"><span class="n">03</span>The Anomaly System</h2>
-<h3>Technical design (data-driven)</h3>
-<p>Every anomaly is a <code>ModuleScript</code> entry in one table (<code>AnomalyCatalog</code>), consumed by a server-side <code>AnomalyService</code>:</p>
+<h3>How it works under the hood</h3>
+<p>Every anomaly is one entry in a table (<code>AnomalyCatalog</code>), read by a server-side <code>AnomalyService</code>:</p>
 <pre><code>{
   id = "SHARK_TEETH",
   name = "Denture Danger",
-  category = "Creature",          -- Creature | Tank | Environment | Entity
+  category = "Creature",          -- Creature, Tank, Environment, Entity
   locations = {"T3"},             -- which tank(s) it can occur in
   weight = 10,                    -- spawn weighting within its difficulty band
   minNight = 2,                   -- earliest night it can appear
-  difficulty = 2,                 -- 1 easy … 5 brutal
-  applyFn = "SwapMeshVariant",    -- named handler: swap mesh/texture/toggle/script
+  difficulty = 2,                 -- 1 easy to 5 hardest
+  applyFn = "SwapMeshVariant",    -- named handler: swap mesh, texture, toggle, script
   params = { variant = "SharkHumanTeeth" },
   clipTag = false,                -- true = rare, staged for filming
 }</code></pre>
 <ul>
-  <li><strong>Handlers, not bespoke scripts.</strong> ~8 generic apply-handlers cover the whole catalogue: <code>SwapMeshVariant</code>, <code>SwapTexture</code>, <code>ToggleVisibility</code>, <code>PlayAnimOverride</code>, <code>MoveModel</code>, <code>LightingOverride</code>, <code>SoundEmit</code>, <code>SpawnEntity</code>. A new anomaly is usually a table row + one variant asset.</li>
-  <li><strong>Spawn table:</strong> at shift start, <code>AnomalyService</code> rolls N anomalies (N scales by night), filtered by <code>minNight</code>, weighted by <code>weight</code>, biased so no two share a tank, with a guaranteed difficulty spread. Some slots are flagged <strong>delayed</strong> — they trigger 60–180 s in.</li>
-  <li><strong>Report mechanic:</strong> client raycasts from the reticle to identify the tank zone, fires a <code>RemoteEvent</code> with <code>(tankId, category)</code>. <strong>Server validates everything</strong>: live anomaly present, category match, not already reported. Correct category = +25% pay; correct tank + wrong category still counts as found (forgiving for kids, rewarding for pros).</li>
-  <li><strong>False positives:</strong> reporting a clean tank = 1 strike + small deduction + a mocking PA line ("Attention staff: the fish are fine."). Strikes reset each shift — reporting becomes a <em>decision</em>, not spam. Spam-reporting all 8 tanks always loses.</li>
-  <li><strong>Difficulty weighting:</strong> each night has a difficulty budget (e.g. Night 6 = 11 points, filled by one 4, one 3, two 2s). Tuned from one config table.</li>
+  <li><strong>Shared handlers, not one script per anomaly.</strong> About eight handlers cover the whole catalogue: <code>SwapMeshVariant</code>, <code>SwapTexture</code>, <code>ToggleVisibility</code>, <code>PlayAnimOverride</code>, <code>MoveModel</code>, <code>LightingOverride</code>, <code>SoundEmit</code>, <code>SpawnEntity</code>. A new anomaly is usually one table row plus one variant asset.</li>
+  <li><strong>Spawn table.</strong> At the start of a shift, <code>AnomalyService</code> picks N anomalies (N grows by night), filters by <code>minNight</code>, weights by <code>weight</code>, avoids putting two in the same tank, and keeps a spread of difficulty so a shift is never all easy or all hard. Some slots are set to fire 60 to 180 seconds in.</li>
+  <li><strong>Report check.</strong> The client raycasts from the reticle to find the tank, then fires a <code>RemoteEvent</code> with the tank id and category. The server checks everything: is there a live anomaly in that tank, does the category match, has it already been reported. A matching category pays an extra 25 percent. The right tank with the wrong category still counts as found, so it stays forgiving for younger players while rewarding the ones who learn the categories.</li>
+  <li><strong>False reports.</strong> Reporting a clean tank costs one strike and a small pay cut, with a mocking announcement over the PA ("Attention staff: the fish are fine."). Strikes reset each shift, so reporting stays a real decision. Reporting all eight tanks on purpose always loses.</li>
+  <li><strong>Difficulty budget.</strong> Each night has a point budget, so Night 6 might be 11 points made of one 4, one 3, and two 2s. All of it tunes from one config table.</li>
 </ul>
 
-<h3>Starter Anomaly Catalogue (30 at launch)</h3>
+<h3>Starter anomaly catalogue (30 at launch)</h3>
 <div class="table-wrap"><table>
-<thead><tr><th>#</th><th>Name</th><th>Location</th><th>The Tell</th><th>Diff.</th><th>Category</th></tr></thead>
+<thead><tr><th>#</th><th>Name</th><th>Location</th><th>The tell</th><th>Diff.</th><th>Category</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>Extra Eyes</td><td>T1 Clownfish</td><td>One clownfish has 6 eyes down its flank</td><td>1</td><td>Creature</td></tr>
-<tr><td>2</td><td>The Empty Tank</td><td>T5 Jellyfish</td><td>All jellyfish gone; water still gently glowing</td><td>1</td><td>Tank</td></tr>
-<tr><td>3</td><td>Backwards School</td><td>T2 Sardines</td><td>Entire school swims tail-first in formation</td><td>2</td><td>Creature</td></tr>
-<tr><td>4</td><td>Denture Danger</td><td>T3 Shark</td><td>Nurse shark has flat, human teeth in a wide grin</td><td>2</td><td>Creature</td></tr>
-<tr><td>5</td><td>Dry Run</td><td>T5 Jellyfish</td><td>Tank has no water; jellyfish float in air anyway</td><td>2</td><td>Tank</td></tr>
-<tr><td>6</td><td>Wrong Label</td><td>Any</td><td>Exhibit plaque reads a different species than displayed</td><td>2</td><td>Environment</td></tr>
-<tr><td>7</td><td>The Watcher</td><td>T6 Octopus</td><td>Octopus stays pressed to glass, rotates to track the player</td><td>3</td><td>Creature</td></tr>
+<tr><td>1</td><td>Extra Eyes</td><td>T1 Clownfish</td><td>One clownfish has six eyes down its flank</td><td>1</td><td>Creature</td></tr>
+<tr><td>2</td><td>The Empty Tank</td><td>T5 Jellyfish</td><td>All jellyfish gone, water still gently glowing</td><td>1</td><td>Tank</td></tr>
+<tr><td>3</td><td>Backwards School</td><td>T2 Sardines</td><td>The whole school swims tail first in formation</td><td>2</td><td>Creature</td></tr>
+<tr><td>4</td><td>Denture Danger</td><td>T3 Shark</td><td>The nurse shark has flat, human teeth in a wide grin</td><td>2</td><td>Creature</td></tr>
+<tr><td>5</td><td>Dry Run</td><td>T5 Jellyfish</td><td>No water in the tank, jellyfish float in the air anyway</td><td>2</td><td>Tank</td></tr>
+<tr><td>6</td><td>Wrong Label</td><td>Any</td><td>The exhibit plaque names a different species than the one on display</td><td>2</td><td>Environment</td></tr>
+<tr><td>7</td><td>The Watcher</td><td>T6 Octopus</td><td>The octopus stays pressed to the glass and rotates to track the player</td><td>3</td><td>Creature</td></tr>
 <tr><td>8</td><td>Flicker Corridor</td><td>Hallway B</td><td>Every light between T4 and T5 strobes in a heartbeat rhythm</td><td>1</td><td>Environment</td></tr>
-<tr><td>9</td><td>Overcrowded</td><td>T2 Sardines</td><td>School has visibly tripled; fish clip through each other</td><td>2</td><td>Tank</td></tr>
-<tr><td>10</td><td>Upside-Down Ray</td><td>T4 Stingray</td><td>Ray glides along the <em>surface</em>, belly-up, perfectly calm</td><td>1</td><td>Creature</td></tr>
-<tr><td>11</td><td>Red Water</td><td>T7 Reef</td><td>Tank water tinted deep red; fish behave normally</td><td>1</td><td>Tank</td></tr>
-<tr><td>12</td><td>The Extra Diver</td><td>T8 Big Tank</td><td>A maintenance diver mannequin stands inside — the aquarium has no divers</td><td>3</td><td>Entity</td></tr>
-<tr><td>13</td><td>Frozen Solid</td><td>T4 Stingray</td><td>Tank is a block of ice; ray visible mid-glide inside</td><td>2</td><td>Tank</td></tr>
+<tr><td>9</td><td>Overcrowded</td><td>T2 Sardines</td><td>The school has tripled and the fish clip through each other</td><td>2</td><td>Tank</td></tr>
+<tr><td>10</td><td>Upside-Down Ray</td><td>T4 Stingray</td><td>The ray glides along the surface, belly up, perfectly calm</td><td>1</td><td>Creature</td></tr>
+<tr><td>11</td><td>Red Water</td><td>T7 Reef</td><td>Tank water is tinted deep red, fish act normally</td><td>1</td><td>Tank</td></tr>
+<tr><td>12</td><td>The Extra Diver</td><td>T8 Big Tank</td><td>A maintenance diver stands inside, though the aquarium has no divers</td><td>3</td><td>Entity</td></tr>
+<tr><td>13</td><td>Frozen Solid</td><td>T4 Stingray</td><td>The tank is a block of ice with the ray visible mid-glide inside</td><td>2</td><td>Tank</td></tr>
 <tr><td>14</td><td>Giant</td><td>T1 Clownfish</td><td>One clownfish is the size of a dog</td><td>1</td><td>Creature</td></tr>
-<tr><td>15</td><td>Silent Tank</td><td>T7 Reef</td><td>All bubbler/filter audio for this tank is gone; dead silence in its zone</td><td>3</td><td>Environment</td></tr>
-<tr><td>16</td><td>Two Moons</td><td>Lobby skylight</td><td>Two moons visible through the ceiling glass</td><td>2</td><td>Environment</td></tr>
-<tr><td>17</td><td>The Long Eel</td><td>T6 Octopus tank</td><td>An eel loops the tank perimeter <em>twice</em> — it has no visible end</td><td>3</td><td>Creature</td></tr>
-<tr><td>18</td><td>Feeding Time</td><td>T3 Shark</td><td>Feeding hatch open, chum bucket floating, no staff scheduled</td><td>2</td><td>Environment</td></tr>
-<tr><td>19</td><td>Glass Crack</td><td>T8 Big Tank</td><td>Spiderweb crack slowly <em>growing</em> across the glass (report fast or shift-wide flood fail on Night 8+)</td><td>3</td><td>Tank</td></tr>
-<tr><td>20</td><td>Mimic Plaque</td><td>T6 Octopus</td><td>Plaque photo shows the <em>player's own avatar</em> instead of the octopus</td><td>4</td><td>Environment</td></tr>
-<tr><td>21</td><td>Wrong Reflection</td><td>Hallway mirror</td><td>Player's reflection lags 1 second behind their movement</td><td>4</td><td>Entity</td></tr>
-<tr><td>22</td><td>Doppel-fish</td><td>T7 Reef</td><td>Every fish is the identical same fish, same animation phase, synchronized</td><td>3</td><td>Creature</td></tr>
-<tr><td>23</td><td>The Knocker</td><td>T8 Big Tank</td><td>Three slow knocks from <em>inside</em> the glass when the player faces away (audio-only)</td><td>4</td><td>Entity</td></tr>
-<tr><td>24</td><td>Coral Spiral</td><td>T7 Reef</td><td>Coral has rearranged overnight into a perfect spiral</td><td>2</td><td>Tank</td></tr>
-<tr><td>25</td><td>Land Walker</td><td>T4 → Hallway</td><td>Wet footprint-fin trail leads from the ray tank down the corridor; tank is one ray short</td><td>3</td><td>Entity</td></tr>
-<tr><td>26</td><td>Static Tank</td><td>T2 Sardines</td><td>Fish frozen mid-swim like a paused video; bubbles still rise</td><td>2</td><td>Creature</td></tr>
-<tr><td>27</td><td>The Anglerfish Light</td><td>T8 (deep)</td><td>A lure-light hangs in the dark; approaching reveals the <strong>signature creature</strong> ("The Curator") for one frame</td><td>5</td><td>Entity</td></tr>
-<tr><td>28</td><td>Turned Cameras</td><td>Security office</td><td>Every CCTV monitor shows the <em>break room</em> instead of tanks</td><td>3</td><td>Environment</td></tr>
-<tr><td>29</td><td>Countdown</td><td>T5 Jellyfish</td><td>Jellyfish pulse in unison, blinking out one per pulse: 5… 4… 3… (report before zero)</td><td>4</td><td>Tank</td></tr>
-<tr><td>30</td><td>Name Tag</td><td>Break room</td><td>A staff locker now bears the player's actual Roblox username, slightly ajar</td><td>5</td><td>Entity</td></tr>
+<tr><td>15</td><td>Silent Tank</td><td>T7 Reef</td><td>All bubbler and filter sound for this tank is gone, dead silence in its zone</td><td>3</td><td>Environment</td></tr>
+<tr><td>16</td><td>Two Moons</td><td>Lobby skylight</td><td>Two moons are visible through the ceiling glass</td><td>2</td><td>Environment</td></tr>
+<tr><td>17</td><td>The Long Eel</td><td>T6 Octopus tank</td><td>An eel loops the tank twice and has no visible end</td><td>3</td><td>Creature</td></tr>
+<tr><td>18</td><td>Feeding Time</td><td>T3 Shark</td><td>The feeding hatch is open and a chum bucket floats, with no staff scheduled</td><td>2</td><td>Environment</td></tr>
+<tr><td>19</td><td>Glass Crack</td><td>T8 Big Tank</td><td>A crack slowly spreads across the glass. Report it fast or the shift floods on Night 8 and up</td><td>3</td><td>Tank</td></tr>
+<tr><td>20</td><td>Mimic Plaque</td><td>T6 Octopus</td><td>The plaque photo shows the player's own avatar instead of the octopus</td><td>4</td><td>Environment</td></tr>
+<tr><td>21</td><td>Wrong Reflection</td><td>Hallway mirror</td><td>The player's reflection lags one second behind their movement</td><td>4</td><td>Entity</td></tr>
+<tr><td>22</td><td>Doppel-fish</td><td>T7 Reef</td><td>Every fish is the same fish, in the same animation frame, in sync</td><td>3</td><td>Creature</td></tr>
+<tr><td>23</td><td>The Knocker</td><td>T8 Big Tank</td><td>Three slow knocks from inside the glass when the player faces away, sound only</td><td>4</td><td>Entity</td></tr>
+<tr><td>24</td><td>Coral Spiral</td><td>T7 Reef</td><td>The coral has rearranged overnight into a clean spiral</td><td>2</td><td>Tank</td></tr>
+<tr><td>25</td><td>Land Walker</td><td>T4 to Hallway</td><td>A wet fin-print trail leads from the ray tank down the corridor, and the tank is one ray short</td><td>3</td><td>Entity</td></tr>
+<tr><td>26</td><td>Static Tank</td><td>T2 Sardines</td><td>Fish frozen mid-swim like a paused video, bubbles still rising</td><td>2</td><td>Creature</td></tr>
+<tr><td>27</td><td>The Anglerfish Light</td><td>T8 (deep)</td><td>A lure light hangs in the dark. Get close to the glass and the signature creature (The Curator) shows for one frame</td><td>5</td><td>Entity</td></tr>
+<tr><td>28</td><td>Turned Cameras</td><td>Security office</td><td>Every monitor shows the break room instead of the tanks</td><td>3</td><td>Environment</td></tr>
+<tr><td>29</td><td>Countdown</td><td>T5 Jellyfish</td><td>Jellyfish pulse together, blinking out one per pulse: 5, 4, 3. Report before zero</td><td>4</td><td>Tank</td></tr>
+<tr><td>30</td><td>Name Tag</td><td>Break room</td><td>A staff locker now carries the player's actual Roblox username, slightly open</td><td>5</td><td>Entity</td></tr>
 </tbody></table></div>
-<p><strong>Notes:</strong> #27 and #30 are <code>clipTag = true</code> — rare, staged for recording, ~1-in-12 shifts on eligible nights. #19 and #29 are "active" anomalies with their own consequence timers. The Entity category is the horror spine: never dangerous mechanically at launch (except The Curator on Night 10+), always dangerous <em>emotionally</em>.</p>
+<p><strong>Notes.</strong> #27 and #30 carry <code>clipTag = true</code>. They are rare, staged for recording, and show up on roughly one shift in twelve on eligible nights. #19 and #29 are the two anomalies with their own timers, which give the harder shifts a sense of urgency. The Entity category is the horror backbone. It is not dangerous mechanically at launch, apart from The Curator on Night 10 and up, but it is always meant to unsettle.</p>
 
-<h2 id="s4"><span class="n">04</span>Shift &amp; Difficulty Progression</h2>
+<h2 id="s4"><span class="n">04</span>Shift and Difficulty Progression</h2>
 <div class="table-wrap"><table>
 <thead><tr><th>Night tier</th><th>Anomalies</th><th>Length</th><th>New pressure</th></tr></thead>
 <tbody>
-<tr><td>1–2</td><td>2, diff 1–2, no delayed spawns</td><td>4 min</td><td>Onboarding. Near-impossible to miss.</td></tr>
-<tr><td>3–5</td><td>3, delayed spawns begin</td><td>5 min</td><td>Mid-shift spawns; first Entity anomalies; category bonus explained.</td></tr>
-<tr><td>6–8</td><td>4, one diff-4 guaranteed</td><td>6 min</td><td><strong>Modifiers</strong> begin (random, one/shift): Cameras Offline, Power Save, Fog Bank.</td></tr>
-<tr><td>9–11</td><td>5, active anomalies in pool</td><td>6 min</td><td>Miss-tolerance drops to 0.</td></tr>
-<tr><td>12–14</td><td>5–6, stacked modifiers</td><td>7 min</td><td>The Curator can manifest on a false report — brief chase-to-elevator (clip fuel, low fail cost).</td></tr>
-<tr><td>15+ (Overtime)</td><td>6, endless rotation</td><td>7 min</td><td>Prestige loop: weekly leaderboard of consecutive S-grades.</td></tr>
+<tr><td>1 to 2</td><td>2, difficulty 1 to 2, no delayed spawns</td><td>4 min</td><td>Onboarding. Almost impossible to miss.</td></tr>
+<tr><td>3 to 5</td><td>3, delayed spawns start</td><td>5 min</td><td>Mid-shift spawns, first Entity anomalies, the category bonus is explained.</td></tr>
+<tr><td>6 to 8</td><td>4, one difficulty-4 guaranteed</td><td>6 min</td><td>Modifiers start, one per shift, picked at random: Cameras Offline, Power Save, Fog Bank.</td></tr>
+<tr><td>9 to 11</td><td>5, timed anomalies in the pool</td><td>6 min</td><td>Miss tolerance drops to zero.</td></tr>
+<tr><td>12 to 14</td><td>5 to 6, two modifiers at once</td><td>7 min</td><td>The Curator can appear on a false report, a short chase to the elevator. Low cost to fail, good for clips.</td></tr>
+<tr><td>15 and up (Overtime)</td><td>6, endless rotation</td><td>7 min</td><td>Prestige loop: a weekly leaderboard of back-to-back S grades.</td></tr>
 </tbody></table></div>
 <ul>
-  <li><strong>Strikes:</strong> 3 false reports = terminated (keep 25% pay). No sanity meter — strikes are simpler and cheaper; the <em>feeling</em> of sanity drain comes free from lighting/audio escalation.</li>
-  <li><strong>Fail forward:</strong> failing never de-levels; retry the same night. Failure costs time, not progress — critical for kid retention.</li>
-  <li><strong>Grades:</strong> S = all found, all correct categories, no strikes. Gates nothing except the Overtime leaderboard, but S feels prestigious (gold stamp, distinct stinger).</li>
+  <li><strong>Strikes.</strong> Three false reports end the shift, and you keep 25 percent of the pay. There is no sanity meter. Strikes are simpler and cheaper to build, and the feeling of losing your grip already comes from the lights and audio.</li>
+  <li><strong>Failure does not set you back.</strong> Failing never lowers your night tier. You retry the same night. It costs time, not progress, which matters a lot for keeping younger players.</li>
+  <li><strong>Grades.</strong> S means every anomaly found, every category right, no strikes. Grades only gate the Overtime leaderboard, but the results screen makes an S feel earned with a gold stamp and its own sound.</li>
 </ul>
 
-<h2 id="s5"><span class="n">05</span>Economy &amp; Progression</h2>
-<p><strong>Currency:</strong> <strong>Credits (₡)</strong> — single soft currency, no dual-currency complexity at this scope.</p>
-<p><strong>Payouts</strong> (per shift, before bonuses): Night 1–2 ₡50 · 3–5 ₡90 · 6–8 ₡140 · 9–11 ₡200 · 12+ ₡275. Bonuses: +25% per correct category, +₡50 S-grade, +₡75 first-clear of a night, daily first-shift ×2.</p>
-<h3>Tool / upgrade tree</h3>
+<h2 id="s5"><span class="n">05</span>Economy and Progression</h2>
+<p><strong>Currency:</strong> Credits (₡), one soft currency. No second currency at this scope.</p>
+<p><strong>Base pay per shift, before bonuses:</strong> Night 1 to 2 pays ₡50, 3 to 5 pays ₡90, 6 to 8 pays ₡140, 9 to 11 pays ₡200, 12 and up pays ₡275. Bonuses: 25 percent per correct category, ₡50 for an S grade, ₡75 for the first clear of a night, and double pay on your first shift of the day.</p>
+<h3>Tools and upgrades</h3>
 <div class="table-wrap"><table>
 <thead><tr><th>Tool</th><th>Cost</th><th>Effect</th><th>Why it matters</th></tr></thead>
 <tbody>
-<tr><td>Flashlight I</td><td>Free (Night 1)</td><td>Basic cone light</td><td>Baseline horror tool</td></tr>
-<tr><td>Reference Tablet</td><td>₡200</td><td>Photo of each tank's normal state</td><td>#1 skill equalizer; first meaningful buy, ~3 shifts away</td></tr>
-<tr><td>Flashlight II (UV)</td><td>₡400</td><td>Reveals faint tells (footprints, cracks earlier)</td><td>Makes diff-3+ tells fairer</td></tr>
-<tr><td>CCTV Access</td><td>₡600</td><td>Check 3 tank cams from the office</td><td>Route efficiency; disabled by Cameras Offline modifier</td></tr>
-<tr><td>Overtime Watch</td><td>₡800</td><td>+45 s shift timer</td><td>Relief valve for slower/younger players</td></tr>
-<tr><td>Anomaly Scanner</td><td>₡1,500</td><td>Once/shift: pings anomaly present/absent for the faced tank</td><td>Endgame QoL; the grind anchor the gamepass shortcuts</td></tr>
-<tr><td>Cosmetics</td><td>₡300–₡2,000</td><td>Visual only</td><td>Lobby flex, credit sink after tools</td></tr>
+<tr><td>Flashlight I</td><td>Free on Night 1</td><td>Basic cone of light</td><td>The starting horror tool</td></tr>
+<tr><td>Reference Tablet</td><td>₡200</td><td>Shows a photo of each tank's normal state</td><td>The biggest skill leveler and the first real purchase, about three shifts away</td></tr>
+<tr><td>Flashlight II (UV)</td><td>₡400</td><td>Reveals faint tells like footprints and early cracks</td><td>Makes the harder tells fair</td></tr>
+<tr><td>CCTV Access</td><td>₡600</td><td>Check three tank cameras from the office</td><td>Saves patrol time, and the Cameras Offline modifier turns it off so it never trivialises a shift</td></tr>
+<tr><td>Overtime Watch</td><td>₡800</td><td>Adds 45 seconds to the shift timer</td><td>Breathing room for slower or younger players</td></tr>
+<tr><td>Anomaly Scanner</td><td>₡1,500</td><td>Once per shift, tells you if the tank you face has an anomaly</td><td>Late-game convenience, and the main grind that the gamepass shortcuts</td></tr>
+<tr><td>Cosmetics</td><td>₡300 to ₡2,000</td><td>Visual only</td><td>Lobby flex and a place to spend credits once the tools are bought</td></tr>
 </tbody></table></div>
-<p><strong>Pacing math:</strong> full tool tree ≈ ₡3,500 ≈ 22–28 shifts ≈ 3–5 sessions of honest play. Grindy enough that the ×2 Credits gamepass is attractive by session two, fair enough that free players finish the tree within a week of casual play.</p>
+<p>The full tool tree costs about ₡3,500, which is roughly 22 to 28 shifts, or three to five sessions of steady play. That is enough grind that the double-Credits gamepass looks good by the second session, and still fair enough that a free player finishes the tree within a week of casual play.</p>
 
-<h2 id="s6"><span class="n">06</span>Monetization Design</h2>
-<blockquote>Reality check: at ~26–28% net after Roblox's cut and DevEx, ₨1,000 of player spend ≈ <strong>$3.50</strong> to us. A $700 build breaks even at roughly <strong>₨200,000 of gross spend</strong> (~$700 net) — on the order of 60k–120k lifetime visits with decent retention. Achievable if the algorithm picks it up, which is exactly what the kill/scale gate (§13) tests.</blockquote>
+<h2 id="s6"><span class="n">06</span>Monetization</h2>
+<blockquote>At about 26 to 28 percent net after Roblox's cut and DevEx, ₨1,000 of player spend is worth roughly $3.50 to us. A $700 build pays for itself at around ₨200,000 of gross spend (about $700 net), which is on the order of 60,000 to 120,000 lifetime visits with decent retention. That is doable if the algorithm picks the game up, which is exactly what the kill or scale gate in §13 tests.</blockquote>
 <h3>Gamepasses (permanent)</h3>
 <div class="table-wrap"><table>
-<thead><tr><th>Gamepass</th><th>₨</th><th>Psychology</th></tr></thead>
+<thead><tr><th>Gamepass</th><th>₨</th><th>Why players buy it</th></tr></thead>
 <tbody>
-<tr><td><strong>Senior Staff (×2 Credits)</strong> — flagship</td><td>199</td><td>Bought at the moment of felt grind (session 2, staring at the ₡1,500 scanner). Every future shift "reminds" the buyer of its value.</td></tr>
-<tr><td>Anomaly Scanner Unlock</td><td>149</td><td>Skips the biggest grind wall. Priced below ×2 so they don't cannibalize — many buy both.</td></tr>
-<tr><td>VIP (name tag, gold uniform, beam color, +1 daily bonus shift)</td><td>249</td><td>Status purchase, visible in the lobby — advertises itself.</td></tr>
-<tr><td>Anomaly Log+ (silhouette hints for undiscovered)</td><td>99</td><td>Cheap completionist hook; converts collectors.</td></tr>
-<tr><td>Radio (lobby music/emotes)</td><td>79</td><td>Impulse-tier; widens the price ladder.</td></tr>
+<tr><td><strong>Senior Staff (double Credits), the main seller</strong></td><td>199</td><td>Bought at the moment the grind is felt, around session two while staring at the ₡1,500 scanner. Every later shift reminds the buyer it was worth it.</td></tr>
+<tr><td>Anomaly Scanner Unlock</td><td>149</td><td>Skips the biggest grind directly. Priced under the double-Credits pass so they do not compete, and plenty of players buy both.</td></tr>
+<tr><td>VIP (name tag, gold uniform, beam color, one extra daily bonus shift)</td><td>249</td><td>A status buy that other players can see in the lobby, so it advertises itself.</td></tr>
+<tr><td>Anomaly Log+ (silhouette hints for anomalies you have not found)</td><td>99</td><td>A cheap hook for collectors.</td></tr>
+<tr><td>Radio (lobby music and emotes)</td><td>79</td><td>An impulse buy that fills out the low end of the price range.</td></tr>
 </tbody></table></div>
 <h3>Dev products (consumables)</h3>
 <div class="table-wrap"><table>
-<thead><tr><th>Product</th><th>₨</th><th>Psychology</th></tr></thead>
+<thead><tr><th>Product</th><th>₨</th><th>Why players buy it</th></tr></thead>
 <tbody>
-<tr><td>Second Chance (revive after termination, once/shift)</td><td>25</td><td>Bought at peak frustration/investment — the highest-intent moment. Cheap enough to be a reflex.</td></tr>
-<tr><td>₡500 Credit Pack</td><td>49</td><td>Direct grind skip, small.</td></tr>
-<tr><td>₡2,000 Credit Pack</td><td>149</td><td>"Buy the whole tree" option.</td></tr>
-<tr><td>Shift Skip (unlock next night tier, max 3)</td><td>99</td><td>For the hard-stuck; capped to protect the difficulty curve.</td></tr>
+<tr><td>Second Chance (revive after termination, once per shift)</td><td>25</td><td>Bought at the point of most frustration and investment, the highest-intent moment in the game. Cheap enough to be reflexive.</td></tr>
+<tr><td>₡500 Credit Pack</td><td>49</td><td>A small, direct skip past the grind.</td></tr>
+<tr><td>₡2,000 Credit Pack</td><td>149</td><td>The buy-the-whole-tree option.</td></tr>
+<tr><td>Shift Skip (unlock the next night tier, up to 3 times)</td><td>99</td><td>For players who are stuck. Capped so it does not break the difficulty curve.</td></tr>
 </tbody></table></div>
-<p><strong>Ethical guardrails:</strong> no loot boxes, no gacha, no FOMO countdowns, no purchase prompts during scares or on the termination screen (Second Chance is offered <em>once</em>, calmly, with an equal-size decline button), all prices visible before confirm, nothing pay-gated that blocks seeing content — paying buys <em>speed and status</em>, never the only path. Right for a kid-heavy audience and pragmatic: predatory patterns are increasingly moderated by Roblox.</p>
+<p><strong>Guardrails.</strong> No loot boxes, no gacha, no countdown timers on purchases, and no purchase prompts during a scare or on the termination screen. Second Chance is offered once, calmly, with a decline button the same size as the buy button. All prices show before any confirm, and nothing paid blocks seeing the content. Money buys speed and status, never the only way through. That is the right call for a young audience, and it is also the safe call, since Roblox moderates predatory patterns more each year.</p>
 
-<h2 id="s7"><span class="n">07</span>Retention &amp; Virality Hooks</h2>
-<h4>Daily return reasons</h4>
+<h2 id="s7"><span class="n">07</span>Retention and Sharing</h2>
+<h4>Reasons to come back each day</h4>
 <ul>
-  <li>Daily first-shift ×2 pay + a <strong>Daily Anomaly</strong> (one hand-picked anomaly guaranteed that day; the community compares notes — "did you find today's?").</li>
-  <li>Login streak: 5-day → exclusive flashlight skin (cosmetic-only, low resentment if broken).</li>
-  <li>Anomaly Log fills only by <em>witnessing</em> anomalies, and rares are rare — a natural long-tail chase.</li>
+  <li>Double pay on the first shift of the day, plus a Daily Anomaly, one hand-picked anomaly guaranteed to appear that day. Players compare notes on it ("did you find today's?").</li>
+  <li>A login streak. Five days in a row earns an exclusive flashlight skin. It is cosmetic only, so breaking the streak does not sting.</li>
+  <li>The Anomaly Log fills only when you actually see an anomaly, and the rare ones are rare, so there is a long tail to chase.</li>
 </ul>
-<h4>Virality / clippable design</h4>
+<h4>Built for clips</h4>
 <ul>
-  <li><strong>The Curator</strong> (signature creature): designed for thumbnails — pale, too-tall figure in a drenched staff uniform, face never fully shown. Appears in exactly 3 staged contexts. Scarcity = clip value.</li>
-  <li>Rare anomalies (#20 Mimic Plaque, #30 Name Tag) use the player's <em>own avatar/username</em> — the most shareable trick in the genre ("IT KNEW MY NAME").</li>
-  <li>2-player co-op shifts (stretch, §11): friend-drag-in is the cheapest acquisition channel on Roblox; two players disagreeing about a tank is inherently funny content.</li>
-  <li>Update cadence <em>is</em> the marketing: "5 NEW ANOMALIES" badge on the icon every 1–2 weeks — cheap because content is data (§3).</li>
+  <li>The Curator, the signature creature, is made for thumbnails: pale, too tall, in a soaked staff uniform, face never fully shown. It appears in only three set situations, and being rare is what makes it worth filming.</li>
+  <li>The rarest anomalies (#20 Mimic Plaque, #30 Name Tag) use the player's own avatar or username, which is the most shareable trick in the genre ("it knew my name").</li>
+  <li>Two-player co-op shifts (a stretch goal, see §11). Getting a friend to join is the cheapest way to grow on Roblox, and two players arguing over whether a tank is wrong is funny on its own.</li>
+  <li>The update schedule is also the marketing. A "5 NEW ANOMALIES" badge on the icon every week or two is cheap to back up, because the content is data (§3).</li>
 </ul>
 
-<h2 id="s8"><span class="n">08</span>UI / UX</h2>
-<p><strong>Screens/HUD (7 total — deliberately minimal):</strong></p>
+<h2 id="s8"><span class="n">08</span>UI and UX</h2>
+<p><strong>Seven screens, kept small on purpose:</strong></p>
 <ol>
-  <li><strong>Lobby/Main menu</strong> — elevator hub: Play (big), Shop, Anomaly Log, Settings, gamepass shelf. Other players visible.</li>
-  <li><strong>Shift HUD</strong> — timer (top center), anomalies-found counter ("2/4", shown Night 1–5 for onboarding, hidden Night 6+ for dread), strikes (3 pips), tool belt (2 large corner buttons), reticle.</li>
-  <li><strong>Report interface</strong> — full-screen dim, 4 giant category buttons + Cancel. One tap to open, one to send. No typing, ever.</li>
-  <li><strong>Results screen</strong> — grade stamp, pay breakdown line by line, Next Shift / Lobby.</li>
-  <li><strong>Shop</strong> (break room) — tools tab, cosmetics tab, Robux tab (last, not first).</li>
-  <li><strong>Anomaly Log</strong> — grid of cards, undiscovered = "?" silhouettes.</li>
-  <li><strong>Settings</strong> — volume, camera sensitivity, reduced-flash toggle (photosensitivity — mandatory given flicker anomalies), graphics quality.</li>
+  <li><strong>Lobby and main menu.</strong> An elevator hub with Play (big), Shop, Anomaly Log, Settings, and the gamepass shelf. Other players are visible, which gives cosmetics a place to show.</li>
+  <li><strong>Shift HUD.</strong> Timer at top center, an anomalies-found counter ("2/4", shown on Nights 1 to 5 to teach, hidden from Night 6 on for dread), three strike pips, a two-button tool belt in the corners, and the reticle.</li>
+  <li><strong>Report screen.</strong> A dimmed full screen with four big category buttons and Cancel. One tap to open, one to send. No typing at any point.</li>
+  <li><strong>Results screen.</strong> Grade stamp, a line-by-line pay breakdown, Next Shift and Lobby buttons.</li>
+  <li><strong>Shop (break room).</strong> A tools tab, a cosmetics tab, and a Robux tab, in that order, Robux last.</li>
+  <li><strong>Anomaly Log.</strong> A grid of cards, with a "?" silhouette for the ones not yet found.</li>
+  <li><strong>Settings.</strong> Volume, camera sensitivity, a reduced-flash toggle (needed because of the flicker anomalies), and graphics quality.</li>
 </ol>
-<p><strong>Mobile-first controls:</strong> default one-thumb movement + auto camera; <strong>Report</strong> is a single large thumb-zone button that appears only when the reticle is over a tank zone (context-sensitive, no clutter). Interact distance generous (12 studs). Tap targets ≥ 44 pt. PC: E report, F flashlight. Console via ContextActionService.</p>
+<p><strong>Mobile first.</strong> Default one-thumb movement with auto camera. The Report button is one large button in the thumb zone that only appears when the reticle is over a tank, so there is no clutter. Interact range is generous, about 12 studs, and tap targets are at least 44 points. On PC, E reports and F is the flashlight. Console uses ContextActionService.</p>
 
-<h2 id="s9"><span class="n">09</span>Art Direction &amp; Audio</h2>
-<p><strong>Visual style:</strong> low-poly with <strong>lighting doing 80% of the work</strong>. Flat-shaded models, chunky silhouettes (readable on a 5-inch screen), Future lighting where budget allows / Voxel fallback for low-end mobile. Palette: deep teal-blacks (<code>#0A1A22</code>), tank-glow cyan (<code>#38D6E0</code>), warning amber (<code>#E8A13C</code>) for UI, and one reserved color — <strong>anomaly red</strong> (<code>#C7303A</code>) — used <em>only</em> for confirmed-anomaly feedback so it stays meaningful.</p>
-<p><strong>Key asset list</strong> (brutally short): 1 aquarium interior (loop corridor + lobby + break room + security office, ~8 tank alcoves), 8 tank sets with baseline creatures, ~25 anomaly variant meshes/textures (mostly recolors/mesh-swaps — where data-driven design saves the budget), The Curator model, 1 staff uniform + 3 recolors, flashlight/tablet/scanner props. Heavy use of free/marketplace fish meshes retextured — acceptable at this budget, flagged honestly.</p>
-<p><strong>Audio is the horror engine</strong> (cheapest scare-per-dollar): constant low tank-hum bed, per-zone bubbler loops (whose <em>absence</em> is anomaly #15), muffled whale-song layer, heartbeat at ≤60 s, the "ANOMALY CONTAINED" stinger (must be <em>satisfying</em> — the game's slot-machine ding), three Curator stingers, glass knocks. Sourced from Roblox's licensed library + CC0 to keep cost near zero.</p>
+<h2 id="s9"><span class="n">09</span>Art and Audio</h2>
+<p><strong>Look.</strong> Low poly, with lighting doing most of the work. Flat-shaded models with chunky shapes that read on a five-inch screen, Future lighting where the budget allows and a Voxel fallback for weaker phones. The palette is deep teal-black (<code>#0A1A22</code>), tank-glow cyan (<code>#38D6E0</code>), and a warning amber (<code>#E8A13C</code>) for the interface, with one color held back: anomaly red (<code>#C7303A</code>), used only for a confirmed anomaly so it keeps its meaning.</p>
+<p><strong>Asset list, kept short.</strong> One aquarium interior (a loop corridor, a lobby, a break room, a security office, and about eight tank alcoves), eight tank sets with baseline creatures, roughly 25 anomaly variant meshes and textures (mostly recolors and mesh swaps of the baselines, which is where storing anomalies as data saves the budget), The Curator model, one staff uniform plus three recolors, and the flashlight, tablet, and scanner props. A lot of the fish are free marketplace meshes retextured to fit, which is fine at this budget and worth stating plainly.</p>
+<p><strong>Audio carries the horror,</strong> and it is the cheapest scare per dollar. A low tank hum runs under everything, each zone has its own bubbler loop (and one anomaly, #15, is the absence of it), a muffled whale-song layer sits far off, a heartbeat comes in under 60 seconds, and the "ANOMALY CONTAINED" sound has to feel good, since it is the game's reward chime. Add three Curator sounds and the glass knocks. All of it comes from Roblox's licensed library and CC0 sources, so the cost stays near zero.</p>
 
 <h2 id="s10"><span class="n">10</span>Technical Architecture</h2>
 <ul>
-  <li><strong>Server-authoritative everything that matters:</strong> <code>AnomalyService</code> (server) owns the spawn table, live-anomaly state, and validation. Clients never know which anomalies are active — the <em>visual changes replicate</em>, but the truth table lives server-side. Report = <code>RemoteEvent(tankId, category)</code>; server validates proximity (≤20 studs), rate-limits (1/s), computes pay. (Determined exploiters can diff rendered state vs cached baselines — accepted risk; payouts are soft currency only.)</li>
-  <li><strong>Data:</strong> ProfileService (session-locked DataStore wrapper) for credits, night progress, tools, log, streaks — prevents dupe/rejoin-race exploits. One versioned schema with a migration stub from day one.</li>
-  <li><strong>Structure:</strong> single-place game. Shifts are per-player instanced — each player runs their own shift state; the map is shared but anomaly visuals are client-targeted. Avoids reserved-server cost. (Trade-off: two players at the same tank see different things — in this genre that's a feature and a meme.)</li>
-  <li><strong>Performance for mobile:</strong> streaming enabled; ≤8k parts in view; anchored everything (near-zero physics); creature swimming via TweenService, not physics; texture atlas per tank; target 30 fps on a 2019-era Android. Voxel lighting fallback via quality detection.</li>
-  <li><strong>Services:</strong> DataStoreService (via ProfileService), RemoteEvent/Function (minimal, validated), CollectionService (tank-zone tagging), TweenService, SoundService groups, MarketplaceService (server-side receipt processing + idempotent grant log), AnalyticsService custom events (shift_start, shift_end, report, purchase, night_unlocked).</li>
+  <li><strong>The server owns anything that matters.</strong> <code>AnomalyService</code> on the server holds the spawn table, the live anomaly state, and the checks. Clients never learn which anomalies are active. The visual changes replicate, but the truth stays on the server. A report is a <code>RemoteEvent</code> with tank id and category, and the server checks the player is close enough (within 20 studs), limits reports to one per second, and works out the pay. A determined exploiter could compare what is rendered against cached baselines, which we accept at this scope, since the only thing at stake is soft currency.</li>
+  <li><strong>Saving.</strong> ProfileService, a session-locked wrapper over DataStore, holds credits, night progress, tools, log entries, and streaks. It is the standard way to avoid duplication exploits from rejoin races. One versioned schema, with a migration stub in from day one.</li>
+  <li><strong>Structure.</strong> One place. Each player runs their own shift state, and the map is shared but anomaly visuals are sent only to that player. This avoids the cost of reserved servers and keeps the lobby social. Two players at the same tank can see different things, which in this genre is a feature and a running joke.</li>
+  <li><strong>Mobile performance.</strong> Streaming on, a budget of about 8,000 parts in view, everything anchored so physics is near zero, fish swimming through TweenService rather than physics, one texture atlas per tank, and a target of 30 fps on a 2019-era Android phone. Voxel lighting kicks in on low quality.</li>
+  <li><strong>Services used.</strong> DataStoreService through ProfileService, RemoteEvent and RemoteFunction (few, all checked), CollectionService for tagging tank zones, TweenService, SoundService groups, MarketplaceService with server-side receipt handling and an idempotent grant log, and AnalyticsService for custom events (shift_start, shift_end, report, purchase, night_unlocked).</li>
 </ul>
 
 <h2 id="s11"><span class="n">11</span>Production Estimate</h2>
-<p>Assumption: one mid-level freelancer at <strong>$12/hr blended</strong> (realistic for a strong EE/SEA/LatAm Roblox dev; a US dev at $30+/hr does <em>not</em> fit this budget).</p>
+<p>This assumes one mid-level freelancer at about $12 an hour blended, which is realistic for a strong Roblox developer in Eastern Europe, Southeast Asia, or Latin America. A US developer at $30 an hour and up does not fit this budget, and it is worth being clear about that.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Task</th><th>Hrs</th><th>Who</th><th>Cost</th></tr></thead>
 <tbody>
-<tr><td>Aquarium map (corridor loop, lobby, break room, 8 alcoves)</td><td>10</td><td>Dev</td><td>$120</td></tr>
-<tr><td>Tank creature setup (8 baselines, retextured meshes + swim tweens)</td><td>7</td><td>Dev</td><td>$84</td></tr>
-<tr><td>AnomalyService + 8 handlers + spawn/difficulty tables</td><td>9</td><td>Dev</td><td>$108</td></tr>
-<tr><td>30 launch anomalies (variant assets + catalog entries)</td><td>9</td><td>Dev</td><td>$108</td></tr>
-<tr><td>Shift flow (clock-in/out, timer, strikes, grading, progression)</td><td>6</td><td>Dev</td><td>$72</td></tr>
-<tr><td>Report mechanic + server validation + anti-spam</td><td>4</td><td>Dev</td><td>$48</td></tr>
-<tr><td>UI (7 screens, mobile-first)</td><td>8</td><td>Dev</td><td>$96</td></tr>
-<tr><td>Economy, tools (5 functional), shop</td><td>6</td><td>Dev</td><td>$72</td></tr>
-<tr><td>ProfileService integration, saving, receipt processing</td><td>4</td><td>Dev</td><td>$48</td></tr>
-<tr><td>Monetization hookup (5 passes, 4 products)</td><td>3</td><td>Dev</td><td>$36</td></tr>
-<tr><td>The Curator model + 3 staged appearances</td><td>4</td><td>Dev</td><td>$48</td></tr>
+<tr><td>Aquarium map (corridor loop, lobby, break room, eight alcoves)</td><td>10</td><td>Dev</td><td>$120</td></tr>
+<tr><td>Tank creatures (eight baselines, retextured meshes and swim tweens)</td><td>7</td><td>Dev</td><td>$84</td></tr>
+<tr><td>AnomalyService, eight handlers, spawn and difficulty tables</td><td>9</td><td>Dev</td><td>$108</td></tr>
+<tr><td>30 launch anomalies (variant assets and catalog entries)</td><td>9</td><td>Dev</td><td>$108</td></tr>
+<tr><td>Shift flow (clock in and out, timer, strikes, grading, progression)</td><td>6</td><td>Dev</td><td>$72</td></tr>
+<tr><td>Report mechanic, server checks, anti-spam</td><td>4</td><td>Dev</td><td>$48</td></tr>
+<tr><td>UI (seven screens, mobile first)</td><td>8</td><td>Dev</td><td>$96</td></tr>
+<tr><td>Economy, five working tools, shop</td><td>6</td><td>Dev</td><td>$72</td></tr>
+<tr><td>ProfileService, saving, receipt handling</td><td>4</td><td>Dev</td><td>$48</td></tr>
+<tr><td>Monetization hookup (five passes, four products)</td><td>3</td><td>Dev</td><td>$36</td></tr>
+<tr><td>The Curator model and three appearances</td><td>4</td><td>Dev</td><td>$48</td></tr>
 <tr><td>Audio pass (sourcing, zones, stingers, escalation)</td><td>3</td><td>Dev</td><td>$36</td></tr>
-<tr><td>Lighting/atmosphere pass</td><td>3</td><td>Dev</td><td>$36</td></tr>
-<tr><td>Mobile QA + performance + bug-fix buffer</td><td>6</td><td>Dev</td><td>$72</td></tr>
-<tr><td>Icon + 3 thumbnails (commissioned; matters for CTR)</td><td>—</td><td>Artist</td><td>$60</td></tr>
+<tr><td>Lighting and atmosphere pass</td><td>3</td><td>Dev</td><td>$36</td></tr>
+<tr><td>Mobile QA, performance, bug-fix buffer</td><td>6</td><td>Dev</td><td>$72</td></tr>
+<tr><td>Icon and three thumbnails (separate artist, and it matters for click-through)</td><td>n/a</td><td>Artist</td><td>$60</td></tr>
 <tr><td><strong>Total</strong></td><td><strong>82 hrs</strong></td><td></td><td><strong>$1,044</strong></td></tr>
 </tbody></table></div>
-<blockquote><strong>Honesty note:</strong> this lands at the <em>top</em> of the $600–$1,000 band and assumes a competent dev with no rework. Realistic band is <strong>$850–$1,200</strong>. To hit $700–$800: cut CCTV, launch with 25 anomalies, Voxel lighting only (−12 hrs ≈ −$145). Rev-share hybrid ($500 cash + 15% of first 90 days' net) is the recommended structure — caps cash risk, aligns incentives.</blockquote>
-<p><strong>Stretch/polish version</strong> (+$400–600, +1.5 weeks): 2-player co-op shifts, 10 more anomalies incl. one more clipTag rare, a second area (touch-pool room), badge set, localized UI (ES/PT — huge Roblox regions).</p>
+<blockquote>This lands at the top of the $600 to $1,000 band and assumes a capable developer with no rework. A more honest range is $850 to $1,200. To hit $700 to $800, cut CCTV, launch with 25 anomalies instead of 30, and use Voxel lighting only, which saves about 12 hours, or $145. The structure I would use is part cash, part revenue share, say $500 up front plus 15 percent of the first 90 days of net. It caps the cash at risk and lines up the incentives.</blockquote>
+<p>A polished version would add about $400 to $600 and a week and a half: two-player co-op shifts, ten more anomalies including one more rare, a second area such as a touch-pool room, a badge set, and localized UI for Spanish and Portuguese, both huge on Roblox.</p>
 
-<h2 id="s12"><span class="n">12</span>Milestones &amp; Timeline</h2>
+<h2 id="s12"><span class="n">12</span>Milestones and Timeline</h2>
 <div class="table-wrap"><table>
 <thead><tr><th>Days</th><th>Milestone</th><th>Deliverable</th></tr></thead>
 <tbody>
-<tr><td>1–3</td><td><strong>Graybox</strong></td><td>Map blocked out, walkable, tank zones tagged, shift timer works</td></tr>
-<tr><td>4–7</td><td><strong>Core loop playable</strong></td><td>AnomalyService live with 8 anomalies, report/validate/pay, one full shift end-to-end</td></tr>
-<tr><td>8–11</td><td><strong>Content + progression</strong></td><td>All 30 anomalies, nights 1–15, tools, shop, saving</td></tr>
-<tr><td>12–14</td><td><strong>Feel pass</strong></td><td>Lighting, audio, Curator, results-screen juice, monetization live in test</td></tr>
-<tr><td>15–17</td><td><strong>QA + mobile</strong></td><td>Device testing, exploit sanity check, photosensitivity toggle, analytics verified</td></tr>
-<tr><td>18</td><td><strong>Soft launch</strong></td><td>Public, unadvertised. Icon/thumbnail A/B via Roblox's native tools</td></tr>
-<tr><td>18–25</td><td><strong>Watch window</strong></td><td>Daily KPI review (§13); hotfix only, no new content</td></tr>
-<tr><td>25</td><td><strong>Gate decision</strong></td><td>Kill / iterate / scale</td></tr>
-<tr><td>If scaled: every 10–14 days</td><td><strong>Content drop</strong></td><td>+5–8 anomalies (≈1 dev-day each), 1 modifier/event; monthly bigger beat (co-op, new room)</td></tr>
+<tr><td>1 to 3</td><td><strong>Graybox</strong></td><td>Map blocked out and walkable, tank zones tagged, shift timer working</td></tr>
+<tr><td>4 to 7</td><td><strong>Core loop playable</strong></td><td>AnomalyService live with eight anomalies, report and check and pay, one full shift start to finish</td></tr>
+<tr><td>8 to 11</td><td><strong>Content and progression</strong></td><td>All 30 anomalies, Nights 1 to 15, tools, shop, saving</td></tr>
+<tr><td>12 to 14</td><td><strong>Feel pass</strong></td><td>Lighting, audio, The Curator, results-screen polish, monetization live in test</td></tr>
+<tr><td>15 to 17</td><td><strong>QA and mobile</strong></td><td>Device testing, an exploit sanity check, the photosensitivity toggle, analytics events verified</td></tr>
+<tr><td>18</td><td><strong>Soft launch</strong></td><td>Public and unadvertised. Icon and thumbnail tested with Roblox's own tools</td></tr>
+<tr><td>18 to 25</td><td><strong>Watch window</strong></td><td>Daily look at the numbers (§13), hotfixes only, no new content</td></tr>
+<tr><td>25</td><td><strong>Gate decision</strong></td><td>Kill, iterate, or scale</td></tr>
+<tr><td>If scaled, every 10 to 14 days</td><td><strong>Content drop</strong></td><td>Five to eight more anomalies (about one dev-day each), one modifier or event, and a bigger beat each month such as co-op or a new room</td></tr>
 </tbody></table></div>
 
-<h2 id="s13"><span class="n">13</span>KPIs &amp; Kill/Scale Gate</h2>
-<p>Measured over days 18–25 (soft-launch window), via Roblox analytics + custom events:</p>
+<h2 id="s13"><span class="n">13</span>KPIs and the Kill or Scale Gate</h2>
+<p>Measured over days 18 to 25, the soft-launch window, through Roblox analytics and custom events:</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Metric</th><th>Kill</th><th>Iterate</th><th>Scale</th></tr></thead>
 <tbody>
-<tr><td><strong>D1 retention</strong></td><td>&lt; 18%</td><td>18–25%</td><td><strong>≥ 25–30%</strong></td></tr>
-<tr><td>Avg session length</td><td>&lt; 6 min</td><td>6–9 min</td><td>≥ 9 min</td></tr>
-<tr><td>D7 retention</td><td>&lt; 4%</td><td>4–8%</td><td>≥ 8%</td></tr>
-<tr><td>Night-3 reach rate</td><td>&lt; 30%</td><td>30–45%</td><td>≥ 45%</td></tr>
-<tr><td>Payer conversion</td><td>&lt; 0.8%</td><td>0.8–2%</td><td>≥ 2%</td></tr>
-<tr><td>Qualified play-through (algo signal)</td><td>bottom quartile</td><td>—</td><td>above median</td></tr>
+<tr><td><strong>Day 1 retention</strong></td><td>under 18%</td><td>18 to 25%</td><td><strong>25 to 30% or better</strong></td></tr>
+<tr><td>Average session length</td><td>under 6 min</td><td>6 to 9 min</td><td>9 min or more</td></tr>
+<tr><td>Day 7 retention</td><td>under 4%</td><td>4 to 8%</td><td>8% or more</td></tr>
+<tr><td>Reach Night 3</td><td>under 30%</td><td>30 to 45%</td><td>45% or more</td></tr>
+<tr><td>Payer conversion</td><td>under 0.8%</td><td>0.8 to 2%</td><td>2% or more</td></tr>
+<tr><td>Qualified playthrough (algorithm signal)</td><td>bottom quarter</td><td>n/a</td><td>above the middle</td></tr>
 </tbody></table></div>
-<p>Secondary diagnostics: tutorial-shift completion (target ≥ 85% — if lower, onboarding is broken, fix first), false-report rate (if &gt; 40%, tells are too subtle), Second Chance attach rate at terminations (validates the frustration-purchase thesis).</p>
-<blockquote><strong>The rule, agreed in advance:</strong> if after one iteration cycle (one content drop + one onboarding fix, ~2 weeks) D1 is still under 25%, we stop spending. The map and systems get archived for the fishing game (§15) — the project is a $1k option on a trend, not a commitment.</blockquote>
+<p>Secondary numbers to watch: tutorial-shift completion (aim for 85 percent or higher, and if it is lower the onboarding is broken and gets fixed before judging anything else), the false-report rate (if more than 40 percent of reports are wrong, the tells are too subtle for the audience), and the Second Chance attach rate at terminations, which tells us whether the frustration purchase works.</p>
+<blockquote>The rule we set in advance: if after one round of changes (one content drop and one onboarding fix, roughly two weeks) Day 1 retention is still under 25 percent, we stop spending. The map and systems get archived for the fishing game (§15). This is a $1,000 option on a trend, not a commitment.</blockquote>
 
-<h2 id="s14"><span class="n">14</span>Risks &amp; Mitigations</h2>
+<h2 id="s14"><span class="n">14</span>Risks and Mitigations</h2>
 <div class="table-wrap"><table>
-<thead><tr><th>Risk</th><th>Likelihood</th><th>Mitigation</th></tr></thead>
+<thead><tr><th>Risk</th><th>Likelihood</th><th>What we do about it</th></tr></thead>
 <tbody>
-<tr><td>Trend cools before launch (genre saturating through 2026)</td><td>Med-High</td><td>2–3 week timeline; aquarium theme + Curator IP differentiate from hospital/gas-station clones</td></tr>
-<tr><td>Budget overrun (at band ceiling)</td><td>Medium</td><td>Rev-share hybrid; pre-agreed cut list (CCTV, 5 anomalies, Future lighting)</td></tr>
-<tr><td>Freelancer quality/flake</td><td>Medium</td><td>Milestone-gated payments; require playable core-loop build before 50% of cash out</td></tr>
-<tr><td>Anomalies too hard/easy for young mobile audience</td><td>Medium</td><td>Difficulty is one config table; Night 1–5 HUD counter; watch false-report rate day 1</td></tr>
-<tr><td>Client-side anomaly sniffing by exploiters</td><td>Low impact</td><td>Soft currency only; server-validated payouts; monitor</td></tr>
-<tr><td>Roblox moderation (horror limits)</td><td>Low</td><td>No gore; dread over shock; photosensitivity toggle; "Moderate fear" maturity label</td></tr>
-<tr><td>Discovery never triggers (algo ignores it)</td><td>High (base rate)</td><td>This <em>is</em> the bet; capped spend, thumbnail A/B, seed 3–5 micro-YouTubers ($0)</td></tr>
+<tr><td>The trend cools before launch, as the anomaly genre keeps filling up through 2026</td><td>Med to high</td><td>The two to three week timeline is the answer, and the aquarium setting plus The Curator set it apart from the hospital and gas-station clones</td></tr>
+<tr><td>Budget overrun, since we sit at the top of the band</td><td>Medium</td><td>The cash-plus-revenue-share deal, and a cut list agreed up front (CCTV, five anomalies, Future lighting)</td></tr>
+<tr><td>Freelancer quality or reliability</td><td>Medium</td><td>Pay by milestone, and require a playable core-loop build before more than half the cash is out</td></tr>
+<tr><td>Anomalies too hard or too easy for a young mobile audience</td><td>Medium</td><td>Difficulty is one config table, the HUD counter runs on Nights 1 to 5, and we watch the false-report rate from day one</td></tr>
+<tr><td>Exploiters reading anomaly state on the client</td><td>Low impact</td><td>Soft currency only, payouts checked on the server, and we monitor</td></tr>
+<tr><td>Roblox moderation of horror content</td><td>Low</td><td>No gore, dread over shock, a photosensitivity toggle, and a "moderate fear" maturity label</td></tr>
+<tr><td>The algorithm never picks it up</td><td>High by base rate</td><td>This is the bet. We cap the spend, test the thumbnail, and seed a handful of small YouTubers at no cost</td></tr>
 </tbody></table></div>
 
 <h2 id="s15"><span class="n">15</span>Reuse for the Fishing Game</h2>
-<p>This project is partly an R&amp;D purchase for the larger fishing/ocean title. Directly reusable:</p>
+<p>Part of this project is research we buy toward the larger fishing game. What carries over directly:</p>
 <ul>
-  <li><strong>Creature library:</strong> all 8 baseline rigs + swim-tween system → catchable fish, zero rework beyond stat tables.</li>
-  <li><strong>Water/tank visual kit:</strong> water materials, caustics rigs, bubbler particles → ocean/harbor environments.</li>
-  <li><strong>AnomalyService architecture:</strong> the data-driven catalog + handler pattern generalizes to any content-as-data system — fish species, rare-catch events, weather. The most valuable artifact of the project.</li>
-  <li><strong>ProfileService schema + receipt processing:</strong> drop-in economy backbone.</li>
-  <li><strong>The Curator / anomaly IP:</strong> a rare "anomalous catch" event ("you caught… something wrong") is a built-in crossover marketing beat between both games' lobbies.</li>
-  <li><strong>Audio bed:</strong> underwater ambience library transfers wholesale.</li>
-  <li><strong>Learnings:</strong> real data on mobile-horror-lite retention, 79–249 ₨ price performance, and which anomaly categories drive clips — direct input to the fishing game's event design.</li>
+  <li><strong>Creature library.</strong> All eight baseline rigs and the swim-tween system become catchable fish, with no rework beyond stat tables.</li>
+  <li><strong>Water and tank kit.</strong> Water materials, caustics lighting, and bubbler particles feed ocean and harbor scenes.</li>
+  <li><strong>AnomalyService pattern.</strong> The content-as-data catalog and handlers generalize to fish species, rare catches, and weather events. This is the most valuable thing the project produces.</li>
+  <li><strong>ProfileService schema and receipt handling.</strong> A drop-in economy backbone.</li>
+  <li><strong>The Curator and the anomaly idea.</strong> A rare "anomalous catch" event in the fishing game ("you caught something wrong") is a built-in crossover, and each game can promote the other in its lobby.</li>
+  <li><strong>Audio bed.</strong> The underwater ambience library moves over whole.</li>
+  <li><strong>What we learn.</strong> Real numbers on mobile horror-lite retention, how the 79 to 249 ₨ price points perform, and which anomaly categories drive clips. All of it feeds the fishing game's event design.</li>
 </ul>
-<p>Estimated reuse value: <strong>25–35 of the 82 build hours carry forward</strong> — even a killed project recovers roughly a third of its cost in the successor's budget.</p>
+<p>Roughly 25 to 35 of the 82 build hours carry forward, so even a game we shut down returns about a third of its cost to the next one.</p>
 
 </article>
 
-<p class="foot">Aquarium Anomaly GDD v1.0 &middot; July 2026 &middot; Single source of truth &mdash; all changes go through this document. &nbsp;<a href="index.html">Back to presentation</a></p>
+<p class="foot">Aquarium Anomaly GDD v1.0 &middot; July 2026 &middot; Single source of truth. &nbsp;<a href="index.html">Back to presentation</a></p>
 
 <script>
   var root = document.documentElement;
