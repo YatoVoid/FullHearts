@@ -542,15 +542,19 @@
     <div class="pane vids">
       <div class="vid">
         <button class="vfacade" type="button" data-yt="1LpZYPCyJCg" style="background-image:url(https://i.ytimg.com/vi/1LpZYPCyJCg/hqdefault.jpg)" aria-label="Play Animal Hospital gameplay"></button>
-        <div class="vcap" data-i18n="v.aa">Animal Hospital (Anomaly)<small>The proven anomaly game &mdash; our Aquarium Anomaly model</small></div>
+        <div class="vcap" data-i18n="v.aa">Animal Hospital (Anomaly)<small>Worker-job route model for Aquarium Anomaly</small></div>
+      </div>
+      <div class="vid">
+        <button class="vfacade" type="button" data-yt="2Vj0xZl8ab8" style="background-image:url(https://i.ytimg.com/vi/2Vj0xZl8ab8/hqdefault.jpg)" aria-label="Play Observation Duty gameplay"></button>
+        <div class="vcap" data-i18n="v.ah">Observation Duty<small>Hallway route model for Aquarium Anomaly</small></div>
       </div>
       <div class="vid">
         <button class="vfacade" type="button" data-yt="Tann7x4ZWbY" style="background-image:url(https://i.ytimg.com/vi/Tann7x4ZWbY/hqdefault.jpg)" aria-label="Play Sol's RNG gameplay"></button>
-        <div class="vcap" data-i18n="v.rr">Sol's RNG<small>The proven RNG roller &mdash; our Roll a Relic model</small></div>
+        <div class="vcap" data-i18n="v.rr">Sol's RNG<small>Model for Roll a Relic</small></div>
       </div>
       <div class="vid">
         <button class="vfacade" type="button" data-yt="nrdBjbESq6k" style="background-image:url(https://i.ytimg.com/vi/nrdBjbESq6k/hqdefault.jpg)" aria-label="Play Steal a Brainrot gameplay"></button>
-        <div class="vcap" data-i18n="v.sf">Steal a Brainrot<small>The proven steal loop &mdash; our Steal a Fossil model</small></div>
+        <div class="vcap" data-i18n="v.sf">Steal a Brainrot<small>Model for Steal a Fossil</small></div>
       </div>
     </div>
     </div><!-- /swipe -->
@@ -733,9 +737,10 @@
     "s13.tab1": "Наши игры",
     "s13.tab2": "&#9654; Реальный геймплей",
     "s13.swipe": "Нажми <b>Реальный геймплей</b> сверху или свайпни, чтобы увидеть игры-образцы в деле <span class=\"arrow\">&#8594;</span>",
-    "v.aa": "Animal Hospital (Anomaly)<small>Проверенная игра-аномалия &mdash; образец нашей Aquarium Anomaly</small>",
-    "v.rr": "Sol's RNG<small>Проверенный RNG-роллер &mdash; образец нашей Roll a Relic</small>",
-    "v.sf": "Steal a Brainrot<small>Проверенный цикл кражи &mdash; образец нашей Steal a Fossil</small>",
+    "v.aa": "Animal Hospital (Anomaly)<small>Образец для Aquarium Anomaly, вариант с работой</small>",
+    "v.ah": "Observation Duty<small>Образец для Aquarium Anomaly, вариант-коридор</small>",
+    "v.rr": "Sol's RNG<small>Образец для Roll a Relic</small>",
+    "v.sf": "Steal a Brainrot<small>Образец для Steal a Fossil</small>",
 
     "s14.eye": "Бюджет и правило отсева",
     "s14.h2": "Один победитель окупает всю партию.",
@@ -844,6 +849,20 @@
     });
     syncSwipe();
   }
+})();
+</script>
+<script>
+(function(){
+  try{ if('scrollRestoration' in history) history.scrollRestoration='manual'; }catch(e){}
+  var el=document.getElementById('deck');
+  var key='fhscroll:'+location.pathname;
+  function get(){ return el?el.scrollTop:(window.pageYOffset||document.documentElement.scrollTop||0); }
+  function set(v){ if(el){el.scrollTop=v;} else {window.scrollTo(0,v);} }
+  var saved=null; try{ saved=sessionStorage.getItem(key);}catch(e){}
+  if(saved!=null){ var y=parseFloat(saved)||0, tries=0;
+    (function restore(){ set(y); if(++tries<10 && Math.abs(get()-y)>2){ requestAnimationFrame(restore); } })(); }
+  var t; (el||window).addEventListener('scroll',function(){ clearTimeout(t); t=setTimeout(function(){ try{sessionStorage.setItem(key,String(get()));}catch(e){} },100); },{passive:true});
+  window.addEventListener('pagehide',function(){ try{sessionStorage.setItem(key,String(get()));}catch(e){} });
 })();
 </script>
 </body>
