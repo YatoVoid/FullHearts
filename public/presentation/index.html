@@ -4,10 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AE</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='14' y='44' width='44' height='12' rx='3' fill='%2316b877'/><rect x='66' y='44' width='20' height='12' rx='3' fill='%23b67d0e'/></svg>">
 <title>Simple Games, Real Money on Roblox</title>
 <style>
   :root {
+    --ease: cubic-bezier(.22,.61,.21,.99);
     --panel: #ffffff; --panel-2: #f4f5f0; --line: #dcded4; --text: #1a1d17;
     --muted: #5c6154; --faint: #878d7c; --accent: #16b877; --accent-deep: #0c7049;
     --gold: #b67d0e; --danger: #bd4638; --bg: #f7f7f1;
@@ -94,10 +95,10 @@
   .game .gddlink { align-self: start; margin-top: .15rem; display: inline-flex; align-items: center; gap: .5rem;
     font-family: var(--mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 600;
     color: var(--accent-deep); text-decoration: none; }
-  .game .gddlink::before { content: ""; width: 18px; height: 2px; background: var(--accent); flex: 0 0 auto; transition: width .2s; }
+  .game .gddlink::before { content: ""; width: 18px; height: 2px; background: var(--accent); flex: 0 0 auto; transition: width .2s var(--ease); }
   .game .gddlink:hover { color: var(--accent); }
   .game .gddlink:hover::before { width: 26px; }
-  .game .gddlink .ar { transition: transform .2s; }
+  .game .gddlink .ar { transition: transform .2s var(--ease); }
   .game .gddlink:hover .ar { transform: translateX(3px); }
 
   .swipe-wrap { position: relative; }
@@ -111,7 +112,7 @@
   .vfacade { position: relative; aspect-ratio: 16/9; width: 100%; padding: 0; border: none; cursor: pointer;
     background: #000 center/cover no-repeat; }
   .vfacade::after { content: "\25B6"; position: absolute; inset: 0; display: grid; place-items: center;
-    font-size: 2.2rem; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.6); background: rgba(0,0,0,.18); transition: background .2s; }
+    font-size: 2.2rem; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.6); background: rgba(0,0,0,.18); transition: background .2s var(--ease); }
   .vfacade:hover::after { background: rgba(0,0,0,.34); }
   .vid iframe { width: 100%; aspect-ratio: 16/9; border: 0; display: block; }
   .vid .vcap { padding: .6rem .8rem; font-size: clamp(.8rem,2vw,.9rem); font-weight: 700; }
@@ -120,7 +121,7 @@
     border: 1px solid var(--line); border-radius: 999px; background: var(--panel-2); }
   .swipe-tabs button { font-family: var(--mono); font-size: clamp(.72rem,1.9vw,.82rem); font-weight: 600;
     border: none; background: none; color: var(--muted); cursor: pointer; padding: .5rem 1rem;
-    border-radius: 999px; display: inline-flex; align-items: center; gap: .4rem; white-space: nowrap; transition: background .2s, color .2s; }
+    border-radius: 999px; display: inline-flex; align-items: center; gap: .4rem; white-space: nowrap; transition: background .2s var(--ease), color .2s var(--ease); }
   .swipe-tabs button:hover { color: var(--text); }
   .swipe-tabs button.on { background: var(--accent); color: #08150e; }
   .swipe-tip { font-family: var(--mono); font-size: clamp(.66rem,1.7vw,.72rem); color: var(--faint); }
@@ -132,6 +133,9 @@
   .mlab { font-size: .62rem; font-family: var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
   .mval { font-size: clamp(.8rem,2.1vw,.9rem); font-weight: 700; font-family: var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
   .mval.g { color: var(--gold); }
+  .mval.two { line-height: 1.45; }
+  .mval .rt { font-size: .58rem; color: var(--faint); letter-spacing: .08em; margin-right: .35rem; font-weight: 600; }
+  .games .game:has(.gddlink) { border-color: color-mix(in srgb, var(--accent) 30%, var(--line)); }
   .tag { display: inline-flex; align-items: center; gap: .35rem; font-family: var(--mono);
     font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; padding: .28rem .55rem;
     border-radius: 999px; border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); color: var(--accent-deep); white-space: nowrap; }
@@ -165,13 +169,14 @@
   .tl .what { font-size: clamp(.88rem,2.2vw,.95rem); }
   .tl .what b { font-weight: 700; }
 
-  .rail { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0; z-index: 50; transition: width .25s ease; }
+  .rail { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0; z-index: 50; transition: width .25s var(--ease); }
   .controls { position: fixed; top: max(.75rem, env(safe-area-inset-top)); right: .75rem; z-index: 50; display: flex; gap: .45rem; }
   .pill { font-family: var(--mono); font-size: clamp(.66rem,1.9vw,.74rem); cursor: pointer; color: var(--muted);
     background: color-mix(in srgb, var(--bg) 80%, transparent); backdrop-filter: blur(8px);
     border: 1px solid var(--line); border-radius: 999px; padding: .4rem .6rem; line-height: 1; display: inline-flex; align-items: center; gap: .3rem; }
   .pill:hover { color: var(--accent); }
-  .pill:focus-visible, .hud button:focus-visible, .dots button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .pill:focus-visible, .hud button:focus-visible, .dots button:focus-visible,
+  .vfacade:focus-visible, .swipe-tabs button:focus-visible, .game .gddlink:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .langseg .off { color: var(--faint); font-weight: 400; }
 
   .hud { position: fixed; right: .75rem; bottom: max(.75rem, env(safe-area-inset-bottom)); z-index: 50;
@@ -186,14 +191,14 @@
   .dots { position: fixed; left: .8rem; top: 50%; transform: translateY(-50%); z-index: 50;
     display: flex; flex-direction: column; gap: .5rem; }
   .dots button { width: 9px; height: 9px; padding: 0; border-radius: 50%; border: 1.5px solid var(--faint);
-    background: transparent; cursor: pointer; transition: all .2s; }
+    background: transparent; cursor: pointer; transition: background .2s var(--ease), border-color .2s var(--ease), transform .2s var(--ease); }
   .dots button.on { background: var(--accent); border-color: var(--accent); transform: scale(1.3); }
 
-  .slide > * { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
+  .slide > * { opacity: 0; transform: translateY(10px); transition: opacity .45s var(--ease), transform .45s var(--ease); }
   .slide.vis > * { opacity: 1; transform: none; }
-  .slide.vis > *:nth-child(2){transition-delay:.05s} .slide.vis > *:nth-child(3){transition-delay:.1s}
-  .slide.vis > *:nth-child(4){transition-delay:.15s} .slide.vis > *:nth-child(5){transition-delay:.2s}
-  .slide.vis > *:nth-child(6){transition-delay:.25s}
+  .slide.vis > *:nth-child(2){transition-delay:.04s} .slide.vis > *:nth-child(3){transition-delay:.09s}
+  .slide.vis > *:nth-child(4){transition-delay:.13s} .slide.vis > *:nth-child(5){transition-delay:.18s}
+  .slide.vis > *:nth-child(6){transition-delay:.22s}
   @media (prefers-reduced-motion: reduce) { .slide > * { opacity: 1; transform: none; transition: none; } }
 
   @media (max-width: 860px) { .dots { display: none; } }
@@ -507,8 +512,8 @@
         <p class="gref" data-i18n="g.aa.ref">Modeled on <b>Animal Hospital (Anomaly)</b>, a platform-wide hit since May 2026.</p>
         <div class="game-meta">
           <div><span class="mlab" data-i18n="m.genre">Genre</span><span class="mval" data-i18n="g.aa.gn">anomaly / horror-lite</span></div>
-          <div><span class="mlab" data-i18n="m.cost">Build</span><span class="mval g" data-i18n="g.aa.c">$600 to $1K</span></div>
-          <div><span class="mlab" data-i18n="m.time">Time</span><span class="mval" data-i18n="g.aa.tm">2 to 3 weeks</span></div>
+          <div><span class="mlab" data-i18n="m.cost">Build</span><span class="mval g two" data-i18n="g.aa.c"><span class="rt">A</span>$600 to $1K<br><span class="rt">B</span>$1.35K to $2.2K</span></div>
+          <div><span class="mlab" data-i18n="m.time">Time</span><span class="mval two" data-i18n="g.aa.tm"><span class="rt">A</span>2 to 3 weeks<br><span class="rt">B</span>3 to 6 weeks</span></div>
           <div><span class="mlab" data-i18n="m.base">Base case</span><span class="mval" data-i18n="g.aa.b">$500 to $2.5K</span></div>
         </div>
         <a class="gddlink" href="aquarium-anomaly-gdd.html" data-i18n="g.aa.gdd">Design documents <span class="ar">&#8594;</span></a>
@@ -724,7 +729,7 @@
     "s13.h2": "Наши первые три ставки: <span class=\"hl\">маленькие, дешёвые, по тренду.</span>",
     "s13.t1": "приоритет", "s13.t2": "самая дешёвая", "s13.t3": "выше потолок",
     "g.aa": "Ночная смена в аквариуме. Замечай, что не так в каждом резервуаре, рыба задом наперёд, пустой стенд, и сообщай об этом, пока не вышло время.",
-    "g.aa.gn": "аномалии / лёгкий хоррор", "g.aa.c": "$600 – $1K", "g.aa.tm": "2 – 3 недели", "g.aa.b": "$500 – $2.5K",
+    "g.aa.gn": "аномалии / лёгкий хоррор", "g.aa.c": "<span class=\"rt\">A</span>$600 – $1K<br><span class=\"rt\">B</span>$1.35K – $2.2K", "g.aa.tm": "<span class=\"rt\">A</span>2 – 3 недели<br><span class=\"rt\">B</span>3 – 6 недель", "g.aa.b": "$500 – $2.5K",
     "g.aa.ref": "По образцу <b>Animal Hospital (Anomaly)</b>, хит платформы с мая 2026.",
     "g.aa.gdd": "Дизайн-документы <span class=\"ar\">&#8594;</span>",
     "g.rr": "Кручи реликвии с растущей редкостью, надевай лучшие и авто-дуэль с другими игроками за место в топе. RNG плюс лёгкий бой.",
