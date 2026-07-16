@@ -125,7 +125,7 @@
   <div class="pillar"><b>You have a job to do</b>The player has a real job every shift. Anomaly-spotting sits on top of active upkeep work, the way Animal Hospital layers it on top of running a clinic. Being busy is what makes the scares land.</div>
   <div class="pillar"><b>"Wait, was that always there?"</b>Every anomaly should make the player second-guess themselves. The tension comes from not being sure. The player's own memory is a core mechanic.</div>
   <div class="pillar"><b>One thumb, 90 seconds to fun</b>A new mobile player should understand the game and find their first anomaly inside 90 seconds. No long tutorial.</div>
-  <div class="pillar"><b>Content is data, not new maps</b>Anomalies and most tasks are rows in a table. Adding ten more after launch should take under a day. That is what keeps the game cheap to run.</div>
+  <div class="pillar"><b>Content is data, not new maps</b>Anomalies and most tasks are rows in a table. Adding ten more after launch should take under a day.</div>
   <div class="pillar"><b>Made to be filmed</b>Every rare anomaly is a possible clip. The reveals are set up for a camera, with one signature creature people put on thumbnails.</div>
 </div>
 
@@ -158,7 +158,7 @@
 
 <h2 id="s3"><span class="n">03</span>Shift Tasks (the active-work layer)</h2>
 <p>Every night has two jobs running in the same window: the anomaly patrol from §2, and <strong>Shift Tasks</strong>, a rotating checklist of aquarium upkeep. Tasks appear on a small clipboard on the HUD with soft deadlines. Doing them earns Credits and keeps your shift rating up. Skipping them costs pay and, at higher tiers, triggers a consequence (a broken filter fogs a tank, which makes anomalies harder to spot).</p>
-<p>The design rule for every task: it must either <strong>occupy your hands</strong>, <strong>fix your gaze</strong>, or <strong>move you somewhere specific</strong>. That is what makes the anomaly layer scarier, because the game can schedule anomalies against your attention instead of only against a timer.</p>
+<p>The design rule for every task: it must either <strong>occupy your hands</strong>, <strong>fix your gaze</strong>, or <strong>move you somewhere specific</strong>. That is what makes the anomaly layer scarier: the game can schedule anomalies against your attention as well as the timer.</p>
 
 <div class="table-wrap"><table>
 <thead><tr><th>Task</th><th>What the player does</th><th>Interaction</th><th>Why it matters</th><th>Build</th></tr></thead>
@@ -199,9 +199,9 @@
   clipTag = false,                -- true = rare, staged for filming
 }</code></pre>
 <ul>
-  <li><strong>Shared handlers, not one script per anomaly.</strong> About eight handlers cover the whole catalogue: <code>SwapMeshVariant</code>, <code>SwapTexture</code>, <code>ToggleVisibility</code>, <code>PlayAnimOverride</code>, <code>MoveModel</code>, <code>LightingOverride</code>, <code>SoundEmit</code>, <code>SpawnEntity</code>. A new anomaly is usually one table row plus one variant asset.</li>
+  <li><strong>Shared handlers.</strong> About eight handlers cover the whole catalogue: <code>SwapMeshVariant</code>, <code>SwapTexture</code>, <code>ToggleVisibility</code>, <code>PlayAnimOverride</code>, <code>MoveModel</code>, <code>LightingOverride</code>, <code>SoundEmit</code>, <code>SpawnEntity</code>. A new anomaly is usually one table row plus one variant asset.</li>
   <li><strong>Spawn table.</strong> At the start of a shift, <code>AnomalyService</code> picks N anomalies (N grows by night), filters by <code>minNight</code>, weights by <code>weight</code>, avoids putting two in the same tank, and keeps a spread of difficulty so a shift is never all easy or all hard. Some slots are set to fire 60 to 180 seconds in.</li>
-  <li><strong>Task-aware scheduling.</strong> The director also reads the player's current task state (see §3), so it can time an anomaly for the moment your hands are full or your back is turned. This is one small hook, not a new system.</li>
+  <li><strong>Task-aware scheduling.</strong> The director also reads the player's current task state (see §3), so it can time an anomaly for the moment your hands are full or your back is turned. This is one small hook.</li>
   <li><strong>Report check.</strong> The client raycasts from the reticle to find the tank, then fires a <code>RemoteEvent</code> with the tank id and category. The server checks everything: is there a live anomaly in that tank, does the category match, has it already been reported. A matching category pays an extra 25 percent. The right tank with the wrong category still counts as found, so it stays forgiving for younger players while rewarding the ones who learn the categories.</li>
   <li><strong>False reports.</strong> Reporting a clean tank costs one strike and a small pay cut, with a mocking announcement over the PA ("Attention staff: the fish are fine."). Strikes reset each shift, so reporting stays a real decision. Reporting all eight tanks on purpose always loses.</li>
   <li><strong>Difficulty budget.</strong> Each night has a point budget, so Night 6 might be 11 points made of one 4, one 3, and two 2s. All of it tunes from one config table.</li>
@@ -256,9 +256,9 @@
 <tr><td>15 and up (Overtime)</td><td>6, endless rotation</td><td>7 min</td><td>Prestige loop: a weekly leaderboard of back-to-back S grades.</td></tr>
 </tbody></table></div>
 <ul>
-  <li><strong>Two interleaved tracks.</strong> The patrol track can end your shift (3 strikes, or too many missed anomalies). The task track cannot fail the shift on its own. An ignored task ticks down to a consequence (a fogged tank, erratic fish, a slip hazard, a pay cut) that makes the patrol track harder. Anomalies can kill your shift, tasks can only make it harder and poorer, so the player always knows which fire to fight first.</li>
+  <li><strong>Two interleaved tracks.</strong> The patrol track can end your shift (3 strikes, or too many missed anomalies). The task track cannot fail the shift on its own. An ignored task ticks down to a consequence (a fogged tank, erratic fish, a slip hazard, a pay cut) that makes the patrol track harder. The player always knows which fire to fight first.</li>
   <li><strong>Strikes.</strong> Three false reports end the shift, and you keep 25 percent of the pay. There is no sanity meter at launch (see the note below). The feeling of losing your grip comes from the lights, the audio, and the task consequences degrading what you can see.</li>
-  <li><strong>Failure does not set you back.</strong> Failing never lowers your night tier. You retry the same night. It costs time, not progress, which matters for keeping younger players.</li>
+  <li><strong>Failure does not set you back.</strong> Failing never lowers your night tier. You retry the same night and lose only the time.</li>
   <li><strong>Grades.</strong> S means every anomaly found, every category right, every task done, no strikes. Grades only gate the Overtime leaderboard, but the results screen makes an S feel earned with a gold stamp and its own sound.</li>
 </ul>
 <blockquote><strong>On a sanity meter.</strong> We keep 3-strikes as the only fail state for launch. Two fail meters is a lot for a new player in a 5 minute shift, and Animal Hospital earns its sanity meter with a much longer session. The task-consequence system already does most of what a sanity meter would do, which is degrade the player's ability to perceive. A Composure meter (drained by Curator proximity and witnessed anomalies, restored at a break-room coffee machine, unlocking at Night 8 and up) is designed and priced in §12 as a clean post-launch addition, so the door stays open once retention data justifies it.</blockquote>
@@ -312,7 +312,7 @@
 <tr><td>₡2,000 Credit Pack</td><td>149</td><td>The buy-the-whole-tree option.</td></tr>
 <tr><td>Shift Skip (unlock the next night tier, up to 3 times)</td><td>99</td><td>For players who are stuck. Capped so it does not break the difficulty curve.</td></tr>
 </tbody></table></div>
-<p><strong>Guardrails.</strong> No loot boxes, no gacha, no countdown timers on purchases, and no purchase prompts during a scare or on the termination screen. Second Chance is offered once, calmly, with a decline button the same size as the buy button. All prices show before any confirm, and nothing paid blocks seeing the content. Money buys speed and status, never the only way through. That is the right call for a young audience, and it is also the safe call, since Roblox moderates predatory patterns more each year.</p>
+<p><strong>Guardrails.</strong> No loot boxes, no gacha, no countdown timers on purchases, and no purchase prompts during a scare or on the termination screen. Second Chance is offered once, calmly, with a decline button the same size as the buy button. All prices show before any confirm, and nothing paid blocks seeing the content. Purchases buy speed and status. That is the right call for a young audience, and Roblox moderates predatory patterns more each year.</p>
 
 <h2 id="s8"><span class="n">08</span>Retention and Sharing</h2>
 <h4>Reasons to come back each day</h4>
@@ -340,12 +340,12 @@
   <li><strong>Anomaly Log.</strong> A grid of cards, with a "?" silhouette for the ones not yet found.</li>
   <li><strong>Settings.</strong> Volume, camera sensitivity, a reduced-flash toggle (needed because of the flicker anomalies), and graphics quality.</li>
 </ol>
-<p><strong>Camera.</strong> The game plays in first person on both mobile and PC. First person carries the atmosphere here: it puts the player inside the dark, holds the water and the glass right up against the view, and lets us control exactly what they can and cannot see, which is what makes an anomaly behind their back land when they turn around. Third person would flatten the mood and show too much of the room at once. The catwalk and the tank interiors are built to be felt from eye level.</p>
+<p><strong>Camera.</strong> The game plays in first person on both mobile and PC. First person carries the atmosphere here: it puts the player inside the dark, holds the water and the glass right up against the view, and lets us control exactly what they can and cannot see, so an anomaly behind their back lands when they turn around. The catwalk and the tank interiors are built to be felt from eye level.</p>
 <p><strong>Mobile first controls.</strong> One-thumb movement with a drag-to-look camera. Both the Report button and the task interact button are large, live in the thumb zone, and only appear in context (over a tank, or next to a task), so there is no clutter. Interact range is generous, about 12 studs, and tap targets are at least 44 points. On PC, the mouse looks, E interacts and reports, F is the flashlight. Console uses ContextActionService.</p>
 
 <h2 id="s10"><span class="n">10</span>Art and Audio</h2>
 <p><strong>Look.</strong> Low poly, with lighting doing most of the work. Flat-shaded models with chunky shapes that read on a five-inch screen, Future lighting where the budget allows and a Voxel fallback for weaker phones. The palette is deep teal-black (<code>#0A1A22</code>), tank-glow cyan (<code>#38D6E0</code>), and a warning amber (<code>#E8A13C</code>) for the interface, with one color held back: anomaly red (<code>#C7303A</code>), used only for a confirmed anomaly so it keeps its meaning.</p>
-<p><strong>Asset list, kept short.</strong> One aquarium interior (a loop corridor, a lobby, a break room, a security office, a filter room, a supply room, a catwalk over the tanks, and about eight tank alcoves), eight tank sets with baseline creatures, roughly 25 anomaly variant meshes and textures (mostly recolors and mesh swaps of the baselines), the task props (sponge, mop, feed bucket, net pole, filter cartridge, dial panel), The Curator model, one staff uniform plus three recolors, and the flashlight, tablet, and scanner props. A lot of the fish are free marketplace meshes retextured to fit, which is fine at this budget and worth stating plainly.</p>
+<p><strong>Asset list, kept short.</strong> One aquarium interior (a loop corridor, a lobby, a break room, a security office, a filter room, a supply room, a catwalk over the tanks, and about eight tank alcoves), eight tank sets with baseline creatures, roughly 25 anomaly variant meshes and textures (mostly recolors and mesh swaps of the baselines), the task props (sponge, mop, feed bucket, net pole, filter cartridge, dial panel), The Curator model, one staff uniform plus three recolors, and the flashlight, tablet, and scanner props. A lot of the fish are free marketplace meshes retextured to fit, which is fine at this budget.</p>
 <p><strong>Audio carries the horror,</strong> and it is the cheapest scare per dollar. A low tank hum runs under everything, each zone has its own bubbler loop (and one anomaly, #15, is the absence of it), a muffled whale-song layer sits far off, a heartbeat comes in under 60 seconds, and the "ANOMALY CONTAINED" sound has to feel good, since it is the game's reward chime. The task sounds do double duty: a scrub, a pour, a valve creak, and the filter rattle that calls you into the one room with no view. Add three Curator sounds and the glass knocks. All of it comes from Roblox's licensed library and CC0 sources, so the cost stays near zero.</p>
 
 <h2 id="s11"><span class="n">11</span>Technical Architecture</h2>
@@ -397,7 +397,7 @@
 <tr><td>Likely</td><td>About 20 percent overrun, normal for a six-system game</td><td>~176</td><td>$2,100</td></tr>
 <tr><td>Worst case</td><td>50 to 60 percent over, a mid-project freelancer swap or the director integration fighting back</td><td>~225</td><td>$2,700</td></tr>
 </tbody></table></div>
-<p>The honest planning number is <strong>$1,800 to $2,200</strong>, with $2,700 held in mind as the bad outcome. At $12 an hour the biggest cost risk is not the rate, it is rework, because the new layer touches the anomaly director, the shift loop, and the economy, the three systems everything else depends on.</p>
+<p>The honest planning number is <strong>$1,800 to $2,200</strong>, with $2,700 held in mind as the bad outcome. At $12 an hour the biggest cost risk is rework: the new layer touches the anomaly director, the shift loop, and the economy, the three systems everything else depends on.</p>
 <h3>Minimum viable launch versus the full polished game</h3>
 <p><strong>MVP floor: about 112 hours, $1,344, call it $1,350 to $1,600 with overrun.</strong> Baseline 82 hours plus only the task framework (N1), algae cleaning (N2), mopping (N3), feeding (N4), water chemistry (N6), the economy update (N10), and a trimmed 5 hours of balancing. This ships a real active-work game: the anchor task, two hands-busy tasks, one gaze-lock minigame, and task pay. It cuts the filter room, Skimmer Duty, Reading Log, and the fancy director integration. Anomalies still spawn on their own schedule and just happen to catch you working, which is about 70 percent of the effect for none of N9's cost.</p>
 <p><strong>Full polished game: about 176 hours, $2,100 likely.</strong> Everything in the table above, including director integration, all seven tasks, and full balancing.</p>
@@ -409,12 +409,12 @@
 <ol>
   <li>Cut co-op (O3), saves $300. Recommended no matter what.</li>
   <li>Cut defense (O2) and sanity (O1), saves $276. Ship 3-strikes only, add these later.</li>
-  <li>Cut director integration (N9) and half the rework buffer, saves about $96. Anomalies no longer aim at your busy hands, they just coexist with them. Fine at launch.</li>
+  <li>Cut director integration (N9) and half the rework buffer, saves about $96. Anomalies then spawn on their own schedule and coexist with your work. Fine at launch.</li>
   <li>Cut filter room (N5), Skimmer (N7), Reading Log (N8), saves $192. This is the MVP floor.</li>
   <li>Below that you are back to the observation game, which is the design we are moving away from. Do not cut past step 4.</li>
 </ol>
 <h3>The honest verdict on budget</h3>
-<p>The full game with the active-work layer does not fit the original $600 to $1,000 band, and it is better to say so now than to find out in week 3. The observation-only game was already priced at $1,044, at the top of that band. Adding the layer that makes this competitive with Animal Hospital costs real money, because it adds five to seven interaction systems and touches every part of the core loop. The new realistic bands:</p>
+<p>The full game with the active-work layer does not fit the original $600 to $1,000 band. The observation-only game was already priced at $1,044, at the top of that band, and the layer that makes this competitive with Animal Hospital adds five to seven interaction systems and touches every part of the core loop. The new realistic bands:</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Version</th><th>Cost</th><th>Time</th><th>Notes</th></tr></thead>
 <tbody>
@@ -453,7 +453,7 @@
 <tr><td>Qualified playthrough (algorithm signal)</td><td>bottom quarter</td><td>n/a</td><td>above the middle</td></tr>
 </tbody></table></div>
 <p>Secondary numbers to watch: tutorial-shift completion (aim for 85 percent or higher, and if it is lower the onboarding is broken and gets fixed before judging anything else), the false-report rate (if more than 40 percent of reports are wrong, the tells are too subtle for the audience), task-completion rate (if players ignore tasks, the pay split or the deadlines need tuning), and the Second Chance attach rate at terminations, which tells us whether the frustration purchase works.</p>
-<blockquote>The rule we set in advance: if after one round of changes (one content drop and one onboarding fix, roughly two weeks) Day 1 retention is still under 25 percent, we stop spending. The map and systems get archived for the fishing game (§16). This is a budgeted bet on a trend, not a commitment. The higher build cost makes the gate matter more, not less.</blockquote>
+<blockquote>The rule we set in advance: if after one round of changes (one content drop and one onboarding fix, roughly two weeks) Day 1 retention is still under 25 percent, we stop spending. The map and systems get archived for the fishing game (§16). This is a budgeted bet on a trend. The higher build cost makes the gate matter more.</blockquote>
 
 <h2 id="s15"><span class="n">15</span>Risks and Mitigations</h2>
 <div class="table-wrap"><table>
@@ -464,7 +464,7 @@
 <tr><td>Two-track loop overwhelms new players</td><td>Medium</td><td>Tasks never fail the shift on their own, Night 1 to 2 is light, the HUD counter runs early, and task-completion rate is watched from day one</td></tr>
 <tr><td>Freelancer quality or reliability, more exposed now with more systems</td><td>Medium</td><td>Pay by milestone, require a playable core-loop build before more than half the cash is out, and hold the rework buffer in reserve</td></tr>
 <tr><td>Anomalies too hard or too easy for a young mobile audience</td><td>Medium</td><td>Difficulty is one config table, the HUD counter runs on Nights 1 to 5, and we watch the false-report rate from day one</td></tr>
-<tr><td>Roblox moderation of horror content</td><td>Low</td><td>No gore, dread over shock, a photosensitivity toggle, and a "moderate fear" maturity label</td></tr>
+<tr><td>Roblox moderation of horror content</td><td>Low</td><td>No gore; the horror works through dread. A photosensitivity toggle and a "moderate fear" maturity label</td></tr>
 <tr><td>The algorithm never picks it up</td><td>High by base rate</td><td>This is the bet. We cap the spend, test the thumbnail, and seed a handful of small YouTubers at no cost</td></tr>
 </tbody></table></div>
 
@@ -501,7 +501,7 @@
   <div class="pillar"><b>У вас есть работа</b>У игрока есть настоящая работа каждую смену. Поиск аномалий накладывается поверх активного обслуживания, так же как Animal Hospital кладёт его поверх управления клиникой. Именно занятость делает пугающие моменты действенными.</div>
   <div class="pillar"><b>«Погодите, это всегда было тут?»</b>Каждая аномалия должна заставлять игрока усомниться в себе. Напряжение рождается из неуверенности. Собственная память игрока это ключевая механика.</div>
   <div class="pillar"><b>Один палец, 90 секунд до веселья</b>Новый мобильный игрок должен понять игру и найти свою первую аномалию за 90 секунд. Никакого длинного обучения.</div>
-  <div class="pillar"><b>Контент это данные, а не новые карты</b>Аномалии и большинство задач это строки в таблице. Добавить ещё десяток после запуска должно занимать меньше дня. Именно это делает игру дешёвой в поддержке.</div>
+  <div class="pillar"><b>Контент это данные, а не новые карты</b>Аномалии и большинство задач это строки в таблице. Добавить ещё десяток после запуска должно занимать меньше дня.</div>
   <div class="pillar"><b>Создано для съёмки</b>Каждая редкая аномалия это потенциальный клип. Появления поставлены под камеру, и есть одно фирменное существо, которое люди ставят на превью.</div>
 </div>
 
@@ -534,7 +534,7 @@
 
 <h2 id="s3"><span class="n">03</span>Задачи смены (слой активной работы)</h2>
 <p>Каждая ночь ведёт две работы в одном окне: патруль аномалий из §2 и <strong>Задачи смены</strong>, чередующийся список дел по обслуживанию аквариума. Задачи появляются на маленьком планшете в интерфейсе с мягкими сроками. Их выполнение приносит Кредиты и держит ваш рейтинг смены высоким. Пропуск задач стоит платы и на высоких уровнях запускает последствие (сломанный фильтр затуманивает аквариум, из-за чего аномалии труднее заметить).</p>
-<p>Правило дизайна для каждой задачи: она должна либо <strong>занять ваши руки</strong>, либо <strong>приковать ваш взгляд</strong>, либо <strong>переместить вас в конкретное место</strong>. Именно это делает слой аномалий страшнее, ведь игра может расставлять аномалии против вашего внимания, а не только против таймера.</p>
+<p>Правило дизайна для каждой задачи: она должна либо <strong>занять ваши руки</strong>, либо <strong>приковать ваш взгляд</strong>, либо <strong>переместить вас в конкретное место</strong>. Именно это делает слой аномалий страшнее: игра может подгадывать аномалии под ваше внимание вдобавок к таймеру.</p>
 
 <div class="table-wrap"><table>
 <thead><tr><th>Задача</th><th>Что делает игрок</th><th>Взаимодействие</th><th>Почему это важно</th><th>Сложность сборки</th></tr></thead>
@@ -575,9 +575,9 @@
   clipTag = false,                -- true = редкая, поставлена для съёмки
 }</code></pre>
 <ul>
-  <li><strong>Общие обработчики, а не один скрипт на аномалию.</strong> Около восьми обработчиков покрывают весь каталог: <code>SwapMeshVariant</code>, <code>SwapTexture</code>, <code>ToggleVisibility</code>, <code>PlayAnimOverride</code>, <code>MoveModel</code>, <code>LightingOverride</code>, <code>SoundEmit</code>, <code>SpawnEntity</code>. Новая аномалия это обычно одна строка таблицы плюс один вариантный ассет.</li>
+  <li><strong>Общие обработчики.</strong> Около восьми обработчиков покрывают весь каталог: <code>SwapMeshVariant</code>, <code>SwapTexture</code>, <code>ToggleVisibility</code>, <code>PlayAnimOverride</code>, <code>MoveModel</code>, <code>LightingOverride</code>, <code>SoundEmit</code>, <code>SpawnEntity</code>. Новая аномалия это обычно одна строка таблицы плюс один вариантный ассет.</li>
   <li><strong>Таблица появления.</strong> В начале смены <code>AnomalyService</code> выбирает N аномалий (N растёт по ночам), фильтрует по <code>minNight</code>, взвешивает по <code>weight</code>, избегает помещать две в один аквариум и сохраняет разброс сложности, чтобы смена никогда не была вся лёгкой или вся сложной. Некоторые слоты настроены сработать через 60 до 180 секунд.</li>
-  <li><strong>Планирование с учётом задач.</strong> Режиссёр также читает текущее состояние задач игрока (см. §3), так что может подгадать аномалию под момент, когда ваши руки заняты или спина повёрнута. Это один маленький хук, а не новая система.</li>
+  <li><strong>Планирование с учётом задач.</strong> Режиссёр также читает текущее состояние задач игрока (см. §3), так что может подгадать аномалию под момент, когда ваши руки заняты или спина повёрнута. Это один маленький хук.</li>
   <li><strong>Проверка доклада.</strong> Клиент пускает луч из прицела, чтобы найти аквариум, затем шлёт <code>RemoteEvent</code> с id аквариума и категорией. Сервер проверяет всё: есть ли активная аномалия в этом аквариуме, совпадает ли категория, не сообщалось ли о ней уже. Совпавшая категория платит на 25 процентов больше. Верный аквариум с неверной категорией всё равно считается найденным, так что игра остаётся снисходительной к младшим игрокам, вознаграждая тех, кто выучил категории.</li>
   <li><strong>Ложные доклады.</strong> Доклад о чистом аквариуме стоит одного штрафного очка и небольшого вычета из платы, с насмешливым объявлением по громкой связи («Внимание, персонал: с рыбами всё в порядке.»). Штрафные очки сбрасываются каждую смену, так что доклад остаётся настоящим решением. Доклад обо всех восьми аквариумах нарочно всегда ведёт к поражению.</li>
   <li><strong>Бюджет сложности.</strong> У каждой ночи есть бюджет очков, так что Night 6 может быть 11 очков из одной 4, одной 3 и двух 2. Всё это настраивается из одной конфигурационной таблицы.</li>
@@ -632,9 +632,9 @@
 <tr><td>15 и выше (Overtime)</td><td>6, бесконечная ротация</td><td>7 мин</td><td>Престижный цикл: еженедельная таблица лидеров по S-оценкам подряд.</td></tr>
 </tbody></table></div>
 <ul>
-  <li><strong>Два переплетённых трека.</strong> Патрульный трек может завершить вашу смену (3 штрафных очка или слишком много пропущенных аномалий). Трек задач сам по себе не может провалить смену. Проигнорированная задача отсчитывает время до последствия (затуманенный аквариум, беспорядочные рыбы, риск поскользнуться, вычет из платы), которое усложняет патрульный трек. Аномалии могут погубить вашу смену, задачи могут лишь сделать её труднее и беднее, так что игрок всегда знает, какой пожар тушить первым.</li>
+  <li><strong>Два переплетённых трека.</strong> Патрульный трек может завершить вашу смену (3 штрафных очка или слишком много пропущенных аномалий). Трек задач сам по себе не может провалить смену. Проигнорированная задача отсчитывает время до последствия (затуманенный аквариум, беспорядочные рыбы, риск поскользнуться, вычет из платы), которое усложняет патрульный трек. Игрок всегда знает, какой пожар тушить первым.</li>
   <li><strong>Штрафные очки.</strong> Три ложных доклада завершают смену, и вы сохраняете 25 процентов платы. На запуске нет шкалы рассудка (см. примечание ниже). Ощущение, что вы теряете контроль, идёт от света, звука и последствий задач, ухудшающих то, что вы можете видеть.</li>
-  <li><strong>Провал не отбрасывает назад.</strong> Провал никогда не понижает ваш уровень ночей. Вы переигрываете ту же ночь. Это стоит времени, а не прогресса, что важно для удержания младших игроков.</li>
+  <li><strong>Провал не отбрасывает назад.</strong> Провал никогда не понижает ваш уровень ночей. Вы переигрываете ту же ночь и теряете только время.</li>
   <li><strong>Оценки.</strong> S означает, что все аномалии найдены, все категории верны, все задачи выполнены, штрафных очков нет. Оценки открывают только таблицу лидеров Overtime, но экран результатов делает так, что S ощущается заслуженной, с золотой печатью и собственным звуком.</li>
 </ul>
 <blockquote><strong>О шкале рассудка.</strong> На запуске мы оставляем 3 штрафных очка единственным состоянием проигрыша. Две шкалы провала это много для нового игрока в 5-минутной смене, а Animal Hospital оправдывает свою шкалу рассудка гораздо более долгой сессией. Система последствий задач уже делает большую часть того, что делала бы шкала рассудка, а именно ухудшает способность игрока воспринимать. Шкала Самообладания (истощается близостью Куратора и увиденными аномалиями, восстанавливается у кофемашины в комнате отдыха, открывается на Night 8 и выше) спроектирована и оценена в §12 как чистое послезапусковое дополнение, так что дверь остаётся открытой, как только данные удержания это оправдают.</blockquote>
@@ -688,7 +688,7 @@
 <tr><td>Набор Кредитов ₡2,000</td><td>149</td><td>Вариант купить всё дерево.</td></tr>
 <tr><td>Пропуск смены (открыть следующий уровень ночей, до 3 раз)</td><td>99</td><td>Для застрявших игроков. Ограничен, чтобы не ломать кривую сложности.</td></tr>
 </tbody></table></div>
-<p><strong>Ограждения.</strong> Никаких лутбоксов, никакой гачи, никаких таймеров обратного отсчёта на покупках и никаких предложений о покупке во время испуга или на экране увольнения. Второй шанс предлагается один раз, спокойно, с кнопкой отказа того же размера, что и кнопка покупки. Все цены показаны до любого подтверждения, и ничто платное не блокирует просмотр контента. Деньги покупают скорость и статус, но никогда не единственный путь вперёд. Это правильное решение для юной аудитории, и оно же безопасное, ведь Roblox с каждым годом всё строже модерирует хищнические схемы.</p>
+<p><strong>Ограждения.</strong> Никаких лутбоксов, никакой гачи, никаких таймеров обратного отсчёта на покупках и никаких предложений о покупке во время испуга или на экране увольнения. Второй шанс предлагается один раз, спокойно, с кнопкой отказа того же размера, что и кнопка покупки. Все цены показаны до любого подтверждения, и ничто платное не блокирует просмотр контента. Покупки дают скорость и статус. Это правильное решение для юной аудитории, и Roblox с каждым годом всё строже модерирует хищнические схемы.</p>
 
 <h2 id="s8"><span class="n">08</span>Удержание и распространение</h2>
 <h4>Причины возвращаться каждый день</h4>
@@ -716,12 +716,12 @@
   <li><strong>Журнал аномалий.</strong> Сетка карточек, с силуэтом «?» для ещё не найденных.</li>
   <li><strong>Настройки.</strong> Громкость, чувствительность камеры, переключатель сниженного мерцания (нужен из-за мерцающих аномалий) и качество графики.</li>
 </ol>
-<p><strong>Камера.</strong> Игра идёт от первого лица и на мобильных, и на ПК. От первого лица здесь держится атмосфера: она помещает игрока внутрь темноты, прижимает воду и стекло вплотную к обзору и позволяет нам точно управлять тем, что он может и не может видеть, а это и делает так, что аномалия за спиной срабатывает, когда он оборачивается. От третьего лица настроение сплющилось бы и показывало бы слишком много комнаты разом. Мостки и внутренности аквариумов сделаны так, чтобы их ощущали с уровня глаз.</p>
+<p><strong>Камера.</strong> Игра идёт от первого лица и на мобильных, и на ПК. От первого лица здесь держится атмосфера: она помещает игрока внутрь темноты, прижимает воду и стекло вплотную к обзору и позволяет нам точно управлять тем, что он может и не может видеть, поэтому аномалия за спиной срабатывает, когда он оборачивается. Мостки и внутренности аквариумов сделаны так, чтобы их ощущали с уровня глаз.</p>
 <p><strong>Управление в первую очередь для мобильных.</strong> Движение одним пальцем с камерой, управляемой перетаскиванием. И кнопка Доклад, и кнопка взаимодействия с задачей крупные, живут в зоне большого пальца и появляются только по контексту (над аквариумом или рядом с задачей), так что нет загромождения. Дальность взаимодействия щедрая, около 12 стадов, а цели касания не меньше 44 точек. На ПК мышь смотрит, E взаимодействует и докладывает, F это фонарик. Консоль использует ContextActionService.</p>
 
 <h2 id="s10"><span class="n">10</span>Арт и звук</h2>
 <p><strong>Внешний вид.</strong> Low poly, где основную работу делает освещение. Плоско затенённые модели с грубоватыми формами, читаемые на пятидюймовом экране, освещение Future там, где позволяет бюджет, и Voxel-запасной вариант для слабых телефонов. Палитра это глубокий сине-зелёный чёрный (<code>#0A1A22</code>), голубой свет аквариума (<code>#38D6E0</code>) и предупреждающий янтарный (<code>#E8A13C</code>) для интерфейса, с одним придержанным цветом: красный аномалии (<code>#C7303A</code>), используемый только для подтверждённой аномалии, чтобы он сохранял смысл.</p>
-<p><strong>Список ассетов, коротко.</strong> Один интерьер аквариума (кольцевой коридор, лобби, комната отдыха, офис охраны, фильтровальная комната, подсобка, мостки над аквариумами и около восьми альковов с аквариумами), восемь наборов аквариумов с эталонными существами, примерно 25 вариантных мешей и текстур аномалий (в основном перекраски и подмены мешей эталонов), реквизит задач (губка, швабра, ведро с кормом, сачок, картридж фильтра, панель с циферблатами), модель Куратора, одна форма персонала плюс три перекраски, и реквизит фонарика, планшета и сканера. Многие рыбы это бесплатные меши с маркетплейса, перетекстурированные под нужды, что нормально при таком бюджете и стоит сказать прямо.</p>
+<p><strong>Список ассетов, коротко.</strong> Один интерьер аквариума (кольцевой коридор, лобби, комната отдыха, офис охраны, фильтровальная комната, подсобка, мостки над аквариумами и около восьми альковов с аквариумами), восемь наборов аквариумов с эталонными существами, примерно 25 вариантных мешей и текстур аномалий (в основном перекраски и подмены мешей эталонов), реквизит задач (губка, швабра, ведро с кормом, сачок, картридж фильтра, панель с циферблатами), модель Куратора, одна форма персонала плюс три перекраски, и реквизит фонарика, планшета и сканера. Многие рыбы это бесплатные меши с маркетплейса, перетекстурированные под нужды, что нормально при таком бюджете.</p>
 <p><strong>Звук несёт ужас,</strong> и это самый дешёвый испуг на доллар. Низкий гул аквариума звучит подо всем, у каждой зоны свой цикл аэратора (а одна аномалия, #15, это его отсутствие), приглушённый слой китовой песни держится где-то вдали, биение сердца входит на отметке меньше 60 секунд, а звук «ANOMALY CONTAINED» должен ощущаться приятно, ведь это наградный сигнал игры. Звуки задач служат вдвойне: оттирание, высыпание, скрип клапана и грохот фильтра, что зовёт вас в единственную комнату без обзора. Добавьте три звука Куратора и стуки по стеклу. Всё это из лицензированной библиотеки Roblox и источников CC0, так что стоимость держится около нуля.</p>
 
 <h2 id="s11"><span class="n">11</span>Техническая архитектура</h2>
@@ -773,7 +773,7 @@
 <tr><td>Вероятный</td><td>Около 20 процентов перерасхода, обычно для игры из шести систем</td><td>~176</td><td>$2,100</td></tr>
 <tr><td>Худший случай</td><td>На 50 до 60 процентов больше, смена фрилансера в середине проекта или сопротивляющаяся интеграция режиссёра</td><td>~225</td><td>$2,700</td></tr>
 </tbody></table></div>
-<p>Честное плановое число это <strong>$1,800 до $2,200</strong>, с $2,700 в уме как плохой исход. При $12 в час самый большой риск по стоимости не ставка, а переделка, потому что новый слой затрагивает режиссёра аномалий, цикл смены и экономику, три системы, от которых зависит всё остальное.</p>
+<p>Честное плановое число это <strong>$1,800 до $2,200</strong>, с $2,700 в уме как плохой исход. При $12 в час главный риск по стоимости это переделка: новый слой затрагивает режиссёра аномалий, цикл смены и экономику, три системы, от которых зависит всё остальное.</p>
 <h3>Минимально жизнеспособный запуск против полной отполированной игры</h3>
 <p><strong>Нижняя планка MVP: около 112 часов, $1,344, назовём это $1,350 до $1,600 с перерасходом.</strong> Базовые 82 часа плюс только каркас задач (N1), чистка водорослей (N2), вытирание (N3), кормёжка (N4), химия воды (N6), обновление экономики (N10) и урезанные 5 часов балансировки. Это выпускает настоящую игру про активную работу: якорную задачу, две задачи с занятыми руками, одну мини-игру с приковыванием взгляда и плату за задачи. Это отсекает фильтровальную комнату, Дежурство у скиммера, Журнал показаний и модную интеграцию режиссёра. Аномалии всё ещё появляются по своему расписанию и просто случайно застают вас за работой, что примерно 70 процентов эффекта без всякой стоимости N9.</p>
 <p><strong>Полная отполированная игра: около 176 часов, $2,100 вероятно.</strong> Всё в таблице выше, включая интеграцию режиссёра, все семь задач и полную балансировку.</p>
@@ -785,12 +785,12 @@
 <ol>
   <li>Отрезать кооп (O3), экономит $300. Рекомендуется в любом случае.</li>
   <li>Отрезать защиту (O2) и рассудок (O1), экономит $276. Выпустить только 3 штрафа, добавить это позже.</li>
-  <li>Отрезать интеграцию режиссёра (N9) и половину буфера на переделку, экономит около $96. Аномалии больше не нацеливаются на ваши занятые руки, они просто сосуществуют с ними. Нормально на запуске.</li>
+  <li>Отрезать интеграцию режиссёра (N9) и половину буфера на переделку, экономит около $96. Аномалии тогда появляются по своему расписанию и сосуществуют с вашей работой. Нормально на запуске.</li>
   <li>Отрезать фильтровальную комнату (N5), Скиммер (N7), Журнал показаний (N8), экономит $192. Это нижняя планка MVP.</li>
   <li>Ниже этого вы возвращаетесь к игре с наблюдением, дизайну, от которого мы уходим. Не режьте дальше шага 4.</li>
 </ol>
 <h3>Честный вердикт по бюджету</h3>
-<p>Полная игра со слоем активной работы не вписывается в изначальный диапазон $600 до $1,000, и лучше сказать это сейчас, чем узнать на 3-й неделе. Игра только с наблюдением уже была оценена в $1,044, у верхней границы этого диапазона. Добавление слоя, который делает её конкурентной с Animal Hospital, стоит настоящих денег, ведь он добавляет пять до семи систем взаимодействия и затрагивает каждую часть основного цикла. Новые реалистичные диапазоны:</p>
+<p>Полная игра со слоем активной работы не вписывается в изначальный диапазон $600 до $1,000. Игра только с наблюдением уже была оценена в $1,044, у верхней границы этого диапазона, а слой, который делает её конкурентной с Animal Hospital, добавляет пять до семи систем взаимодействия и затрагивает каждую часть основного цикла. Новые реалистичные диапазоны:</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Версия</th><th>Стоимость</th><th>Время</th><th>Примечания</th></tr></thead>
 <tbody>
@@ -829,7 +829,7 @@
 <tr><td>Квалифицированное прохождение (сигнал алгоритма)</td><td>нижняя четверть</td><td>н/д</td><td>выше середины</td></tr>
 </tbody></table></div>
 <p>Вторичные цифры для наблюдения: завершение обучающей смены (цель 85 процентов или выше, а если ниже, то онбординг сломан и чинится прежде, чем судить о чём-либо ещё), доля ложных докладов (если больше 40 процентов докладов неверны, приметы слишком тонки для аудитории), доля выполнения задач (если игроки игнорируют задачи, разбивка платы или сроки нуждаются в настройке), и доля прикрепления Второго шанса при увольнениях, что говорит нам, работает ли покупка из разочарования.</p>
-<blockquote>Правило, что мы задаём заранее: если после одного раунда изменений (один выпуск контента и одна правка онбординга, примерно две недели) удержание День 1 всё ещё меньше 25 процентов, мы прекращаем тратить. Карта и системы уходят в архив для рыболовной игры (§16). Это ограниченная бюджетом ставка на тренд, а не обязательство. Более высокая стоимость сборки делает эти ворота важнее, а не менее важными.</blockquote>
+<blockquote>Правило, что мы задаём заранее: если после одного раунда изменений (один выпуск контента и одна правка онбординга, примерно две недели) удержание День 1 всё ещё меньше 25 процентов, мы прекращаем тратить. Карта и системы уходят в архив для рыболовной игры (§16). Это ограниченная бюджетом ставка на тренд. Более высокая стоимость сборки делает эти ворота ещё важнее.</blockquote>
 
 <h2 id="s15"><span class="n">15</span>Риски и меры</h2>
 <div class="table-wrap"><table>
@@ -840,7 +840,7 @@
 <tr><td>Двухтрековый цикл перегружает новых игроков</td><td>Средняя</td><td>Задачи сами по себе никогда не проваливают смену, Night 1 до 2 лёгкие, счётчик в интерфейсе работает с ранних этапов, а доля выполнения задач наблюдается с первого дня</td></tr>
 <tr><td>Качество или надёжность фрилансера, теперь более уязвимо с большим числом систем</td><td>Средняя</td><td>Платить по вехам, требовать играбельную сборку основного цикла до того, как выдана больше половины денег, и держать буфер на переделку в резерве</td></tr>
 <tr><td>Аномалии слишком сложны или слишком легки для юной мобильной аудитории</td><td>Средняя</td><td>Сложность это одна конфигурационная таблица, счётчик в интерфейсе работает на Nights 1 до 5, и мы следим за долей ложных докладов с первого дня</td></tr>
-<tr><td>Модерация Roblox контента ужасов</td><td>Низкая</td><td>Никакой расчленёнки, тревога вместо шока, переключатель светочувствительности и метка зрелости «умеренный страх»</td></tr>
+<tr><td>Модерация Roblox контента ужасов</td><td>Низкая</td><td>Никакой расчленёнки: ужас держится на тревоге. Переключатель светочувствительности и метка зрелости «умеренный страх»</td></tr>
 <tr><td>Алгоритм так и не подхватывает её</td><td>Высокая по базовой частоте</td><td>Это и есть ставка. Мы ограничиваем траты, тестируем превью и бесплатно засеиваем горстку небольших ютуберов</td></tr>
 </tbody></table></div>
 
