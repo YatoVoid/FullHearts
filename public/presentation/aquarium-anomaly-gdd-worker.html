@@ -388,6 +388,7 @@
 <tr><td>O1</td><td>Composure (sanity) meter, break-room coffee restore, Curator drain</td><td>13</td><td>$156</td></tr>
 <tr><td>O2</td><td>Defense tool (net-gun or air horn to repel the Curator, ammo economy)</td><td>10</td><td>$120</td></tr>
 <tr><td>O3</td><td>Two-player co-op shifts (replication, shared strikes, pay split)</td><td>25</td><td>$300</td></tr>
+<tr><td>O4</td><td>Friends layer (shared-server shifts, cross-tank flags, spectate-on-termination, friend revive, friends board)</td><td>12</td><td>$144</td></tr>
 </tbody></table></div>
 <h3>Totals and an honest range</h3>
 <div class="table-wrap"><table>
@@ -453,7 +454,7 @@
 <tr><td>Qualified playthrough (algorithm signal)</td><td>bottom quarter</td><td>n/a</td><td>above the middle</td></tr>
 </tbody></table></div>
 <p>Secondary numbers to watch: tutorial-shift completion (aim for 85 percent or higher, and if it is lower the onboarding is broken and gets fixed before judging anything else), the false-report rate (if more than 40 percent of reports are wrong, the tells are too subtle for the audience), task-completion rate (if players ignore tasks, the pay split or the deadlines need tuning), and the Second Chance attach rate at terminations, which tells us whether the frustration purchase works.</p>
-<blockquote>The rule we set in advance: if after one round of changes (one content drop and one onboarding fix, roughly two weeks) Day 1 retention is still under 25 percent, we stop spending. The map and systems get archived for the fishing game (§16). This is a budgeted bet on a trend. The higher build cost makes the gate matter more.</blockquote>
+<blockquote>The rule we set in advance: if after one round of changes (one content drop and one onboarding fix, roughly two weeks) Day 1 retention is still under 25 percent, we stop spending. The map and systems get archived for the fishing game (§17). This is a budgeted bet on a trend. The higher build cost makes the gate matter more.</blockquote>
 
 <h2 id="s15"><span class="n">15</span>Risks and Mitigations</h2>
 <div class="table-wrap"><table>
@@ -468,7 +469,19 @@
 <tr><td>The algorithm never picks it up</td><td>High by base rate</td><td>This is the bet. We cap the spend, test the thumbnail, and seed a handful of small YouTubers at no cost</td></tr>
 </tbody></table></div>
 
-<h2 id="s16"><span class="n">16</span>Reuse for the Fishing Game</h2>
+<h2 id="s16"><span class="n">16</span>Playing with Friends</h2>
+<p>Friends join the same server and clock in together. Each player still runs their own shift: the per-player model from §11 already sends different anomaly visuals to each client, so friends on the same floor rarely see the same aquarium. The multiplayer design turns that split into the point.</p>
+<ul>
+  <li><strong>Shared floor, solo shifts.</strong> Up to six players work one aquarium on a shared shift timer. You see each other patrol the halls and climb the catwalk, but your anomalies and tasks are your own. No reserved servers and no replicated anomaly state, so the hosting cost stays flat.</li>
+  <li><strong>Cross-tank flags.</strong> Point at any tank and flag it for a friend. It pings that tank on their HUD. You might be seeing an anomaly their client never spawned, or the game may have shown you a fake. Two players arguing over whether T3 is wrong is the loop. A flag that sends a friend to a clean tank can burn their report, so a call carries weight.</li>
+  <li><strong>Spectate on termination.</strong> When a friend hits the TERMINATED screen, you can watch their last ten seconds from their camera as The Curator reaches them. The reaction and the reveal land in one clip.</li>
+  <li><strong>Friend revive.</strong> A friend can spend your Second Chance for you. They reach your locker in the break room within 20 seconds and clock you back in. The revive gets a free social path alongside the Robux one, and friends have a reason to stay near each other.</li>
+  <li><strong>Break room downtime.</strong> Between shifts, the break room and its Composure coffee machine (§5) are where friends regroup, emote, and compare Anomaly Logs.</li>
+  <li><strong>Friends leaderboard.</strong> A weekly friends-only board of back-to-back S grades sits beside the global Overtime board (§5).</li>
+</ul>
+<p>The layer reuses the per-player architecture from §11 and adds messaging, a spectate camera, and one revive interaction. It leaves the anomaly director and the shift loop alone, which is what keeps it cheap. It is priced as <strong>O4</strong> in §12, separate from full replicated co-op (O3). Friends play is the social update to ship first after launch, and it markets itself every time a group records a run.</p>
+
+<h2 id="s17"><span class="n">17</span>Reuse for the Fishing Game</h2>
 <p>Part of this project is research we buy toward the larger fishing game. What carries over directly:</p>
 <ul>
   <li><strong>Creature library.</strong> All eight baseline rigs and the swim-tween system become catchable fish, with no rework beyond stat tables.</li>
@@ -764,6 +777,7 @@
 <tr><td>O1</td><td>Шкала Самообладания (рассудка), восстановление кофе в комнате отдыха, истощение Куратором</td><td>13</td><td>$156</td></tr>
 <tr><td>O2</td><td>Инструмент защиты (сеткомёт или воздушный горн, чтобы отпугнуть Куратора, экономика боезапаса)</td><td>10</td><td>$120</td></tr>
 <tr><td>O3</td><td>Кооп-смены на двух игроков (репликация, общие штрафы, деление платы)</td><td>25</td><td>$300</td></tr>
+<tr><td>O4</td><td>Слой друзей (смены на общем сервере, метки на аквариумах, наблюдение при увольнении, возрождение другом, таблица друзей)</td><td>12</td><td>$144</td></tr>
 </tbody></table></div>
 <h3>Итоги и честный диапазон</h3>
 <div class="table-wrap"><table>
@@ -829,7 +843,7 @@
 <tr><td>Квалифицированное прохождение (сигнал алгоритма)</td><td>нижняя четверть</td><td>н/д</td><td>выше середины</td></tr>
 </tbody></table></div>
 <p>Вторичные цифры для наблюдения: завершение обучающей смены (цель 85 процентов или выше, а если ниже, то онбординг сломан и чинится прежде, чем судить о чём-либо ещё), доля ложных докладов (если больше 40 процентов докладов неверны, приметы слишком тонки для аудитории), доля выполнения задач (если игроки игнорируют задачи, разбивка платы или сроки нуждаются в настройке), и доля прикрепления Второго шанса при увольнениях, что говорит нам, работает ли покупка из разочарования.</p>
-<blockquote>Правило, что мы задаём заранее: если после одного раунда изменений (один выпуск контента и одна правка онбординга, примерно две недели) удержание День 1 всё ещё меньше 25 процентов, мы прекращаем тратить. Карта и системы уходят в архив для рыболовной игры (§16). Это ограниченная бюджетом ставка на тренд. Более высокая стоимость сборки делает эти ворота ещё важнее.</blockquote>
+<blockquote>Правило, что мы задаём заранее: если после одного раунда изменений (один выпуск контента и одна правка онбординга, примерно две недели) удержание День 1 всё ещё меньше 25 процентов, мы прекращаем тратить. Карта и системы уходят в архив для рыболовной игры (§17). Это ограниченная бюджетом ставка на тренд. Более высокая стоимость сборки делает эти ворота ещё важнее.</blockquote>
 
 <h2 id="s15"><span class="n">15</span>Риски и меры</h2>
 <div class="table-wrap"><table>
@@ -844,7 +858,19 @@
 <tr><td>Алгоритм так и не подхватывает её</td><td>Высокая по базовой частоте</td><td>Это и есть ставка. Мы ограничиваем траты, тестируем превью и бесплатно засеиваем горстку небольших ютуберов</td></tr>
 </tbody></table></div>
 
-<h2 id="s16"><span class="n">16</span>Переиспользование для рыболовной игры</h2>
+<h2 id="s16"><span class="n">16</span>Игра с друзьями</h2>
+<p>Друзья заходят на один сервер и вместе заступают на смену. При этом каждый ведёт свою: модель на игрока из §11 уже отправляет каждому клиенту свои визуалы аномалий, так что друзья на одном этаже редко видят один и тот же аквариум. Мультиплеерный дизайн делает это расхождение сутью.</p>
+<ul>
+  <li><strong>Общий этаж, одиночные смены.</strong> До шести игроков работают в одном аквариуме на общем таймере смены. Вы видите, как остальные патрулируют коридоры и поднимаются на мостки, но аномалии и задачи у каждого свои. Ни зарезервированных серверов, ни реплицируемого состояния аномалий, так что стоимость хостинга остаётся плоской.</li>
+  <li><strong>Метки на аквариумах.</strong> Наведитесь на любой аквариум и пометьте его для друга. У него этот аквариум пингуется в интерфейсе. Возможно, вы видите аномалию, которую его клиент так и не породил, а возможно, игра подсунула обманку вам. Два игрока, спорящие, всё ли в порядке с T3, это и есть цикл. Метка, отправившая друга к чистому аквариуму, может впустую потратить его доклад, так что каждая метка имеет вес.</li>
+  <li><strong>Наблюдение при увольнении.</strong> Когда друг попадает на экран «TERMINATED», вы можете посмотреть его последние десять секунд с его камеры, пока Куратор до него добирается. Реакция и развязка попадают в один клип.</li>
+  <li><strong>Возрождение другом.</strong> Друг может потратить ваш Второй шанс за вас. Он добегает до вашего шкафчика в комнате отдыха за 20 секунд и возвращает вас на смену. У возрождения появляется бесплатный социальный путь рядом с путём за Robux, а у друзей появляется причина держаться ближе друг к другу.</li>
+  <li><strong>Передышка в комнате отдыха.</strong> Между сменами друзья собираются в комнате отдыха у кофемашины Самообладания (§5), включают эмоции и сравнивают Журналы аномалий.</li>
+  <li><strong>Таблица лидеров друзей.</strong> Еженедельная таблица только для друзей по S-оценкам подряд стоит рядом с глобальной таблицей Overtime (§5).</li>
+</ul>
+<p>Слой переиспользует архитектуру на игрока из §11 и добавляет обмен сообщениями, камеру наблюдения и одно взаимодействие возрождения. Режиссёра аномалий и цикл смены он не трогает, и именно это держит его дешёвым. В §12 он оценён как <strong>O4</strong>, отдельно от полного реплицируемого коопа (O3). Игра с друзьями это первое социальное обновление после запуска, и она сама себя рекламирует каждый раз, когда компания записывает прохождение.</p>
+
+<h2 id="s17"><span class="n">17</span>Переиспользование для рыболовной игры</h2>
 <p>Часть этого проекта это исследование, что мы покупаем в счёт большей рыболовной игры. Что переносится напрямую:</p>
 <ul>
   <li><strong>Библиотека существ.</strong> Все восемь эталонных ригов и система плавательных твинов становятся ловимой рыбой, без переделки сверх таблиц статов.</li>
