@@ -1,4 +1,8 @@
+// @vitest-environment node
+// Pure logic + stubbed fetch only (no DOM). Node's Blob round-trips the zipped
+// bytes faithfully; jsdom's Blob corrupts a Uint8Array, breaking the unzip check.
 import { describe, it, expect, vi, afterEach } from "vitest";
+import { unzipSync, strFromU8 } from "fflate";
 import { fileEntryFromVersion, buildIndex, buildMrpack, resolveBuildable, jarFilenameMcMismatch, pickEraVersion, __resetCaches } from "@/lib/modpack/mrpack";
 import type { Mod } from "@/lib/sources/types";
 
@@ -146,6 +150,26 @@ describe("buildMrpack dependency closure", () => {
 
     expect(included.map((m) => m.id)).toEqual(["chipped-express"]);
     expect(depCount).toBe(1); // chipped force-pulled as a dependency
+  });
+
+  it("marks a client-only mod server:unsupported so ONE pack serves client and server", async () => {
+    // JEI/Xaero's (Modrinth server_side "unsupported") must install on the client
+    // but be skipped by a server reading this same file — that's what keeps client
+    // and server on identical mod versions (one file list, not two resolutions).
+    const jei = { id: "vJ", project_id: "JEI", version_type: "release", files: [file("jei.jar")], dependencies: [{ project_id: "LIB", version_id: null, dependency_type: "required" }] };
+    const lib = { id: "vLib", project_id: "LIB", version_type: "release", files: [file("lib.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("/project/jei/version")) return jsonRes([jei]);
+      if (url.includes("/project/LIB/version")) return jsonRes([lib]);
+      return jsonRes([]);
+    }));
+    const { blob } = await buildMrpack({
+      name: "t", mods: [{ ...modStub("jei"), clientOnly: true }], loader: "forge", mcVersion: "1.20.1"
+    });
+    const idx = JSON.parse(strFromU8(unzipSync(new Uint8Array(await blob.arrayBuffer()))["modrinth.index.json"]));
+    const env = Object.fromEntries(idx.files.map((f: { path: string; env: unknown }) => [f.path, f.env]));
+    expect(env["mods/jei.jar"]).toEqual({ client: "required", server: "unsupported" }); // client-only -> server skips it
+    expect(env["mods/lib.jar"]).toEqual({ client: "required", server: "required" });    // shared dep -> both sides
   });
 
   it("drops one side of a declared mod-vs-mod incompatibility", async () => {

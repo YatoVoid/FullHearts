@@ -86,7 +86,11 @@ const API = "https://api.modrinth.com/v2";
 export interface MrpackFile {
   path: string;
   hashes: { sha1: string; sha512: string };
-  env: { client: "required"; server: "required" };
+  // One pack serves both sides: client-only mods (JEI/Xaero's, Modrinth
+  // server_side "unsupported") are marked server:"unsupported" so a server
+  // installing this exact same file skips them — the client and server can
+  // never drift to different mod versions because it's literally one file list.
+  env: { client: "required"; server: "required" | "unsupported" };
   downloads: string[];
   fileSize: number;
 }
@@ -939,9 +943,18 @@ export async function buildMrpack(opts: {
     removedConflicts.push({ name: nameOf(victim), reason: `conflicts with ${nameOf(other)}` });
   }
 
+  // One pack, both sides. Mark a selected client-only mod (Modrinth server_side
+  // "unsupported": JEI, Xaero's, minimaps) as server:"unsupported" so the SAME
+  // file, installed on a server, skips it. Dependency libraries stay required on
+  // both. This is what makes client==server versions guaranteed: there's one
+  // resolved file list, not two independent "newest release" resolutions.
   const files = [...resolvedByProject.entries()]
     .filter(([pid]) => !dropped.has(pid))
-    .map(([, v]) => fileEntryFromVersion(v))
+    .map(([pid, v]) => {
+      const f = fileEntryFromVersion(v);
+      if (f && modByProject.get(pid)?.clientOnly) f.env.server = "unsupported";
+      return f;
+    })
     .filter((f): f is MrpackFile => Boolean(f));
 
   if (files.length === 0) {
