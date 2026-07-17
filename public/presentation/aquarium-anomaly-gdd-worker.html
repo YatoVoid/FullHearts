@@ -113,7 +113,7 @@
 <div class="hero">
   <div class="eyebrow">Route B &middot; Worker-job version</div>
   <h1>Aquarium Anomaly</h1>
-  <p class="sub">The active-work build &middot; upkeep tasks plus anomalies &middot; Roblox &middot; roughly $1,500 to $2,300</p>
+  <p class="sub">The active-work build &middot; upkeep tasks plus anomalies plus the Escape fail-state &middot; Roblox &middot; roughly $1,750 to $2,650</p>
 </div>
 
 <article>
@@ -150,7 +150,16 @@
 <tr><td>Clock out</td><td>15 s</td><td>Results screen: anomalies found, missed, false reports, tasks done, pay breakdown, grade (S, A, B, C, F).</td></tr>
 </tbody></table></div>
 
-<p><strong>Win:</strong> report enough of the live anomalies (see §5) before the timer ends and keep the aquarium running. <strong>Lose:</strong> take 3 strikes in one shift, or miss too many anomalies, and you get the "TERMINATED" screen. That screen is a clip in itself, since the signature creature shows up behind the player as it plays.</p>
+<p><strong>Win:</strong> report enough of the live anomalies (see §5) before the timer ends and keep the aquarium running. <strong>Lose:</strong> take 3 strikes and the shift ends early. But a <em>missed</em> Entity anomaly does not just tick a counter down. It gets out, and it comes for you at clock-out (see <a href="#s2b">The Escape</a>). That is the "TERMINATED" moment, and it is a clip in itself, because the thing hunting you is whatever you failed to contain.</p>
+
+<h3 id="s2b">The Escape (end-of-shift encounter)</h3>
+<p>This is the change that turns a miss into a scene, borrowed from the checkpoint horror <em>Terminal 13</em>, where letting an impostor through means the thing comes for you after the shift and you have to fight it off. Here it works like this:</p>
+<ul>
+  <li><strong>Only Entity-category misses escape.</strong> A missed Creature or Tank anomaly just reverts at clock-out with lost pay. A missed <strong>Entity</strong> (the horror backbone: The Watcher, The Extra Diver, Land Walker, The Curator) is marked <em>loose</em>.</li>
+  <li><strong>The clock-out becomes a chase.</strong> If anything is loose when the timer hits 6 AM, the lights cut, the elevator is 20 seconds away down the loop corridor, and the escaped thing is between you and it. You run for the doors.</li>
+  <li><strong>You can survive it.</strong> The <strong>defense tool</strong> (air horn early, net-gun later) repels the pursuer for a beat so you can reach the elevator. Make it, and you keep your pay and earn a "Contained the hard way" bonus. Fail, and it is the real TERMINATED screen, with the creature filling the frame.</li>
+  <li><strong>Why it is better than a text screen.</strong> It gives every missed scare a dramatic, filmable payoff, it makes the defense tool a core purchase instead of an optional one, and it softens the harsh binary fail for a young audience: losing is a chase you nearly won, not a wall you hit. It reuses the Curator model, the defense tool, and the Night 12 elevator chase the game already has, so it is mostly rewiring, not a new system.</li>
+</ul>
 
 <h3>Session and long-term loops</h3>
 <p><strong>Session, about 10 to 20 minutes.</strong> Play a few shifts, spend earnings in the break-room shop, try the next night tier, hit a wall or a scare, run one more shift.</p>
@@ -261,7 +270,15 @@
   <li><strong>Failure does not set you back.</strong> Failing never lowers your night tier. You retry the same night and lose only the time.</li>
   <li><strong>Grades.</strong> S means every anomaly found, every category right, every task done, no strikes. Grades only gate the Overtime leaderboard, but the results screen makes an S feel earned with a gold stamp and its own sound.</li>
 </ul>
-<blockquote><strong>On a sanity meter.</strong> We keep 3-strikes as the only fail state for launch. Two fail meters is a lot for a new player in a 5 minute shift, and Animal Hospital earns its sanity meter with a much longer session. The task-consequence system already does most of what a sanity meter would do, which is degrade the player's ability to perceive. A Composure meter (drained by Curator proximity and witnessed anomalies, restored at a break-room coffee machine, unlocking at Night 8 and up) is designed and priced in §12 as a clean post-launch addition, so the door stays open once retention data justifies it.</blockquote>
+<blockquote><strong>On a sanity meter.</strong> We keep 3-strikes as the core fail state, now paired with The Escape (§2) for missed Entities. Two <em>drain</em> meters is a lot for a new player in a 5 minute shift, and Animal Hospital earns its sanity meter with a much longer session. The task-consequence system already does most of the perception-degrade job a sanity meter would do, and the end-of-shift Escape does the drama job, so a Composure meter is a clean post-launch extra, not a launch need. It is still designed and priced in §12 (drained by Curator proximity and witnessed anomalies, restored at a break-room coffee machine, Night 8 and up), so the door stays open once retention data justifies it.</blockquote>
+
+<h3 id="s5b">The 13-Night arc (a spine over the endless tiers)</h3>
+<p>The endless night tiers retain, but on their own they give the player no goal and no ending, and nothing for a streamer to <em>finish</em>. On top of the tiers we run an authored <strong>13-night story</strong>, the length nodding to <em>Terminal 13</em>, that answers the one question the setting raises: what is wrong with Blackwater, and why does the Curator know your name?</p>
+<ul>
+  <li><strong>How it works.</strong> Nights 1 to 13 play in a fixed, hand-authored order (specific anomalies, specific modifiers) instead of pure random, with 4 to 5 short scripted beats between shifts: a note in a locker, a logbook page, a flooded office, a voicemail from the last night worker. Random tiers and Overtime unlock <em>after</em> Night 13, so nothing is lost.</li>
+  <li><strong>The ending.</strong> Night 13 is a scripted confrontation with the Curator that resolves the escape mechanic at story scale, and rolls credits. Finishing it grants a permanent lobby cosmetic, so completion is visible and worth filming.</li>
+  <li><strong>Guaranteed early scare.</strong> The arc scripts the game's most shareable anomaly to hit inside the first three nights: <strong>every new player</strong> gets a personalized moment (#20 Mimic Plaque or #30 Name Tag, which use their own avatar or username) instead of maybe seeing it after twenty shifts. This is a scheduling rule, near-zero cost, and it front-loads the exact "it knew my name" clip that sells the game.</li>
+</ul>
 
 <h2 id="s6"><span class="n">06</span>Economy and Progression</h2>
 <p><strong>Currency:</strong> Credits (₡), one soft currency. No second currency at this scope.</p>
@@ -292,7 +309,7 @@
 <p>The full tool tree costs about ₡3,850, which is roughly 24 to 30 shifts, or three to five sessions of steady play. That is enough grind that the double-Credits gamepass looks good by the second session, and still fair enough that a free player finishes the tree within a week of casual play.</p>
 
 <h2 id="s7"><span class="n">07</span>Monetization</h2>
-<blockquote>At about 26 to 28 percent net after Roblox's cut and DevEx, ₨1,000 of player spend is worth roughly $3.50 to us. Now that the build costs more (see §12), the break-even point is higher too. A $1,600 build pays for itself at around ₨460,000 of gross spend, which needs stronger retention or more visits than the old cheap build did. That is what the kill or scale gate in §14 tests.</blockquote>
+<blockquote>At about 26 to 28 percent net after Roblox's cut and DevEx, ₨1,000 of player spend is worth roughly $3.50 to us. Now that the build costs more (see §12), the break-even point is higher too. A $2,200 build pays for itself at around ₨630,000 of gross spend, which needs stronger retention or more visits than the old cheap build did. That is what the kill or scale gate in §14 tests.</blockquote>
 <h3>Gamepasses (permanent)</h3>
 <div class="table-wrap"><table>
 <thead><tr><th>Gamepass</th><th>₨</th><th>Why players buy it</th></tr></thead>
@@ -324,7 +341,8 @@
 <h4>Built for clips</h4>
 <ul>
   <li>The Curator, the signature creature, is made for thumbnails: pale, too tall, in a soaked staff uniform, face never fully shown. It appears in only three set situations, and being rare is what makes it worth filming.</li>
-  <li>The rarest anomalies (#20 Mimic Plaque, #30 Name Tag) use the player's own avatar or username, which is the most shareable trick in the genre ("it knew my name").</li>
+  <li>The rarest anomalies (#20 Mimic Plaque, #30 Name Tag) use the player's own avatar or username, which is the most shareable trick in the genre ("it knew my name"). The 13-night arc (§5) guarantees every new player sees one inside their first three nights, so the game's best clip is not left to a 1-in-12 roll.</li>
+  <li>The Escape (§2) is a clip engine on its own: the end-of-shift chase from a thing you failed to contain is the moment players record and post, the same way <em>Terminal 13</em>'s "it got through" endings spread that game.</li>
   <li>Task-shaped anomalies are their own clip engine: the algae you scoop that turns and looks at you, the dead fish that twitches. These happen while the player is calm and working, so the reaction is bigger.</li>
   <li>The update schedule is also the marketing. A "5 NEW ANOMALIES" badge on the icon every week or two is cheap to back up, because the content is data (§4).</li>
 </ul>
@@ -378,50 +396,52 @@
 <tr><td>N11</td><td>New UI and SFX (clipboard, task pings, scrub, pour, valve audio)</td><td>4</td><td>$48</td></tr>
 <tr><td>N12</td><td>Balancing and playtesting the combined two-track loop</td><td>8</td><td>$96</td></tr>
 <tr><td>N13</td><td>Integration rework buffer (touching the director, shift loop, and economy always breaks something)</td><td>6</td><td>$72</td></tr>
-<tr><td></td><td><strong>New-layer subtotal</strong></td><td><strong>71</strong></td><td><strong>$852</strong></td></tr>
-<tr><td></td><td><strong>Full game total</strong></td><td><strong>153</strong></td><td><strong>$1,896</strong></td></tr>
+<tr><td>N14</td><td><strong>The Escape fail-state + defense tool</strong> (escaped-Entity tracking, end-of-shift chase, repel-to-survive, results integration; absorbs the old optional defense tool)</td><td>16</td><td>$192</td></tr>
+<tr><td>N15</td><td><strong>13-Night story arc + guaranteed early scare</strong> (fixed night order, 4 to 5 scripted beats, ending confrontation, first-three-nights personalized-anomaly rule)</td><td>10</td><td>$120</td></tr>
+<tr><td></td><td><strong>New-layer subtotal</strong></td><td><strong>97</strong></td><td><strong>$1,164</strong></td></tr>
+<tr><td></td><td><strong>Full game total</strong></td><td><strong>179</strong></td><td><strong>$2,208</strong></td></tr>
 </tbody></table></div>
 <h4>Optional systems, priced but not in the total above</h4>
 <div class="table-wrap"><table>
 <thead><tr><th>Line</th><th>Work</th><th>Hrs</th><th>Cost</th></tr></thead>
 <tbody>
 <tr><td>O1</td><td>Composure (sanity) meter, break-room coffee restore, Curator drain</td><td>13</td><td>$156</td></tr>
-<tr><td>O2</td><td>Defense tool (net-gun or air horn to repel the Curator, ammo economy)</td><td>10</td><td>$120</td></tr>
-<tr><td>O3</td><td>Two-player co-op shifts (replication, shared strikes, pay split)</td><td>25</td><td>$300</td></tr>
-<tr><td>O4</td><td>Friends layer (shared-server shifts, cross-tank flags, spectate-on-termination, friend revive, friends board)</td><td>12</td><td>$144</td></tr>
+<tr><td>O2</td><td><strong>Two-player co-op shifts</strong> (replication, shared strikes, pay split) &mdash; <em>the scale bet, not a cut: this is Terminal 13's growth engine and, given a crowding genre, the clearest differentiator. Marquee post-launch feature if the gate passes.</em></td><td>25</td><td>$300</td></tr>
+<tr><td>O3</td><td>Friends layer (shared-server shifts, cross-tank flags, spectate-on-termination, friend revive, friends board)</td><td>12</td><td>$144</td></tr>
 </tbody></table></div>
 <h3>Totals and an honest range</h3>
 <div class="table-wrap"><table>
 <thead><tr><th>Scenario</th><th>Assumption</th><th>Hrs</th><th>Cost</th></tr></thead>
 <tbody>
-<tr><td>Best case</td><td>Estimates hold, one capable freelancer, little rework</td><td>153</td><td>$1,896</td></tr>
-<tr><td>Likely</td><td>About 20 percent overrun, normal for a six-system game</td><td>~184</td><td>$2,275</td></tr>
-<tr><td>Worst case</td><td>50 to 60 percent over, a mid-project freelancer swap or the director integration fighting back</td><td>~237</td><td>$2,950</td></tr>
+<tr><td>Best case</td><td>Estimates hold, one capable freelancer, little rework</td><td>179</td><td>$2,208</td></tr>
+<tr><td>Likely</td><td>About 20 percent overrun, normal for an eight-system game</td><td>~215</td><td>$2,650</td></tr>
+<tr><td>Worst case</td><td>50 to 60 percent over, a mid-project freelancer swap or the director integration fighting back</td><td>~277</td><td>$3,450</td></tr>
 </tbody></table></div>
-<p>The honest planning number is <strong>$1,900 to $2,300</strong>, with $2,950 held in mind as the bad outcome. At $12 an hour the biggest cost risk is rework: the new layer touches the anomaly director, the shift loop, and the economy, the three systems everything else depends on.</p>
+<p>The honest planning number is <strong>$2,200 to $2,650</strong>, with $3,450 held in mind as the bad outcome. At $12 an hour the biggest cost risk is rework: the new layer touches the anomaly director, the shift loop, and the economy, the three systems everything else depends on.</p>
 <h3>Minimum viable launch versus the full polished game</h3>
-<p><strong>MVP floor: about 119 hours, $1,488, call it $1,500 to $1,700 with overrun.</strong> Baseline 82 hours plus only the task framework (N1), algae cleaning (N2), mopping (N3), feeding (N4), water chemistry (N6), the economy update (N10), and a trimmed 5 hours of balancing. This ships a real active-work game: the anchor task, two hands-busy tasks, one gaze-lock minigame, and task pay. It cuts the filter room, Skimmer Duty, Reading Log, and the fancy director integration. Anomalies still spawn on their own schedule and just happen to catch you working, which is about 70 percent of the effect for none of N9's cost.</p>
-<p><strong>Full polished game: about 184 hours, $2,275 likely.</strong> Everything in the table above, including director integration, all seven tasks, and full balancing.</p>
-<p><strong>Full game plus the Animal Hospital feature set (sanity and defense): about 207 hours, $2,550 to $2,950.</strong> Add O1 and O2. Skip O3 (co-op) for launch. It is the single most expensive and riskiest line, and the genre does not require it.</p>
+<p><strong>MVP floor: about 135 hours, $1,680, call it $1,750 to $1,950 with overrun.</strong> Baseline 82 hours plus the task framework (N1), algae cleaning (N2), mopping (N3), feeding (N4), water chemistry (N6), the economy update (N10), a trimmed 5 hours of balancing, and <strong>the Escape fail-state (N14)</strong> plus the early-scare scheduling rule. The Escape is in the floor on purpose: it is the differentiator and the clip engine, and it reuses parts the baseline already builds. This ships a real active-work game with a dramatic, filmable fail. It cuts the filter room, Skimmer Duty, Reading Log, the director integration, and the full 13-night authored arc (the arc's ending and scripted beats are the first post-launch drop).</p>
+<p><strong>Full polished game: about 215 hours, $2,650 likely.</strong> Everything in the build table above, including director integration, all seven tasks, the Escape fail-state, the 13-night arc, and full balancing.</p>
+<p><strong>Full game plus the Composure meter (O1 sanity): about 228 hours, $2,800 to $3,050.</strong> Add O1. Co-op (O2) is kept separate as the scale bet, funded from revenue if the gate passes, since it is the single most expensive and riskiest line.</p>
 <h3>What is cheap, what is expensive, where to cut</h3>
 <p><strong>Cheap wins, high tension per dollar:</strong> algae cleaning, mopping, feeding, Reading Log, Skimmer Duty. These are decals, tools, prompts, and timers, roughly $36 to $72 each.</p>
-<p><strong>Real cost centers:</strong> the filter room minigame ($96, needs a new room and a state machine), director integration ($60 plus most of the rework buffer), sanity ($156), defense ($120), and co-op ($300, and it destabilizes everything else).</p>
+<p><strong>Real cost centers:</strong> the Escape fail-state ($192, but it is the differentiator and reuses existing parts), the 13-night arc ($120), the filter room minigame ($96, needs a new room and a state machine), director integration ($60 plus most of the rework buffer), sanity ($156), and co-op ($300, and it destabilizes everything else).</p>
 <p><strong>Cut ladder to hit a lower budget, in order:</strong></p>
 <ol>
-  <li>Cut co-op (O3), saves $300. Recommended no matter what.</li>
-  <li>Cut defense (O2) and sanity (O1), saves $276. Ship 3-strikes only, add these later.</li>
+  <li>Defer co-op (O2), $300. It is the scale bet, funded from revenue, never in the launch total anyway.</li>
+  <li>Cut the Composure meter (O1), saves $156. The Escape already carries the drama a sanity meter would.</li>
+  <li>Cut the 13-night arc's ending and scripted beats (most of N15), saves about $96, but <strong>keep the early-scare scheduling rule</strong> (near-free, high value). Nights stay endless-tier only until a post-launch drop.</li>
   <li>Cut director integration (N9) and half the rework buffer, saves about $96. Anomalies then spawn on their own schedule and coexist with your work. Fine at launch.</li>
-  <li>Cut filter room (N5), Skimmer (N7), Reading Log (N8), saves $192. This is the MVP floor.</li>
-  <li>Below that you are back to the observation game, which is the design we are moving away from. Do not cut past step 4.</li>
+  <li>Cut filter room (N5), Skimmer (N7), Reading Log (N8), saves $192. This is the MVP floor &mdash; which still keeps the Escape fail-state (N14), because that is the point of the revision.</li>
+  <li>Below that you are back to the observation game, which is the design we are moving away from. Do not cut past step 5, and never cut the Escape.</li>
 </ol>
 <h3>The honest verdict on budget</h3>
 <p>The full game with the active-work layer does not fit the original $600 to $1,000 band. The observation-only game was already priced at $1,044, at the top of that band, and the layer that makes this competitive with Animal Hospital adds five to seven interaction systems and touches every part of the core loop. The new realistic bands:</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Version</th><th>Cost</th><th>Time</th><th>Notes</th></tr></thead>
 <tbody>
-<tr><td><strong>MVP with active work (recommended)</strong></td><td>$1,500 to $1,700</td><td>3 to 4 weeks</td><td>Ships the worker fantasy, task pay, and the anchor tasks. Every deferred item is a clean post-launch update that doubles as marketing.</td></tr>
-<tr><td>Full polished launch</td><td>$1,900 to $2,300</td><td>4 to 6 weeks</td><td>All seven tasks, director integration, full balancing.</td></tr>
-<tr><td>Full launch plus sanity and defense</td><td>$2,175 to $2,950</td><td>5 to 7 weeks</td><td>The complete Animal Hospital feature set, minus co-op.</td></tr>
+<tr><td><strong>MVP with active work (recommended)</strong></td><td>$1,750 to $1,950</td><td>3.5 to 4.5 weeks</td><td>Ships the worker fantasy, task pay, the anchor tasks, and the Escape fail-state. Every deferred item is a clean post-launch update that doubles as marketing.</td></tr>
+<tr><td>Full polished launch</td><td>$2,200 to $2,650</td><td>5 to 6 weeks</td><td>All seven tasks, director integration, the Escape fail-state, the 13-night arc, full balancing.</td></tr>
+<tr><td>Full launch plus Composure meter</td><td>$2,800 to $3,050</td><td>6 to 7 weeks</td><td>Adds the sanity meter (O1). Co-op (O2) stays the separate scale bet.</td></tr>
 </tbody></table></div>
 <p>If the hard ceiling really is $1,000, the two honest options are: shrink the baseline (6 tanks instead of 8, 20 anomalies instead of 30, saves roughly $150 to $200) and ship the MVP task set on top, landing near $1,300 to $1,350, still over by about 30 percent. Or launch the observation core early and fund the tasks from the first month of gamepass revenue, which is the better cash-flow plan but risks launching into the exact thin sub-genre this whole revision exists to escape. The first option is the better game.</p>
 
@@ -438,7 +458,7 @@
 <tr><td>24</td><td><strong>Soft launch</strong></td><td>Public and unadvertised. Icon and thumbnail tested with Roblox's own tools</td></tr>
 <tr><td>24 to 31</td><td><strong>Watch window</strong></td><td>Daily look at the numbers (§14), hotfixes only, no new content</td></tr>
 <tr><td>31</td><td><strong>Gate decision</strong></td><td>Kill, iterate, or scale</td></tr>
-<tr><td>If scaled, every 10 to 14 days</td><td><strong>Content drop</strong></td><td>The deferred tasks (filter room, Skimmer, director integration), five to eight more anomalies, sanity and defense once retention justifies it</td></tr>
+<tr><td>If scaled, every 10 to 14 days</td><td><strong>Content drop</strong></td><td>The 13-night arc's ending and beats, the deferred tasks (filter room, Skimmer, director integration), five to eight more anomalies, the Composure meter once retention justifies it, then the co-op scale bet</td></tr>
 </tbody></table></div>
 
 <h2 id="s14"><span class="n">14</span>KPIs and the Kill or Scale Gate</h2>
@@ -461,7 +481,7 @@
 <thead><tr><th>Risk</th><th>Likelihood</th><th>What we do about it</th></tr></thead>
 <tbody>
 <tr><td>Higher build cost than the original plan, since the active-work layer roughly doubles it</td><td>Certain</td><td>Priced honestly in §12, with an MVP floor and a clear cut ladder. Ship the MVP, patch the rest from revenue</td></tr>
-<tr><td>The trend cools before launch, as the anomaly genre keeps filling up through 2026</td><td>Med to high</td><td>The 3 to 4 week MVP timeline is the answer, and the aquarium setting plus The Curator set it apart from the hospital and gas-station clones</td></tr>
+<tr><td>The trend cools before launch, as the anomaly genre keeps filling up through 2026</td><td>Med to high</td><td>The 3 to 4 week MVP timeline is the answer, and the aquarium setting, the active-work layer, and The Curator set it apart from the hospital and gas-station clones. The closest direct comp is <strong>Terminal 13</strong> (Papers-Please + anomaly on Roblox and Steam); our wedge against it is the aquarium job fantasy and the Escape fail-state, and its co-op success (§12, O2) is exactly why co-op is our scale bet rather than a cut</td></tr>
 <tr><td>Two-track loop overwhelms new players</td><td>Medium</td><td>Tasks never fail the shift on their own, Night 1 to 2 is light, the HUD counter runs early, and task-completion rate is watched from day one</td></tr>
 <tr><td>Freelancer quality or reliability, more exposed now with more systems</td><td>Medium</td><td>Pay by milestone, require a playable core-loop build before more than half the cash is out, and hold the rework buffer in reserve</td></tr>
 <tr><td>Anomalies too hard or too easy for a young mobile audience</td><td>Medium</td><td>Difficulty is one config table, the HUD counter runs on Nights 1 to 5, and we watch the false-report rate from day one</td></tr>
@@ -502,7 +522,7 @@
 <div class="hero">
   <div class="eyebrow">Маршрут B &middot; Версия с рабочими сменами</div>
   <h1>Aquarium Anomaly</h1>
-  <p class="sub">Сборка с активной работой &middot; задачи по обслуживанию плюс аномалии &middot; Roblox &middot; примерно $1,500 до $2,300</p>
+  <p class="sub">Сборка с активной работой &middot; задачи по обслуживанию плюс аномалии плюс механика Побега &middot; Roblox &middot; примерно $1,750 до $2,650</p>
 </div>
 
 <article>
@@ -539,7 +559,16 @@
 <tr><td>Отметка об уходе</td><td>15 с</td><td>Экран результатов: найденные аномалии, пропущенные, ложные доклады, выполненные задачи, разбивка платы, оценка (S, A, B, C, F).</td></tr>
 </tbody></table></div>
 
-<p><strong>Победа:</strong> доложите о достаточном числе активных аномалий (см. §5) до конца таймера и поддержите работу аквариума. <strong>Поражение:</strong> получите 3 штрафных очка за смену или пропустите слишком много аномалий, и вы увидите экран «TERMINATED». Этот экран сам по себе клип, ведь фирменное существо появляется за спиной игрока, пока он проигрывается.</p>
+<p><strong>Победа:</strong> доложите о достаточном числе активных аномалий (см. §5) до конца таймера и поддержите работу аквариума. <strong>Поражение:</strong> получите 3 штрафных очка, и смена заканчивается досрочно. Но <em>пропущенная</em> аномалия категории Сущность не просто отматывает счётчик. Она вырывается и приходит за вами при выходе со смены (см. <a href="#s2b-ru">Побег</a>). Это и есть момент «TERMINATED», и он сам по себе клип, ведь то, что за вами охотится, это именно то, что вы не смогли сдержать.</p>
+
+<h3 id="s2b-ru">Побег (столкновение в конце смены)</h3>
+<p>Это изменение превращает промах в сцену, позаимствованное из хоррора про КПП <em>Terminal 13</em>, где пропуск самозванца означает, что существо приходит за вами после смены и его нужно отбить. Здесь это работает так:</p>
+<ul>
+  <li><strong>Вырываются только промахи по Сущностям.</strong> Пропущенная аномалия Существо или Аквариум просто откатывается при выходе с потерей платы. Пропущенная <strong>Сущность</strong> (хоррор-костяк: Наблюдатель, Лишний ныряльщик, Ходок по суше, Куратор) помечается как <em>на воле</em>.</li>
+  <li><strong>Выход со смены становится погоней.</strong> Если что-то на воле, когда таймер бьёт 6 утра, свет гаснет, лифт в 20 секундах по коридору-петле, а сбежавшая тварь между вами и ним. Вы бежите к дверям.</li>
+  <li><strong>Это можно пережить.</strong> <strong>Инструмент защиты</strong> (сначала воздушный горн, позже сеткомёт) отпугивает преследователя на миг, чтобы вы добрались до лифта. Успели, и вы сохраняете плату и получаете бонус «Сдержал трудным путём». Провалили, и это настоящий экран TERMINATED, где существо заполняет кадр.</li>
+  <li><strong>Почему это лучше текстового экрана.</strong> Каждый пропущенный испуг получает драматичную, снимаемую развязку, инструмент защиты становится основной покупкой, а не опциональной, и это смягчает жёсткий бинарный провал для юной аудитории: проигрыш это погоня, которую вы почти выиграли, а не стена. Переиспользует модель Куратора, инструмент защиты и погоню к лифту с Ночи 12, которые в игре уже есть, так что это в основном перепроводка, а не новая система.</li>
+</ul>
 
 <h3>Сессионный и долгосрочный циклы</h3>
 <p><strong>Сессия, около 10 до 20 минут.</strong> Отыграйте несколько смен, потратьте заработок в магазине комнаты отдыха, попробуйте следующий уровень ночей, упритесь в стену или испугайтесь, отыграйте ещё одну смену.</p>
@@ -650,7 +679,15 @@
   <li><strong>Провал не отбрасывает назад.</strong> Провал никогда не понижает ваш уровень ночей. Вы переигрываете ту же ночь и теряете только время.</li>
   <li><strong>Оценки.</strong> S означает, что все аномалии найдены, все категории верны, все задачи выполнены, штрафных очков нет. Оценки открывают только таблицу лидеров Overtime, но экран результатов делает так, что S ощущается заслуженной, с золотой печатью и собственным звуком.</li>
 </ul>
-<blockquote><strong>О шкале рассудка.</strong> На запуске мы оставляем 3 штрафных очка единственным состоянием проигрыша. Две шкалы провала это много для нового игрока в 5-минутной смене, а Animal Hospital оправдывает свою шкалу рассудка гораздо более долгой сессией. Система последствий задач уже делает большую часть того, что делала бы шкала рассудка, а именно ухудшает способность игрока воспринимать. Шкала Самообладания (истощается близостью Куратора и увиденными аномалиями, восстанавливается у кофемашины в комнате отдыха, открывается на Night 8 и выше) спроектирована и оценена в §12 как чистое послезапусковое дополнение, так что дверь остаётся открытой, как только данные удержания это оправдают.</blockquote>
+<blockquote><strong>О шкале рассудка.</strong> Мы оставляем 3 штрафных очка основным состоянием проигрыша, теперь в паре с Побегом (§2) для пропущенных Сущностей. Две <em>истощающиеся</em> шкалы это много для нового игрока в 5-минутной смене, а Animal Hospital оправдывает свою шкалу рассудка гораздо более долгой сессией. Система последствий задач уже делает большую часть работы по ухудшению восприятия, а Побег в конце смены делает драматическую работу, так что шкала Самообладания это чистое послезапусковое дополнение, а не потребность запуска. Она всё ещё спроектирована и оценена в §12 (истощается близостью Куратора и увиденными аномалиями, восстанавливается у кофемашины, Night 8 и выше), так что дверь остаётся открытой, как только данные удержания это оправдают.</blockquote>
+
+<h3 id="s5b-ru">Арка из 13 ночей (стержень поверх бесконечных уровней)</h3>
+<p>Бесконечные уровни ночей удерживают, но сами по себе не дают игроку цели, концовки и того, что стример мог бы <em>пройти</em>. Поверх уровней мы запускаем авторскую <strong>историю на 13 ночей</strong>, длина кивает на <em>Terminal 13</em>, которая отвечает на главный вопрос сеттинга: что не так с Блэкуотером и почему Куратор знает ваше имя?</p>
+<ul>
+  <li><strong>Как это работает.</strong> Ночи с 1 по 13 идут в фиксированном, вручную составленном порядке (конкретные аномалии, конкретные модификаторы) вместо чистой случайности, с 4 до 5 короткими сценарными вставками между сменами: записка в шкафчике, страница журнала, затопленный офис, голосовое от прошлого ночного работника. Случайные уровни и Овертайм открываются <em>после</em> Ночи 13, так что ничего не теряется.</li>
+  <li><strong>Концовка.</strong> Ночь 13 это сценарное столкновение с Куратором, которое разрешает механику побега на масштабе истории и пускает титры. Прохождение даёт постоянную косметику лобби, так что завершение заметно и его стоит снимать.</li>
+  <li><strong>Гарантированный ранний испуг.</strong> Арка сценарно ставит самую расшариваемую аномалию игры в первые три ночи: <strong>каждый новый игрок</strong> получает персонализированный момент (#20 Мимик-табличка или #30 Именной бейдж, использующие его аватар или ник) вместо, может быть, встречи с ним после двадцати смен. Это правило расписания, почти нулевой стоимости, и оно выносит вперёд именно тот клип «оно знало моё имя», что продаёт игру.</li>
+</ul>
 
 <h2 id="s6"><span class="n">06</span>Экономика и прогрессия</h2>
 <p><strong>Валюта:</strong> Кредиты (₡), одна мягкая валюта. Второй валюты в этом объёме нет.</p>
@@ -681,7 +718,7 @@
 <p>Полное дерево инструментов стоит около ₡3,850, что примерно 24 до 30 смен или три до пяти сессий размеренной игры. Этого гринда достаточно, чтобы геймпасс с двойными Кредитами выглядел привлекательно ко второй сессии, и всё же честно настолько, что бесплатный игрок проходит дерево за неделю неспешной игры.</p>
 
 <h2 id="s7"><span class="n">07</span>Монетизация</h2>
-<blockquote>При примерно 26 до 28 процентах чистыми после доли Roblox и DevEx, ₨1,000 траты игроков стоят для нас примерно $3.50. Теперь, когда сборка стоит дороже (см. §12), точка окупаемости тоже выше. Сборка за $1,600 окупается примерно при ₨460,000 валовой траты, для чего нужно более сильное удержание или больше визитов, чем требовала старая дешёвая сборка. Именно это проверяет ворота убить или масштабировать в §14.</blockquote>
+<blockquote>При примерно 26 до 28 процентах чистыми после доли Roblox и DevEx, ₨1,000 траты игроков стоят для нас примерно $3.50. Теперь, когда сборка стоит дороже (см. §12), точка окупаемости тоже выше. Сборка за $2,200 окупается примерно при ₨630,000 валовой траты, для чего нужно более сильное удержание или больше визитов, чем требовала старая дешёвая сборка. Именно это проверяет ворота убить или масштабировать в §14.</blockquote>
 <h3>Геймпассы (постоянные)</h3>
 <div class="table-wrap"><table>
 <thead><tr><th>Геймпасс</th><th>₨</th><th>Почему игроки это покупают</th></tr></thead>
@@ -713,7 +750,8 @@
 <h4>Создано для клипов</h4>
 <ul>
   <li>Куратор, фирменное существо, создан для превью: бледный, слишком высокий, в промокшей форме персонала, лицо никогда полностью не показано. Он появляется лишь в трёх заданных ситуациях, и именно редкость делает его достойным съёмки.</li>
-  <li>Редчайшие аномалии (#20 Табличка-имитатор, #30 Именная бирка) используют собственный аватар или имя игрока, что самый распространяемый трюк в жанре («она знала моё имя»).</li>
+  <li>Редчайшие аномалии (#20 Табличка-имитатор, #30 Именная бирка) используют собственный аватар или имя игрока, что самый распространяемый трюк в жанре («она знала моё имя»). Арка из 13 ночей (§5) гарантирует, что каждый новый игрок увидит одну из них в первые три ночи, так что лучший клип игры не оставлен на бросок 1 к 12.</li>
+  <li>Побег (§2) сам по себе движок клипов: погоня в конце смены от твари, которую вы не смогли сдержать, это момент, который игроки записывают и постят, так же как концовки «оно прошло» распространили <em>Terminal 13</em>.</li>
   <li>Аномалии в форме задач это собственный двигатель клипов: водоросли, что вы вылавливаете и которые поворачиваются и смотрят на вас, мёртвая рыба, что дёргается. Это случается, пока игрок спокоен и работает, так что реакция сильнее.</li>
   <li>Расписание обновлений это ещё и маркетинг. Значок «5 NEW ANOMALIES» на иконке каждую неделю или две дёшево подкрепить, ведь контент это данные (§4).</li>
 </ul>
@@ -767,50 +805,52 @@
 <tr><td>N11</td><td>Новый UI и SFX (планшет, пинги задач, звук оттирания, высыпания, клапана)</td><td>4</td><td>$48</td></tr>
 <tr><td>N12</td><td>Балансировка и плейтест объединённого двухтрекового цикла</td><td>8</td><td>$96</td></tr>
 <tr><td>N13</td><td>Буфер на переделку при интеграции (правки режиссёра, цикла смены и экономики всегда что-то ломают)</td><td>6</td><td>$72</td></tr>
-<tr><td></td><td><strong>Промежуточный итог нового слоя</strong></td><td><strong>71</strong></td><td><strong>$852</strong></td></tr>
-<tr><td></td><td><strong>Итог полной игры</strong></td><td><strong>153</strong></td><td><strong>$1,896</strong></td></tr>
+<tr><td>N14</td><td><strong>Механика провала Побег + инструмент защиты</strong> (отслеживание сбежавших Сущностей, погоня в конце смены, отбиться-и-выжить, интеграция с экраном итогов; поглощает прежний опциональный инструмент защиты)</td><td>16</td><td>$192</td></tr>
+<tr><td>N15</td><td><strong>Арка из 13 ночей + гарантированный ранний испуг</strong> (фиксированный порядок ночей, 4 до 5 сценарных вставок, финальное столкновение, правило персонализированной аномалии в первые три ночи)</td><td>10</td><td>$120</td></tr>
+<tr><td></td><td><strong>Промежуточный итог нового слоя</strong></td><td><strong>97</strong></td><td><strong>$1,164</strong></td></tr>
+<tr><td></td><td><strong>Итог полной игры</strong></td><td><strong>179</strong></td><td><strong>$2,208</strong></td></tr>
 </tbody></table></div>
 <h4>Опциональные системы, оценены, но не в итоге выше</h4>
 <div class="table-wrap"><table>
 <thead><tr><th>Строка</th><th>Работа</th><th>Часы</th><th>Стоимость</th></tr></thead>
 <tbody>
 <tr><td>O1</td><td>Шкала Самообладания (рассудка), восстановление кофе в комнате отдыха, истощение Куратором</td><td>13</td><td>$156</td></tr>
-<tr><td>O2</td><td>Инструмент защиты (сеткомёт или воздушный горн, чтобы отпугнуть Куратора, экономика боезапаса)</td><td>10</td><td>$120</td></tr>
-<tr><td>O3</td><td>Кооп-смены на двух игроков (репликация, общие штрафы, деление платы)</td><td>25</td><td>$300</td></tr>
-<tr><td>O4</td><td>Слой друзей (смены на общем сервере, метки на аквариумах, наблюдение при увольнении, возрождение другом, таблица друзей)</td><td>12</td><td>$144</td></tr>
+<tr><td>O2</td><td><strong>Кооп-смены на двух игроков</strong> (репликация, общие штрафы, деление платы) &mdash; <em>ставка на масштаб, а не отрез: это движок роста Terminal 13 и, при переполняющемся жанре, самое ясное отличие. Флагманская послезапусковая функция, если ворота пройдены.</em></td><td>25</td><td>$300</td></tr>
+<tr><td>O3</td><td>Слой друзей (смены на общем сервере, метки на аквариумах, наблюдение при увольнении, возрождение другом, таблица друзей)</td><td>12</td><td>$144</td></tr>
 </tbody></table></div>
 <h3>Итоги и честный диапазон</h3>
 <div class="table-wrap"><table>
 <thead><tr><th>Сценарий</th><th>Допущение</th><th>Часы</th><th>Стоимость</th></tr></thead>
 <tbody>
-<tr><td>Лучший случай</td><td>Оценки держатся, один способный фрилансер, мало переделок</td><td>153</td><td>$1,896</td></tr>
-<tr><td>Вероятный</td><td>Около 20 процентов перерасхода, обычно для игры из шести систем</td><td>~184</td><td>$2,275</td></tr>
-<tr><td>Худший случай</td><td>На 50 до 60 процентов больше, смена фрилансера в середине проекта или сопротивляющаяся интеграция режиссёра</td><td>~237</td><td>$2,950</td></tr>
+<tr><td>Лучший случай</td><td>Оценки держатся, один способный фрилансер, мало переделок</td><td>179</td><td>$2,208</td></tr>
+<tr><td>Вероятный</td><td>Около 20 процентов перерасхода, обычно для игры из восьми систем</td><td>~215</td><td>$2,650</td></tr>
+<tr><td>Худший случай</td><td>На 50 до 60 процентов больше, смена фрилансера в середине проекта или сопротивляющаяся интеграция режиссёра</td><td>~277</td><td>$3,450</td></tr>
 </tbody></table></div>
-<p>Честное плановое число это <strong>$1,900 до $2,300</strong>, с $2,950 в уме как плохой исход. При $12 в час главный риск по стоимости это переделка: новый слой затрагивает режиссёра аномалий, цикл смены и экономику, три системы, от которых зависит всё остальное.</p>
+<p>Честное плановое число это <strong>$2,200 до $2,650</strong>, с $3,450 в уме как плохой исход. При $12 в час главный риск по стоимости это переделка: новый слой затрагивает режиссёра аномалий, цикл смены и экономику, три системы, от которых зависит всё остальное.</p>
 <h3>Минимально жизнеспособный запуск против полной отполированной игры</h3>
-<p><strong>Нижняя планка MVP: около 119 часов, $1,488, назовём это $1,500 до $1,700 с перерасходом.</strong> Базовые 82 часа плюс только каркас задач (N1), чистка водорослей (N2), вытирание (N3), кормёжка (N4), химия воды (N6), обновление экономики (N10) и урезанные 5 часов балансировки. Это выпускает настоящую игру про активную работу: якорную задачу, две задачи с занятыми руками, одну мини-игру с приковыванием взгляда и плату за задачи. Это отсекает фильтровальную комнату, Дежурство у скиммера, Журнал показаний и модную интеграцию режиссёра. Аномалии всё ещё появляются по своему расписанию и просто случайно застают вас за работой, что примерно 70 процентов эффекта без всякой стоимости N9.</p>
-<p><strong>Полная отполированная игра: около 184 часов, $2,275 вероятно.</strong> Всё в таблице выше, включая интеграцию режиссёра, все семь задач и полную балансировку.</p>
-<p><strong>Полная игра плюс набор возможностей Animal Hospital (рассудок и защита): около 207 часов, $2,550 до $2,950.</strong> Добавить O1 и O2. Пропустить O3 (кооп) на запуске. Это самая дорогая и рискованная строка, и жанр её не требует.</p>
+<p><strong>Нижняя планка MVP: около 135 часов, $1,680, назовём это $1,750 до $1,950 с перерасходом.</strong> Базовые 82 часа плюс каркас задач (N1), чистка водорослей (N2), вытирание (N3), кормёжка (N4), химия воды (N6), обновление экономики (N10), урезанные 5 часов балансировки и <strong>механика провала Побег (N14)</strong> плюс правило раннего испуга. Побег в планке намеренно: это отличие и движок клипов, и он переиспользует то, что базовая линия уже строит. Это выпускает настоящую игру про активную работу с драматичным, снимаемым провалом. Отсекает фильтровальную комнату, Дежурство у скиммера, Журнал показаний, интеграцию режиссёра и полную авторскую арку из 13 ночей (концовка и вставки арки это первый послезапусковый дроп).</p>
+<p><strong>Полная отполированная игра: около 215 часов, $2,650 вероятно.</strong> Всё в таблице сборки выше, включая интеграцию режиссёра, все семь задач, механику Побега, арку из 13 ночей и полную балансировку.</p>
+<p><strong>Полная игра плюс шкала Самообладания (O1 рассудок): около 228 часов, $2,800 до $3,050.</strong> Добавить O1. Кооп (O2) держится отдельно как ставка на масштаб, финансируется из выручки, если ворота пройдены, ведь это самая дорогая и рискованная строка.</p>
 <h3>Что дёшево, что дорого, где резать</h3>
 <p><strong>Дешёвые победы, высокое напряжение на доллар:</strong> чистка водорослей, вытирание, кормёжка, Журнал показаний, Дежурство у скиммера. Это декали, инструменты, подсказки и таймеры, примерно $36 до $72 каждая.</p>
-<p><strong>Настоящие центры затрат:</strong> мини-игра фильтровальной комнаты ($96, нужны новая комната и конечный автомат), интеграция режиссёра ($60 плюс большая часть буфера на переделку), рассудок ($156), защита ($120) и кооп ($300, и он дестабилизирует всё остальное).</p>
+<p><strong>Настоящие центры затрат:</strong> механика Побега ($192, но это отличие, и она переиспользует существующие части), арка из 13 ночей ($120), мини-игра фильтровальной комнаты ($96, нужны новая комната и конечный автомат), интеграция режиссёра ($60 плюс большая часть буфера на переделку), рассудок ($156) и кооп ($300, и он дестабилизирует всё остальное).</p>
 <p><strong>Лестница отсечений, чтобы попасть в меньший бюджет, по порядку:</strong></p>
 <ol>
-  <li>Отрезать кооп (O3), экономит $300. Рекомендуется в любом случае.</li>
-  <li>Отрезать защиту (O2) и рассудок (O1), экономит $276. Выпустить только 3 штрафа, добавить это позже.</li>
+  <li>Отложить кооп (O2), $300. Это ставка на масштаб, финансируется из выручки, и всё равно никогда не входила в итог запуска.</li>
+  <li>Отрезать шкалу Самообладания (O1), экономит $156. Побег уже несёт драму, которую несла бы шкала рассудка.</li>
+  <li>Отрезать концовку и вставки арки из 13 ночей (большую часть N15), экономит около $96, но <strong>оставить правило раннего испуга</strong> (почти бесплатно, высокая ценность). Ночи остаются только бесконечными уровнями до послезапускового дропа.</li>
   <li>Отрезать интеграцию режиссёра (N9) и половину буфера на переделку, экономит около $96. Аномалии тогда появляются по своему расписанию и сосуществуют с вашей работой. Нормально на запуске.</li>
-  <li>Отрезать фильтровальную комнату (N5), Скиммер (N7), Журнал показаний (N8), экономит $192. Это нижняя планка MVP.</li>
-  <li>Ниже этого вы возвращаетесь к игре с наблюдением, дизайну, от которого мы уходим. Не режьте дальше шага 4.</li>
+  <li>Отрезать фильтровальную комнату (N5), Скиммер (N7), Журнал показаний (N8), экономит $192. Это нижняя планка MVP &mdash; которая всё ещё сохраняет механику Побега (N14), ведь в этом и смысл ревизии.</li>
+  <li>Ниже этого вы возвращаетесь к игре с наблюдением, дизайну, от которого мы уходим. Не режьте дальше шага 5 и никогда не режьте Побег.</li>
 </ol>
 <h3>Честный вердикт по бюджету</h3>
 <p>Полная игра со слоем активной работы не вписывается в изначальный диапазон $600 до $1,000. Игра только с наблюдением уже была оценена в $1,044, у верхней границы этого диапазона, а слой, который делает её конкурентной с Animal Hospital, добавляет пять до семи систем взаимодействия и затрагивает каждую часть основного цикла. Новые реалистичные диапазоны:</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Версия</th><th>Стоимость</th><th>Время</th><th>Примечания</th></tr></thead>
 <tbody>
-<tr><td><strong>MVP с активной работой (рекомендуется)</strong></td><td>$1,500 до $1,700</td><td>3 до 4 недель</td><td>Выпускает фантазию о работнике, плату за задачи и якорные задачи. Каждый отложенный пункт это чистое послезапусковое обновление, которое заодно служит маркетингом.</td></tr>
-<tr><td>Полный отполированный запуск</td><td>$1,900 до $2,300</td><td>4 до 6 недель</td><td>Все семь задач, интеграция режиссёра, полная балансировка.</td></tr>
-<tr><td>Полный запуск плюс рассудок и защита</td><td>$2,175 до $2,950</td><td>5 до 7 недель</td><td>Полный набор возможностей Animal Hospital, минус кооп.</td></tr>
+<tr><td><strong>MVP с активной работой (рекомендуется)</strong></td><td>$1,750 до $1,950</td><td>3.5 до 4.5 недель</td><td>Выпускает фантазию о работнике, плату за задачи, якорные задачи и механику Побега. Каждый отложенный пункт это чистое послезапусковое обновление, которое заодно служит маркетингом.</td></tr>
+<tr><td>Полный отполированный запуск</td><td>$2,200 до $2,650</td><td>5 до 6 недель</td><td>Все семь задач, интеграция режиссёра, механика Побега, арка из 13 ночей, полная балансировка.</td></tr>
+<tr><td>Полный запуск плюс шкала Самообладания</td><td>$2,800 до $3,050</td><td>6 до 7 недель</td><td>Добавляет шкалу рассудка (O1). Кооп (O2) остаётся отдельной ставкой на масштаб.</td></tr>
 </tbody></table></div>
 <p>Если жёсткий потолок и правда $1,000, две честные опции таковы: ужать базовую линию (6 аквариумов вместо 8, 20 аномалий вместо 30, экономит примерно $150 до $200) и выпустить набор задач MVP поверх, приземлившись около $1,300 до $1,350, всё ещё превысив примерно на 30 процентов. Или запустить ядро с наблюдением рано и профинансировать задачи из первого месяца дохода с геймпассов, что лучший план по денежному потоку, но рискует запуском ровно в тот тонкий поджанр, ради ухода от которого и существует вся эта переработка. Первая опция это лучшая игра.</p>
 
@@ -827,7 +867,7 @@
 <tr><td>24</td><td><strong>Мягкий запуск</strong></td><td>Публично и без рекламы. Иконка и превью протестированы собственными инструментами Roblox</td></tr>
 <tr><td>24 до 31</td><td><strong>Окно наблюдения</strong></td><td>Ежедневный взгляд на цифры (§14), только хотфиксы, без нового контента</td></tr>
 <tr><td>31</td><td><strong>Решение у ворот</strong></td><td>Убить, итерировать или масштабировать</td></tr>
-<tr><td>Если масштабируем, каждые 10 до 14 дней</td><td><strong>Выпуск контента</strong></td><td>Отложенные задачи (фильтровальная комната, Скиммер, интеграция режиссёра), пять до восьми новых аномалий, рассудок и защита, как только удержание это оправдает</td></tr>
+<tr><td>Если масштабируем, каждые 10 до 14 дней</td><td><strong>Выпуск контента</strong></td><td>Концовка и вставки арки из 13 ночей, отложенные задачи (фильтровальная комната, Скиммер, интеграция режиссёра), пять до восьми новых аномалий, шкала Самообладания, как только удержание это оправдает, затем ставка на масштаб — кооп</td></tr>
 </tbody></table></div>
 
 <h2 id="s14"><span class="n">14</span>KPI и ворота убить или масштабировать</h2>
@@ -850,7 +890,7 @@
 <thead><tr><th>Риск</th><th>Вероятность</th><th>Что мы с этим делаем</th></tr></thead>
 <tbody>
 <tr><td>Более высокая стоимость сборки, чем в изначальном плане, ведь слой активной работы примерно удваивает её</td><td>Наверняка</td><td>Честно оценено в §12, с нижней планкой MVP и ясной лестницей отсечений. Выпустить MVP, допилить остальное из дохода</td></tr>
-<tr><td>Тренд остывает до запуска, ведь жанр аномалий продолжает заполняться в течение 2026</td><td>Средняя до высокой</td><td>График MVP в 3 до 4 недель это ответ, а сеттинг аквариума плюс Куратор выделяют её среди клонов про больницу и заправку</td></tr>
+<tr><td>Тренд остывает до запуска, ведь жанр аномалий продолжает заполняться в течение 2026</td><td>Средняя до высокой</td><td>График MVP в 3 до 4 недель это ответ, а сеттинг аквариума, слой активной работы и Куратор выделяют её среди клонов про больницу и заправку. Ближайший прямой конкурент это <strong>Terminal 13</strong> (Papers-Please плюс аномалии на Roblox и Steam); наш клин против него это фантазия о работе в аквариуме и механика Побега, а его успех в коопе (§12, O2) именно поэтому кооп у нас ставка на масштаб, а не отрез</td></tr>
 <tr><td>Двухтрековый цикл перегружает новых игроков</td><td>Средняя</td><td>Задачи сами по себе никогда не проваливают смену, Night 1 до 2 лёгкие, счётчик в интерфейсе работает с ранних этапов, а доля выполнения задач наблюдается с первого дня</td></tr>
 <tr><td>Качество или надёжность фрилансера, теперь более уязвимо с большим числом систем</td><td>Средняя</td><td>Платить по вехам, требовать играбельную сборку основного цикла до того, как выдана больше половины денег, и держать буфер на переделку в резерве</td></tr>
 <tr><td>Аномалии слишком сложны или слишком легки для юной мобильной аудитории</td><td>Средняя</td><td>Сложность это одна конфигурационная таблица, счётчик в интерфейсе работает на Nights 1 до 5, и мы следим за долей ложных докладов с первого дня</td></tr>
