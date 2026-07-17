@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%9B%B0%EF%B8%8F</text></svg>">
+<title>Projects</title>
+<style>
+  :root {
+    --panel: #ffffff; --panel-2: #f4f5f0; --line: #dcded4; --text: #1a1d17;
+    --muted: #5c6154; --faint: #878d7c; --accent: #16b877; --accent-deep: #0c7049;
+    --gold: #b67d0e; --danger: #bd4638; --bg: #f7f7f1;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, "Segoe UI", -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --panel: #191c16; --panel-2: #21251d; --line: #333829; --text: #eef0e6;
+      --muted: #a7ad99; --faint: #767c68; --accent: #2ee69a; --accent-deep: #37d792;
+      --gold: #f0b544; --danger: #f0796a; --bg: #10120e;
+    }
+  }
+  :root[data-theme="light"] {
+    --panel:#ffffff;--panel-2:#f4f5f0;--line:#dcded4;--text:#1a1d17;--muted:#5c6154;
+    --faint:#878d7c;--accent:#16b877;--accent-deep:#0c7049;--gold:#b67d0e;--danger:#bd4638;--bg:#f7f7f1;
+  }
+  :root[data-theme="dark"] {
+    --panel:#191c16;--panel-2:#21251d;--line:#333829;--text:#eef0e6;--muted:#a7ad99;
+    --faint:#767c68;--accent:#2ee69a;--accent-deep:#37d792;--gold:#f0b544;--danger:#f0796a;--bg:#10120e;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans);
+    -webkit-font-smoothing: antialiased; line-height: 1.6; }
+
+  .topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 1rem;
+    padding: .7rem clamp(1rem,4vw,2rem); background: color-mix(in srgb, var(--bg) 86%, transparent);
+    backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .topbar .back { font-family: var(--mono); font-size: .78rem; color: var(--accent-deep); text-decoration: none;
+    display: inline-flex; align-items: center; gap: .4rem; font-weight: 600; }
+  .topbar .back:hover { color: var(--accent); }
+  .topbar .spacer { flex: 1; }
+  .topbar .tt { font-family: var(--mono); font-size: .72rem; color: var(--faint); }
+  .pill { font-family: var(--mono); font-size: .74rem; cursor: pointer; color: var(--muted);
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: .4rem .6rem; line-height: 1; }
+  .pill:hover { color: var(--accent); }
+
+  .hero { max-width: 820px; margin: 0 auto; padding: clamp(2rem,6vw,4rem) clamp(1.15rem,5vw,2rem) 1rem; }
+  .eyebrow { font-family: var(--mono); font-size: .72rem; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--accent-deep); font-weight: 600; display: flex; align-items: center; gap: .7rem; }
+  .eyebrow::before { content: ""; width: 24px; height: 2px; background: var(--accent); }
+  .hero h1 { font-size: clamp(2rem,7vw,3.2rem); line-height: 1.03; margin: .8rem 0 .5rem; font-weight: 800; letter-spacing: -.03em; }
+  .hero .sub { color: var(--muted); font-family: var(--mono); font-size: clamp(.78rem,2vw,.9rem); }
+
+  main { max-width: 820px; margin: 0 auto; padding: 1rem clamp(1.15rem,5vw,2rem) 5rem; }
+
+  .proj { background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+    padding: clamp(1.15rem,4vw,1.8rem); margin: 1.1rem 0; }
+  .proj-img { width: 100%; display: block; border-radius: 12px; border: 1px solid var(--line);
+    margin: .2rem 0 .9rem; aspect-ratio: 16/10; object-fit: cover; background: var(--panel-2); }
+  .proj .num { font-family: var(--mono); font-size: .72rem; color: var(--accent); letter-spacing: .1em; }
+  .proj h2 { font-size: clamp(1.25rem,3.6vw,1.7rem); font-weight: 800; letter-spacing: -.02em; margin: .3rem 0 .5rem; }
+  .proj p { margin: .5rem 0; color: var(--muted); }
+  .proj p.lead { color: var(--text); }
+  .proj ul { margin: .6rem 0; padding-left: 1.2rem; color: var(--muted); }
+  .proj li { margin: .2rem 0; }
+  .proj li::marker { color: var(--accent); }
+  .tags { display: flex; flex-wrap: wrap; gap: .4rem; margin: .7rem 0; padding: 0; list-style: none; }
+  .tags li { font-family: var(--mono); font-size: .72rem; color: var(--muted);
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: .28rem .6rem; margin: 0; }
+  .meta { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); margin: .9rem 0 .2rem; }
+  .meta div { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: .7rem .9rem; }
+  .meta b { display: block; font-family: var(--mono); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); margin-bottom: .15rem; }
+  .cta { display: inline-flex; align-items: center; gap: .5rem; margin-top: .6rem;
+    font-family: var(--mono); font-size: .82rem; font-weight: 700; text-decoration: none;
+    color: #fff; background: var(--accent-deep); border-radius: 999px; padding: .7rem 1.2rem;
+    transition: transform .15s ease, background .15s ease; }
+  .cta:hover { background: var(--accent); transform: translateY(-1px); }
+  .cta:active { transform: translateY(0); }
+
+  .foot { max-width: 820px; margin: 0 auto; padding: 0 clamp(1.15rem,5vw,2rem) 4rem;
+    font-family: var(--mono); font-size: .72rem; color: var(--faint); text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back" href="index.html">&#8592; Presentation</a>
+  <span class="spacer"></span>
+  <span class="tt">Projects &middot; private</span>
+  <button class="pill" id="lang" aria-label="Switch language English or Russian">RU</button>
+  <button class="pill" id="theme" aria-label="Toggle light or dark theme">&#9680;</button>
+</div>
+
+<!-- ================= ENGLISH ================= -->
+<div id="p2-en">
+  <div class="hero">
+    <div class="eyebrow">Selected work</div>
+    <h1>Three projects I can build</h1>
+    <p class="sub">Short briefs &middot; pick one and we go deeper.</p>
+  </div>
+
+  <main>
+    <section class="proj">
+      <div class="num">01</div>
+      <h2>GuestRadar &mdash; visitor analytics</h2>
+      <img class="proj-img" src="assets/guestradar.jpg" alt="GuestRadar Wi-Fi sensor device" loading="lazy" width="1456" height="1080">
+      <p class="lead">Anonymous foot-traffic analytics for physical spaces. It senses nearby Wi-Fi devices to count visitors, measure dwell time and map movement &mdash; no app install, no user sign-up, real-time reports.</p>
+      <ul>
+        <li>Unique visitors and repeat-visit analysis</li>
+        <li>Dwell time, plus load by hour and by day</li>
+        <li>Movement heatmaps and location comparison</li>
+        <li>Live monitoring dashboard and reports</li>
+      </ul>
+      <ul class="tags">
+        <li>Malls</li><li>Shops &amp; supermarkets</li><li>Business centers</li><li>Airports &amp; stations</li><li>Events</li><li>Restaurants &amp; hotels</li>
+      </ul>
+      <p>Turns real visitor behavior into decisions: ad placement, floor layout, sales conversion and campaign ROI.</p>
+    </section>
+
+    <section class="proj">
+      <div class="num">02</div>
+      <h2>ANPR / LPR &mdash; plate recognition &amp; access control</h2>
+      <p class="lead">An intelligent number-plate recognition system with access control. Real-time vehicle identification, automatic barrier and gate opening, an event log, white/black-list management, and integration with existing security systems.</p>
+      <div class="meta">
+        <div><b>Timeline</b>1&ndash;2 months, depending on integrations and features</div>
+        <div><b>Cost</b>Base (1 camera, controller, software) 2,500&ndash;3,000 AZN + subscription if SaaS</div>
+      </div>
+    </section>
+
+    <section class="proj">
+      <div class="num">03</div>
+      <h2>Websites, built and deployed</h2>
+      <p class="lead">Custom, multilingual, mobile-first sites &mdash; designed, built and shipped live. Here is a recent one.</p>
+      <a class="cta" href="https://yatovoid.github.io/crunch-burgers/" target="_blank" rel="noopener">View a live example &#8599;</a>
+    </section>
+  </main>
+</div>
+
+<!-- ================= РУССКИЙ ================= -->
+<div id="p2-ru" hidden>
+  <div class="hero">
+    <div class="eyebrow">Избранное</div>
+    <h1>Три проекта, которые я могу сделать</h1>
+    <p class="sub">Короткие описания &middot; выберите одно, и углубимся.</p>
+  </div>
+
+  <main>
+    <section class="proj">
+      <div class="num">01</div>
+      <h2>GuestRadar &mdash; аналитика посетителей</h2>
+      <img class="proj-img" src="assets/guestradar.jpg" alt="Wi-Fi сенсор GuestRadar" loading="lazy" width="1456" height="1080">
+      <p class="lead">Анонимная статистика потока посетителей для физических пространств. Система фиксирует присутствие Wi-Fi устройств, чтобы считать посетителей, измерять время пребывания и анализировать перемещение &mdash; без установки приложения, без регистрации, отчёты в реальном времени.</p>
+      <ul>
+        <li>Уникальные посетители и анализ повторных визитов</li>
+        <li>Время пребывания, загруженность по часам и дням</li>
+        <li>Тепловые карты перемещения и сравнение локаций</li>
+        <li>Онлайн-панель мониторинга и отчёты</li>
+      </ul>
+      <ul class="tags">
+        <li>Торговые центры</li><li>Магазины и супермаркеты</li><li>Бизнес-центры</li><li>Аэропорты и вокзалы</li><li>Выставки и мероприятия</li><li>Рестораны и гостиницы</li>
+      </ul>
+      <p>Превращает реальные данные о поведении посетителей в решения: размещение рекламы, планировка помещений, конверсия продаж и эффективность кампаний.</p>
+    </section>
+
+    <section class="proj">
+      <div class="num">02</div>
+      <h2>ANPR / LPR &mdash; распознавание номеров и контроль доступа</h2>
+      <p class="lead">Интеллектуальная система автоматического распознавания государственных регистрационных номеров с управлением доступом. Идентификация транспорта в реальном времени, автоматическое открытие шлагбаумов и ворот, журнал событий, управление белыми и чёрными списками и интеграция с существующими системами безопасности.</p>
+      <div class="meta">
+        <div><b>Срок</b>1&ndash;2 месяца, в зависимости от интеграций и функциональности</div>
+        <div><b>Стоимость</b>Базовая (1 камера, контроллер, ПО) 2500&ndash;3000 AZN + подписка, если SaaS</div>
+      </div>
+    </section>
+
+    <section class="proj">
+      <div class="num">03</div>
+      <h2>Сайты, собранные и опубликованные</h2>
+      <p class="lead">Индивидуальные, многоязычные, mobile-first сайты &mdash; спроектированы, собраны и запущены. Вот один из недавних.</p>
+      <a class="cta" href="https://yatovoid.github.io/crunch-burgers/" target="_blank" rel="noopener">Открыть живой пример &#8599;</a>
+    </section>
+  </main>
+</div>
+
+<div class="foot">yatovoid &middot; private</div>
+
+<script>
+  var root = document.documentElement;
+  document.getElementById('theme').addEventListener('click', function () {
+    var dark = root.getAttribute('data-theme') === 'dark'
+      || (!root.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+    root.setAttribute('data-theme', dark ? 'light' : 'dark');
+  });
+  (function(){
+    var en=document.getElementById('p2-en'), ru=document.getElementById('p2-ru'), btn=document.getElementById('lang');
+    function set(l){ var isru=l==='ru'; ru.hidden=!isru; en.hidden=isru; btn.textContent=isru?'EN':'RU'; document.documentElement.lang=isru?'ru':'en'; try{localStorage.setItem('gdd-lang',l);}catch(e){} }
+    var s=null; try{s=localStorage.getItem('gdd-lang');}catch(e){}
+    set(s || ((navigator.language||'').toLowerCase().indexOf('ru')===0?'ru':'en'));
+    btn.addEventListener('click',function(){ set(en.hidden?'en':'ru'); });
+  })();
+</script>
+</body>
+</html>
