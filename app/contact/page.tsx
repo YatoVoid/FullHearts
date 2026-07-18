@@ -18,7 +18,7 @@ const HEART = (
   />
 );
 
-const REPO = "https://github.com/YatoVoid/FullHearts";
+const EMAIL = "wali.lambert1960@gmail.com";
 
 export default function Contact() {
   return (
@@ -37,13 +37,11 @@ export default function Contact() {
         <h1>Contact</h1>
         <p>
           Full Hearts is a small, independent project, and feedback from players is what keeps the catalogue accurate.
-          The best way to reach me is through the project&apos;s GitHub, where messages are read and answered directly.
+          The best way to reach me is by email &mdash; messages are read and answered directly.
         </p>
 
         <p>
-          <a className="nav-cta" href={`${REPO}/issues/new`} target="_blank" rel="noopener noreferrer">
-            Open an issue on GitHub
-          </a>
+          <a className="nav-cta" href={`mailto:${EMAIL}`}>Email {EMAIL}</a>
         </p>
 
         <h2>What to reach out about</h2>
@@ -62,8 +60,8 @@ export default function Contact() {
             it gets corrected.
           </li>
           <li>
-            <strong>Advertising and business.</strong> For ad, sponsorship, or partnership questions, use the same GitHub
-            channel and mark it clearly.
+            <strong>Advertising and business.</strong> For ad, sponsorship, or partnership questions, email the address
+            above with &ldquo;Business&rdquo; in the subject.
           </li>
         </ul>
 

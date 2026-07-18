@@ -59,7 +59,7 @@ export default function Privacy() {
         </p>
 
         <h2>Contact</h2>
-        <p>Questions about this page? Reach out via the project&apos;s repository.</p>
+        <p>Questions about this page? Email <a href="mailto:wali.lambert1960@gmail.com">wali.lambert1960@gmail.com</a> or see the <Link href="/contact">Contact</Link> page.</p>
       </main>
 
       <Footer />
