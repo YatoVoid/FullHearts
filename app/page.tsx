@@ -103,27 +103,29 @@ export default function Home() {
 
         <section className="wrap" id="how" style={{ padding: "70px 0 90px" }}>
           <div className="section-head">
-            <div className="eyebrow">HOW IT WORKS</div>
-            <h2>Three steps to your pack</h2>
+            <div className="eyebrow">WHAT IT DOES</div>
+            <h2>The hard parts of a modpack, handled</h2>
           </div>
           <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))" }}>
             <article className="tip r-uncommon">
-              <div className="row1"><span className="title">1 · Take the quiz</span><span className="loader">~2 MIN</span></div>
-              <p className="desc">Tell us how you like to play (building, exploring, automating, fighting) plus your version and mod loader.</p>
-              <div className="fix"><span style={{ width: 14, height: 14, display: "inline-flex" }}>{HEART}</span>No jargon, one question at a time</div>
+              <div className="row1"><span className="title">Adds every dependency</span><span className="loader">AUTO</span></div>
+              <p className="desc">Most mods need extra library mods to run, and a missing one crashes the game on startup. Full Hearts pulls in the whole dependency chain for you, resolved for your loader and version.</p>
+              <div className="fix"><span style={{ width: 14, height: 14, display: "inline-flex" }}>{HEART}</span>Launches the first time</div>
             </article>
             <article className="tip r-rare">
-              <div className="row1"><span className="title">2 · Get your pack</span><span className="loader">RANKED</span></div>
-              <p className="desc">We rank compatible mods to your taste and show a plain-English reason for every pick, with dependencies flagged.</p>
-
-              <div className="fix"><span style={{ width: 14, height: 14, display: "inline-flex" }}>{HEART}</span>A reason behind every mod</div>
+              <div className="row1"><span className="title">Matches server to client</span><span className="loader">SYNC</span></div>
+              <p className="desc">Build a server mod set from the same loadout you play on, at the same versions, with client only mods left off the server. You and your friends line up.</p>
+              <div className="fix"><span style={{ width: 14, height: 14, display: "inline-flex" }}>{HEART}</span>No version mismatch</div>
             </article>
             <article className="tip r-epic">
-              <div className="row1"><span className="title">3 · One-click install</span><span className="loader">.MRPACK</span></div>
-              <p className="desc">Download the whole pack as one modpack file, dependencies included, and import it into your launcher. It just launches.</p>
-              <div className="fix"><span style={{ width: 14, height: 14, display: "inline-flex" }}>{HEART}</span>No per-mod hunting</div>
+              <div className="row1"><span className="title">Moves to another version</span><span className="loader">MIGRATE</span></div>
+              <p className="desc">Point a loadout at a different Minecraft version or loader and it re-resolves every mod to a build that works there, then tells you what could not come along.</p>
+              <div className="fix"><span style={{ width: 14, height: 14, display: "inline-flex" }}>{HEART}</span>One click to migrate</div>
             </article>
           </div>
+          <p style={{ textAlign: "center", marginTop: 30, color: "var(--muted, #b9b3d6)" }}>
+            Not sure what to pick? A short <Link href="/quiz">quiz</Link> suggests a starter pack based on how you like to play. Your answers stay in your browser.
+          </p>
         </section>
       </main>
 

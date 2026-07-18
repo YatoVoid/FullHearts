@@ -37,7 +37,7 @@ export default function Contact() {
         <h1>Contact</h1>
         <p>
           Full Hearts is a small, independent project, and feedback from players is what keeps the catalogue accurate.
-          The best way to reach me is by email &mdash; messages are read and answered directly.
+          The best way to reach me is by email. Messages are read and answered directly.
         </p>
 
         <p>
@@ -56,7 +56,7 @@ export default function Contact() {
             Modrinth link and a line about who it&apos;s for. Every addition is reviewed by hand.
           </li>
           <li>
-            <strong>Fix a mistake.</strong> Wrong tag, wrong version, an outdated recommendation &mdash; point it out and
+            <strong>Fix a mistake.</strong> A wrong tag, a wrong version, or an outdated recommendation. Point it out and
             it gets corrected.
           </li>
           <li>
@@ -67,8 +67,8 @@ export default function Contact() {
 
         <h2>Response time</h2>
         <p>
-          This is a one-person project, so replies come as time allows &mdash; usually within a few days. Bug reports
-          that stop a pack from launching are prioritised over everything else.
+          This is a one-person project, so replies come as time allows, usually within a few days. Bug reports that stop
+          a pack from launching come first.
         </p>
 
         <p>

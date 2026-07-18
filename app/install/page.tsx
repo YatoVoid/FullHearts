@@ -212,7 +212,7 @@ export default function Install() {
               install the correct Java runtime and mod loader for you, which is the part people usually get wrong by hand.
             </li>
             <li>
-              <strong>A little RAM headroom.</strong> A small pack runs fine on 4 GB; heavier packs are happier with 6&ndash;8 GB.
+              <strong>A little RAM headroom.</strong> A small pack runs fine on 4 GB; heavier packs are happier with 6 to 8 GB.
               You set this in the launcher&apos;s instance settings, not in the game.
             </li>
           </ul>
@@ -224,9 +224,8 @@ export default function Install() {
             <h3>When something won&apos;t launch</h3>
           </div>
           <p className="intro-lede" style={{ marginBottom: 24 }}>
-            Most modded crashes are not the mods being broken &mdash; they are a mismatch between loader, version, or a
-            missing dependency. Here are the ones that come up most, and why the one-click <code>.mrpack</code> avoids
-            them.
+            Most modded crashes come down to a mismatch: the loader, the version, or a missing dependency. Here are the
+            ones that come up most, and why the one-click <code>.mrpack</code> avoids them.
           </p>
 
           <h3>&ldquo;The game crashed&rdquo; or a missing-dependency error on startup</h3>
@@ -255,10 +254,10 @@ export default function Install() {
 
           <h3>It works in single-player but not when I join a server</h3>
           <p>
-            A server needs the <em>same version</em> of every mod that adds content or networking. Client-only mods &mdash;
-            a minimap, an inventory search like JEI &mdash; belong on your client and should not be on the server, and
-            forcing them there causes a mismatch. Build the server&apos;s mod set from the same loadout so the shared mods
-            line up exactly.
+            A server needs the <em>same version</em> of every mod that adds content or networking. Client only mods like a
+            minimap or an inventory search such as JEI belong on your client and should stay off the server, and forcing
+            them there causes a mismatch. Build the server&apos;s mod set from the same loadout so the shared mods line up
+            exactly.
           </p>
 
           <h3>Is this safe to run?</h3>
