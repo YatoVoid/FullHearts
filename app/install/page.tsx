@@ -192,6 +192,96 @@ export default function Install() {
             official sources.
           </p>
         </section>
+
+        {/* Written guide: what you need, troubleshooting, servers */}
+        <section className="method method-alt">
+          <div className="method-head">
+            <span className="method-badge alt">BEFORE YOU START</span>
+            <h3>What you need</h3>
+          </div>
+          <ul className="guide-list">
+            <li>
+              <strong>Minecraft: Java Edition.</strong> Mods only work on Java, not Bedrock (the phone, console, and
+              Windows 10/11 Store version). If you can install Forge or Fabric, you have Java.
+            </li>
+            <li>
+              <strong>A launcher that reads <code>.mrpack</code>.</strong> The{" "}
+              <a href="https://modrinth.com/app" target="_blank" rel="noopener noreferrer">Modrinth App</a>,{" "}
+              <a href="https://prismlauncher.org" target="_blank" rel="noopener noreferrer">Prism Launcher</a>, or{" "}
+              <a href="https://atlauncher.com" target="_blank" rel="noopener noreferrer">ATLauncher</a>. All are free and
+              install the correct Java runtime and mod loader for you, which is the part people usually get wrong by hand.
+            </li>
+            <li>
+              <strong>A little RAM headroom.</strong> A small pack runs fine on 4 GB; heavier packs are happier with 6&ndash;8 GB.
+              You set this in the launcher&apos;s instance settings, not in the game.
+            </li>
+          </ul>
+        </section>
+
+        <section className="method method-alt">
+          <div className="method-head">
+            <span className="method-badge alt">TROUBLESHOOTING</span>
+            <h3>When something won&apos;t launch</h3>
+          </div>
+          <p className="intro-lede" style={{ marginBottom: 24 }}>
+            Most modded crashes are not the mods being broken &mdash; they are a mismatch between loader, version, or a
+            missing dependency. Here are the ones that come up most, and why the one-click <code>.mrpack</code> avoids
+            them.
+          </p>
+
+          <h3>&ldquo;The game crashed&rdquo; or a missing-dependency error on startup</h3>
+          <p>
+            A mod almost always needs one or more library mods to run (Fabric API, Architectury, GeckoLib, and so on).
+            Miss one and the game closes with a log most players can&apos;t read. The <code>.mrpack</code> Full Hearts
+            builds already includes the full dependency chain for every mod, resolved for your exact loader and version,
+            so this is the single biggest reason to use the one-click route over adding jars by hand.
+          </p>
+
+          <h3>A mod says it requires a different Minecraft version</h3>
+          <p>
+            Every mod in a pack has to be built for the <em>same</em> game version and the <em>same</em> loader. A Forge
+            1.20.1 jar will not load on Fabric, and a 1.21 jar will not load on 1.20.1. Full Hearts resolves each mod to a
+            concrete build for the version and loader you chose and drops anything that has no matching file, so a pack
+            you export here is already version-consistent.
+          </p>
+
+          <h3>Some mods are missing from my pack</h3>
+          <p>
+            If a mod has no stable build for your loader and version, or a required dependency of it doesn&apos;t, it gets
+            left out rather than shipped in a pack that won&apos;t start. The results screen lists exactly what was
+            excluded and why. Switching to a version with wider support (1.20.1 and 1.21.1 are the safest right now)
+            usually brings the missing mods back.
+          </p>
+
+          <h3>It works in single-player but not when I join a server</h3>
+          <p>
+            A server needs the <em>same version</em> of every mod that adds content or networking. Client-only mods &mdash;
+            a minimap, an inventory search like JEI &mdash; belong on your client and should not be on the server, and
+            forcing them there causes a mismatch. Build the server&apos;s mod set from the same loadout so the shared mods
+            line up exactly.
+          </p>
+
+          <h3>Is this safe to run?</h3>
+          <p>
+            The mods download from Modrinth&apos;s own CDN, and the jars stay the work and property of their authors. Full
+            Hearts never bundles or re-hosts mod files. Whatever route you take, only download mods from official sources
+            like Modrinth or CurseForge, and treat any tool that asks you to run an <code>.exe</code> with the usual care.
+          </p>
+        </section>
+
+        <section className="method method-alt">
+          <div className="method-head">
+            <span className="method-badge alt">SERVERS</span>
+            <h3>Putting the pack on a server</h3>
+          </div>
+          <p>
+            To play with friends, the shared mods have to match on both sides. The clean way is to build the server&apos;s
+            set from the same loadout you play on, so every content mod is the identical version client and server. Keep
+            purely client-side mods (minimaps, JEI, shaders) off the server, and add server-only tools (permissions, a web
+            map, chat filters) separately. If a specific mod refuses to load on the server, tell me which one on the{" "}
+            <Link href="/contact">Contact</Link> page and it gets checked against the catalogue.
+          </p>
+        </section>
       </main>
 
       <Footer />

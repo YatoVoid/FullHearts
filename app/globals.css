@@ -505,6 +505,9 @@ footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
 .method{margin:0 auto 44px;}
 .method-primary{border:2px solid var(--grass);background:rgba(116,192,67,.05);padding:24px 22px;box-shadow:0 4px 0 #0a0718;}
 .method-alt{border:2px solid #2a2046;padding:24px 22px;}
+.method-alt .guide-list{margin:0;padding-left:1.15rem;display:grid;gap:.65rem;line-height:1.6;}
+.method-alt>h3{margin:1.6rem 0 .35rem;font-size:1.05rem;}
+.method-alt>p{line-height:1.65;}
 .method-head{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
 .method-head h3{font-family:var(--pixel);font-size:13px;color:var(--ink);}
 .method-badge{font-family:var(--pixel);font-size:8px;color:var(--void);background:var(--grass);padding:5px 8px;letter-spacing:.5px;}
