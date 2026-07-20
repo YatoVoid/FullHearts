@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
 import Link from "next/link";
 import type { Loader, Mod } from "@/lib/sources/types";
 import { loadPool } from "@/lib/catalog/clientPool";
-import { fetchModsBySlugs } from "@/lib/sources/modrinth";
+import { fetchModsBySlugs, fetchModsBySlugsIndexed } from "@/lib/sources/modrinth";
 import { modBuildsFor } from "@/lib/modpack/mrpack";
 import { parseMrpack, MrpackImportError } from "@/lib/modpack/import";
 import { VERSIONS } from "@/lib/catalog/coverage";
@@ -21,6 +21,7 @@ import {
   deleteCollection,
   removeMod,
   setLoadout,
+  setPinnedVersions,
   type Collection
 } from "@/lib/storage/collections";
 import { encodeCollection, decodeCollection } from "@/lib/storage/share";
@@ -79,6 +80,8 @@ export default function Collections() {
   const [upTarget, setUpTarget] = useState<string | null>(null);
   const [mig, setMig] = useState<MigrateState | null>(null);
   const [importing, setImporting] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const dragDepth = useRef(0); // counts nested enter/leave so a child element inside the dropzone can't flicker the highlight off
   const fileRef = useRef<HTMLInputElement>(null);
   const { confirm: askConfirm, prompt: askPrompt, dialog } = useDialog();
 
@@ -86,21 +89,30 @@ export default function Collections() {
 
   // Import an existing .mrpack: read its modrinth.index.json, resolve the
   // Modrinth-hosted mods back to cards, and drop them into a new editable
-  // collection (loader/version pinned from the pack). External mods and
-  // overrides/ can't round-trip through a rebuilt pack, so we report their
-  // counts rather than pretend they carried over.
+  // collection (loader/version pinned from the pack). Each mod's EXACT version
+  // is pinned too (see setPinnedVersions), so re-downloading reproduces the
+  // same tested build combination instead of buildMrpack silently re-resolving
+  // every mod to "newest" - which can pair versions that were never actually
+  // tested together and crash at launch. External mods and overrides/ still
+  // can't round-trip through a rebuilt pack, so we report their counts rather
+  // than pretend they carried over.
   async function importMrpack(file: File) {
     setImporting(true);
     try {
       const bytes = new Uint8Array(await file.arrayBuffer());
       const pack = parseMrpack(bytes);
-      const mods = await fetchModsBySlugs(pack.projectIds);
+      const { mods, slugByRawId } = await fetchModsBySlugsIndexed(pack.projectIds);
       if (mods.length === 0) {
         flash("Couldn't resolve any of that pack's mods from Modrinth.", 9000);
         return;
       }
       const created = createCollection(pack.name, mods.map((m) => m.id));
       setLoadout(created.id, pack.loader, pack.mcVersion);
+      const pinnedVersions: Record<string, string> = {};
+      for (const [rawId, versionId] of Object.entries(pack.projectVersions)) {
+        pinnedVersions[slugByRawId[rawId] ?? rawId] = versionId;
+      }
+      if (Object.keys(pinnedVersions).length > 0) setPinnedVersions(created.id, pinnedVersions);
       refresh();
       const extras: string[] = [];
       const unresolved = pack.projectIds.length - mods.length;
@@ -115,6 +127,34 @@ export default function Collections() {
       setImporting(false);
       if (fileRef.current) fileRef.current.value = ""; // allow re-importing the same file
     }
+  }
+
+  // Drag-and-drop onto the import dropzone. dragDepth counts nested enter/leave
+  // pairs (the button and hint text inside the zone each fire their own
+  // enter/leave as the pointer crosses them) so the highlight only clears once
+  // the pointer has actually left the whole zone, not a child inside it.
+  function onDropzoneDragEnter(e: DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    if (!e.dataTransfer.types.includes("Files")) return;
+    dragDepth.current += 1;
+    setDragOver(true);
+  }
+  function onDropzoneDragOver(e: DragEvent<HTMLDivElement>) {
+    e.preventDefault(); // required to allow a drop at all
+    if (e.dataTransfer.types.includes("Files")) e.dataTransfer.dropEffect = "copy";
+  }
+  function onDropzoneDragLeave(e: DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    dragDepth.current = Math.max(0, dragDepth.current - 1);
+    if (dragDepth.current === 0) setDragOver(false);
+  }
+  function onDropzoneDrop(e: DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    dragDepth.current = 0;
+    setDragOver(false);
+    if (importing) return;
+    const file = [...e.dataTransfer.files].find((f) => f.name.toLowerCase().endsWith(".mrpack")) ?? e.dataTransfer.files[0];
+    if (file) importMrpack(file);
   }
 
   // Migrate flow: after the user picks a target version, check every mod in the
@@ -347,21 +387,30 @@ export default function Collections() {
 
         <div className="lucky-bar">
           <Link className="btn-ghost" href="/install"><Icon name="package" size={15} /> How to install a whole loadout at once →</Link>
-          <button
-            type="button"
-            className="btn-ghost"
-            onClick={() => fileRef.current?.click()}
-            disabled={importing}
+          <div
+            className={`import-drop${dragOver ? " on" : ""}`}
+            onDragEnter={onDropzoneDragEnter}
+            onDragOver={onDropzoneDragOver}
+            onDragLeave={onDropzoneDragLeave}
+            onDrop={onDropzoneDrop}
           >
-            <Icon name="package" size={15} /> {importing ? "Importing…" : "Import a modpack (.mrpack file) to edit"}
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".mrpack,application/x-modrinth-modpack+zip"
-            style={{ display: "none" }}
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) importMrpack(f); }}
-          />
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={() => fileRef.current?.click()}
+              disabled={importing}
+            >
+              <Icon name="package" size={15} /> {importing ? "Importing…" : "Import a modpack (.mrpack file) to edit"}
+            </button>
+            <span className="import-drop-hint" aria-hidden="true">{dragOver ? "Drop it!" : "or drop a .mrpack file here"}</span>
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".mrpack,application/x-modrinth-modpack+zip"
+              style={{ display: "none" }}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) importMrpack(f); }}
+            />
+          </div>
         </div>
 
         {degraded && (
@@ -406,7 +455,7 @@ export default function Collections() {
                       {resolved.length >= 2 && (
                         <div className="compat compat-ok"><Icon name="check" size={15} /> Should launch together · {label}</div>
                       )}
-                      <DownloadPack name={c.name} mods={resolved} loader={loader} mcVersion={mcVersion} disabled={false} />
+                      <DownloadPack name={c.name} mods={resolved} loader={loader} mcVersion={mcVersion} disabled={false} pinnedVersions={c.pinnedVersions} />
                     </>
                   );
                 }
@@ -433,6 +482,7 @@ export default function Collections() {
                       mods={resolved}
                       loader={loader ?? "fabric"}
                       mcVersion={mcVersion ?? "1.21.1"}
+                      pinnedVersions={c.pinnedVersions}
                       disabled={!canPack}
                       hint={report.ok ? "Loader/version unknown yet for these mods." : "Fix the conflict above to export a modpack."}
                     />

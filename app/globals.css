@@ -350,9 +350,16 @@ nav.links a:hover{color:var(--ink);}
 .tag-nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:36px;}
 .tag-nav a{font-family:var(--pixel);font-size:8px;color:var(--mute);background:var(--slot);border:2px solid #2a2046;padding:9px 11px;text-decoration:none;box-shadow:0 3px 0 #0a0718;transition:color .15s;}
 .tag-nav a:hover{color:var(--grass);}
-.lucky-bar{display:flex;justify-content:center;margin-bottom:30px;}
+.lucky-bar{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:30px;}
 
 /* ---------- COLLECTIONS ---------- */
+/* Drop target for a dragged-in .mrpack, wrapping the existing import button.
+   Subtle until a file is dragged over it, then picks up the same grass
+   highlight .mrpack-band already uses elsewhere for "this is the good path". */
+.import-drop{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:6px;border:2px dashed transparent;border-radius:2px;transition:border-color .15s,background-color .15s;}
+.import-drop.on{border-color:var(--grass);background:rgba(116,192,67,.08);}
+.import-drop-hint{font-size:11px;color:var(--mute);white-space:nowrap;}
+.import-drop.on .import-drop-hint{color:var(--grass);font-weight:600;}
 .collections{max-width:900px;margin:0 auto;padding:40px 24px 90px;}
 .col-card{background:var(--tip-bg);border:2px solid #2a2046;box-shadow:0 0 0 2px var(--edge),0 8px 22px rgba(0,0,0,.45);padding:20px;margin-bottom:22px;}
 .col-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px;}

@@ -16,6 +16,7 @@ export default function DownloadPack({
   mods,
   loader,
   mcVersion,
+  pinnedVersions,
   disabled,
   hint
 }: {
@@ -23,6 +24,9 @@ export default function DownloadPack({
   mods: Mod[];
   loader: Loader;
   mcVersion: string;
+  /** modId -> Modrinth version id pinned from an imported .mrpack, so the
+   *  re-export reuses the exact same tested build combination. */
+  pinnedVersions?: Record<string, string>;
   disabled?: boolean;
   hint?: string;
 }) {
@@ -56,6 +60,7 @@ export default function DownloadPack({
         mods,
         loader,
         mcVersion,
+        pinnedVersions,
         onProgress: (p, l) => {
           floor.current = p;
           setPct((cur) => Math.max(cur, p));

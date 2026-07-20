@@ -9,12 +9,16 @@ import type { Loader } from "@/lib/sources/types";
  * `cdn.modrinth.com/data/<PROJECT_ID>/versions/...`, so the project id is right
  * in the URL — that's all we need to resolve the mod back to a card.
  *
- * We deliberately DON'T try to round-trip everything: re-export rebuilds the
- * index from scratch (newest matching versions), and `overrides/` are binary
- * config files we can't hold in a localStorage collection. So we surface counts
- * for the non-Modrinth files and overrides instead of silently dropping them —
- * the user keeps their original for those. (Full lossless carry-through would
- * need to persist the original zip; out of scope here.)
+ * We deliberately DON'T try to round-trip everything: `overrides/` are binary
+ * config files we can't hold in a localStorage collection, so we surface a
+ * count for those instead of silently dropping them - the user keeps their
+ * original for that. But the MOD VERSIONS themselves are pinned (see
+ * `projectVersions` below): a re-export reuses the exact build every file was
+ * on, instead of re-resolving each project to "newest for this loader/version"
+ * - which can silently swap in a different, untested pairing (e.g. a newer
+ * Create with an addon whose mixin only matches an older Create's internals -
+ * a `NoClassDefFoundError`/mixin-apply crash at launch, not a build error, so
+ * it isn't caught until someone actually starts the game).
  */
 
 export class MrpackImportError extends Error {}
@@ -25,6 +29,10 @@ export interface ImportedPack {
   mcVersion: string;
   /** Modrinth project ids (resolve via fetchModsBySlugs — /projects accepts ids). */
   projectIds: string[];
+  /** project id -> the EXACT version id that file was pinned to in the pack, so
+   *  a re-export can reuse it via resolveVersionById instead of re-resolving to
+   *  "newest for this loader/version" (see the file-level comment above). */
+  projectVersions: Record<string, string>;
   /** Files whose download isn't a Modrinth CDN URL (CurseForge/custom). Count only. */
   externalCount: number;
   /** Whether the pack bundles an overrides/ folder (configs, resource packs, …). */
@@ -53,6 +61,13 @@ interface MrIndex {
 /** Project id out of a Modrinth CDN download URL, or null if not Modrinth-hosted. */
 export function modrinthProjectId(url: string): string | null {
   const m = url.match(/^https?:\/\/cdn\.modrinth\.com\/data\/([^/]+)\//);
+  return m ? m[1] : null;
+}
+
+/** Version id out of a Modrinth CDN download URL
+ *  (`cdn.modrinth.com/data/<project>/versions/<version_id>/<file>`), or null. */
+export function modrinthVersionId(url: string): string | null {
+  const m = url.match(/^https?:\/\/cdn\.modrinth\.com\/data\/[^/]+\/versions\/([^/]+)\//);
   return m ? m[1] : null;
 }
 
@@ -89,6 +104,7 @@ export function parseMrpack(bytes: Uint8Array): ImportedPack {
   if (!loader) throw new MrpackImportError("The pack doesn't declare a supported mod loader.");
 
   const projectIds: string[] = [];
+  const projectVersions: Record<string, string> = {};
   let externalCount = 0;
   const seen = new Set<string>();
   for (const f of index.files ?? []) {
@@ -97,6 +113,8 @@ export function parseMrpack(bytes: Uint8Array): ImportedPack {
     const pid = modrinthProjectId(url);
     if (pid) {
       if (!seen.has(pid)) { seen.add(pid); projectIds.push(pid); }
+      const vid = modrinthVersionId(url);
+      if (vid) projectVersions[pid] = vid;
     } else {
       externalCount++;
     }
@@ -109,6 +127,7 @@ export function parseMrpack(bytes: Uint8Array): ImportedPack {
     loader,
     mcVersion,
     projectIds,
+    projectVersions,
     externalCount,
     hasOverrides
   };

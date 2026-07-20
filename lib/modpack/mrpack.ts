@@ -544,6 +544,14 @@ export async function buildMrpack(opts: {
   mods: Mod[];
   loader: Loader;
   mcVersion: string;
+  /** modId -> Modrinth version id, from an imported/duplicated pack. When a mod
+   *  has a pin, resolve() reuses that EXACT build instead of re-resolving to
+   *  "newest for this loader/version" - so re-downloading an imported pack
+   *  reproduces the same tested combination instead of drifting to whatever
+   *  happens to be newest today (which can silently break: a newer library
+   *  paired with an addon whose mixin was built against the older one). Falls
+   *  back to normal resolution if the pinned version is no longer available. */
+  pinnedVersions?: Record<string, string>;
   /** Override the jar-manifest reader (defaults to the /api/manifest-deps route). */
   inspectJars?: JarInspector;
   /** Coarse progress for the UI: pct 0–100 + a human label for the current phase. */
@@ -552,12 +560,16 @@ export async function buildMrpack(opts: {
   const report = opts.onProgress ?? (() => {});
 
   // Within-session result cache, keyed by exactly what determines the pack
-  // (name + loader + version + the set of mods). Re-downloading an unchanged
-  // collection is then instant; changing a mod yields a new key and rebuilds.
-  // Skip caching when a custom jar inspector is supplied (tests/overrides).
+  // (name + loader + version + the set of mods + their pins). Re-downloading an
+  // unchanged collection is then instant; changing a mod or a pin yields a new
+  // key and rebuilds. Skip caching when a custom jar inspector is supplied
+  // (tests/overrides).
+  const pinsKey = opts.pinnedVersions
+    ? Object.entries(opts.pinnedVersions).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${k}=${v}`).join(",")
+    : "";
   const cacheKey = opts.inspectJars
     ? ""
-    : `${opts.name}|${opts.loader}|${opts.mcVersion}|${opts.mods.map((m) => m.modrinthSlug ?? m.id).slice().sort().join(",")}`;
+    : `${opts.name}|${opts.loader}|${opts.mcVersion}|${opts.mods.map((m) => m.modrinthSlug ?? m.id).slice().sort().join(",")}|${pinsKey}`;
   if (cacheKey && buildResultCache.has(cacheKey)) {
     report(100, "Ready");
     return buildResultCache.get(cacheKey)!;
@@ -617,8 +629,20 @@ export async function buildMrpack(opts: {
     return pickEraVersion(versions, before) ?? resolveVersionByProject(id, opts.loader, opts.mcVersion);
   }
 
+  // A pinned mod reuses the EXACT version id from the imported pack instead of
+  // "newest for this loader/version" - that's the whole fix (see opts.pinnedVersions
+  // doc). Falls back to normal resolution if that version was deleted/broken since.
+  async function resolveMod(mod: Mod): Promise<MrVersion | null> {
+    const pinned = opts.pinnedVersions?.[mod.id];
+    if (pinned) {
+      const v = await resolveVersionById(pinned);
+      if (v && fileEntryFromVersion(v)) return v;
+    }
+    return resolveVersionByProject(mod.modrinthSlug ?? mod.id, opts.loader, opts.mcVersion);
+  }
+
   async function resolve(item: WorkItem): Promise<MrVersion | null> {
-    if (item.kind === "mod") return resolveVersionByProject(item.mod.modrinthSlug ?? item.mod.id, opts.loader, opts.mcVersion);
+    if (item.kind === "mod") return resolveMod(item.mod);
     if (item.kind === "project") return resolveVersionByProject(item.id, opts.loader, opts.mcVersion);
     if (item.kind === "datedProject") return resolveDatedDep(item.id);
     if (item.kind === "resolved") return item.version;
@@ -821,7 +845,22 @@ export async function buildMrpack(opts: {
   // stuck on the other line (the standard drop+report path handles them).
   const createPid = projectByModId.get("create");
   let createEraHandled = false;
-  if (createPid && rangesByProvider.has(createPid)) {
+  // Skip era preference entirely when Create is pinned (imported pack) and its
+  // pinned build already satisfies every dependent's declared range - that's
+  // the exact combination the pack was built and tested with; don't let a
+  // heuristic "which era has more addons" swap replace a build that already works.
+  const createModId = modByProject.get(createPid ?? "")?.id;
+  const createPinned = createModId ? opts.pinnedVersions?.[createModId] : undefined;
+  const createPinnedOk =
+    createPinned && createPid
+      ? (() => {
+          const info = manifestByProject.get(createPid);
+          const cur = info?.version ?? "";
+          const reqs = rangesByProvider.get(createPid) ?? [];
+          return Boolean(cur) && loaderOk(info) && reqs.every((r) => satisfies(cur, r.range));
+        })()
+      : false;
+  if (createPid && rangesByProvider.has(createPid) && !createPinnedOk) {
     try {
       const reqs = rangesByProvider.get(createPid)!;
       const targetModern = preferModern(reqs.map((r) => r.range));

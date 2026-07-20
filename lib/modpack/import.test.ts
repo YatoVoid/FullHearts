@@ -1,17 +1,24 @@
 import { describe, it, expect } from "vitest";
 import { zipSync, strToU8 } from "fflate";
-import { parseMrpack, modrinthProjectId, MrpackImportError } from "@/lib/modpack/import";
+import { parseMrpack, modrinthProjectId, modrinthVersionId, MrpackImportError } from "@/lib/modpack/import";
 
 function pack(index: unknown, extra: Record<string, Uint8Array> = {}): Uint8Array {
   return zipSync({ "modrinth.index.json": strToU8(JSON.stringify(index)), ...extra });
 }
 
-const cdn = (pid: string) => `https://cdn.modrinth.com/data/${pid}/versions/abc123/mod.jar`;
+const cdn = (pid: string, vid = "abc123") => `https://cdn.modrinth.com/data/${pid}/versions/${vid}/mod.jar`;
 
 describe("modrinthProjectId", () => {
   it("pulls the project id from a Modrinth CDN url and rejects others", () => {
     expect(modrinthProjectId(cdn("AABBCCDD"))).toBe("AABBCCDD");
     expect(modrinthProjectId("https://edge.forgecdn.net/files/1/2/mod.jar")).toBeNull();
+  });
+});
+
+describe("modrinthVersionId", () => {
+  it("pulls the version id from a Modrinth CDN url and rejects others", () => {
+    expect(modrinthVersionId(cdn("AABBCCDD", "vers99"))).toBe("vers99");
+    expect(modrinthVersionId("https://edge.forgecdn.net/files/1/2/mod.jar")).toBeNull();
   });
 });
 
@@ -32,6 +39,18 @@ describe("parseMrpack", () => {
     expect(p.projectIds).toEqual(["proj-a", "proj-b"]);
     expect(p.externalCount).toBe(0);
     expect(p.hasOverrides).toBe(false);
+  });
+
+  it("pins each project to the exact version id from its CDN url", () => {
+    const p = parseMrpack(pack({
+      name: "My Pack",
+      dependencies: { minecraft: "1.20.1", forge: "47.4.20" },
+      files: [
+        { path: "mods/a.jar", downloads: [cdn("proj-a", "verA1")] },
+        { path: "mods/b.jar", downloads: [cdn("proj-b", "verB1")] }
+      ]
+    }));
+    expect(p.projectVersions).toEqual({ "proj-a": "verA1", "proj-b": "verB1" });
   });
 
   it("counts non-Modrinth files and flags overrides instead of dropping silently", () => {

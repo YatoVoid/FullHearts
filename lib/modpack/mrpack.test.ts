@@ -200,6 +200,50 @@ describe("buildMrpack dependency closure", () => {
     expect(included.map((m) => m.id)).toEqual(["p"]);
   });
 
+  it("reuses a pinned version instead of resolving to newest (imported-pack round-trip)", async () => {
+    // "newest for this loader/version" would normally pick newVer - but this mod
+    // came from an imported pack pinned to oldVer, so the exact same tested build
+    // must come back out on re-export, not whatever happens to be newest today.
+    const newVer = { id: "newVer1", project_id: "P", version_type: "release", files: [file("p-new.jar")], dependencies: [] };
+    const oldVer = { id: "oldVer1", project_id: "P", version_type: "release", files: [file("p-old.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/version/oldVer1")) return jsonRes(oldVer);
+      if (url.includes("/project/p/version")) return jsonRes([newVer]);
+      return jsonRes([]);
+    }));
+
+    const { included, blob } = await buildMrpack({
+      name: "t", mods: [modStub("p")], loader: "fabric", mcVersion: "1.21.1",
+      pinnedVersions: { p: "oldVer1" }
+    });
+
+    expect(included.map((m) => m.id)).toEqual(["p"]);
+    const idx = JSON.parse(strFromU8(unzipSync(new Uint8Array(await blob.arrayBuffer()))["modrinth.index.json"]));
+    const paths = idx.files.map((f: { path: string }) => f.path);
+    expect(paths).toContain("mods/p-old.jar");
+    expect(paths).not.toContain("mods/p-new.jar");
+  });
+
+  it("falls back to resolving newest when a pinned version no longer exists", async () => {
+    const newVer = { id: "newVer2", project_id: "Q", version_type: "release", files: [file("q-new.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/version/gone-id")) return { ok: false, status: 404, json: async () => ({}) } as Response;
+      if (url.includes("/project/q/version")) return jsonRes([newVer]);
+      return jsonRes([]);
+    }));
+
+    const { included, blob } = await buildMrpack({
+      name: "t", mods: [modStub("q")], loader: "fabric", mcVersion: "1.21.1",
+      pinnedVersions: { q: "gone-id" }
+    });
+
+    expect(included.map((m) => m.id)).toEqual(["q"]);
+    const idx = JSON.parse(strFromU8(unzipSync(new Uint8Array(await blob.arrayBuffer()))["modrinth.index.json"]));
+    expect(idx.files.map((f: { path: string }) => f.path)).toContain("mods/q-new.jar");
+  });
+
   it("drops a mod whose required dependency has no compatible version (and reports it skipped)", async () => {
     // modA requires DEP, but DEP has no matching version -> shipping modA alone
     // would produce a pack that fails to launch with "requires DEP, which is missing".

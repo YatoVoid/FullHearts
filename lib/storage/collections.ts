@@ -10,6 +10,13 @@ export interface Collection {
    *  would wrongly pick a multi-loader mod's first-listed loader/oldest version. */
   loader?: Loader;
   gameVersion?: string;
+  /** modId -> the exact Modrinth version id it was pinned to on import, so a
+   *  re-exported .mrpack reuses that SAME build instead of buildMrpack
+   *  re-resolving to "newest for this loader/version" - which can silently
+   *  swap in a different, untested version pairing. Only set for imported/
+   *  migrated-from-import collections; quiz/Explore-built ones have none and
+   *  resolve to newest as before (the intended behavior there). */
+  pinnedVersions?: Record<string, string>;
   createdAt: number;
   updatedAt: number;
 }
@@ -81,7 +88,14 @@ export function renameCollection(id: string, name: string): Collection | undefin
 export function duplicateCollection(id: string): Collection | undefined {
   const source = getCollection(id);
   if (!source) return undefined;
-  return createCollection(`${source.name} (copy)`, source.modIds);
+  const dup = createCollection(`${source.name} (copy)`, source.modIds);
+  // Carry over the pinned loadout + exact versions - otherwise duplicating an
+  // imported pack would silently drop back to "resolve newest" on export.
+  // mutate() returns a fresh object each call, so re-read after both instead of
+  // returning the pre-mutation `dup` (which would be stale).
+  if (source.loader && source.gameVersion) setLoadout(dup.id, source.loader, source.gameVersion);
+  if (source.pinnedVersions) setPinnedVersions(dup.id, source.pinnedVersions);
+  return getCollection(dup.id);
 }
 
 export function deleteCollection(id: string): void {
@@ -93,6 +107,14 @@ export function setLoadout(id: string, loader: Loader, gameVersion: string): Col
   return mutate(id, (c) => {
     if (!c.loader) c.loader = loader;
     if (!c.gameVersion) c.gameVersion = gameVersion;
+  });
+}
+
+/** Merge in modId -> Modrinth version id pins (e.g. from an imported .mrpack),
+ *  so a re-exported pack reuses the exact same builds. */
+export function setPinnedVersions(id: string, versions: Record<string, string>): Collection | undefined {
+  return mutate(id, (c) => {
+    c.pinnedVersions = { ...(c.pinnedVersions ?? {}), ...versions };
   });
 }
 

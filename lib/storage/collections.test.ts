@@ -9,7 +9,8 @@ import {
   addMod,
   removeMod,
   ensureCollection,
-  setLoadout
+  setLoadout,
+  setPinnedVersions
 } from "@/lib/storage/collections";
 
 beforeEach(() => {
@@ -53,6 +54,21 @@ describe("collections CRUD", () => {
     expect(dup?.name).toBe("Base (copy)");
     expect(dup?.modIds).toEqual(["a", "b"]);
     expect(dup?.id).not.toBe(c.id);
+  });
+
+  it("merges in pinned versions without clobbering existing pins", () => {
+    const c = createCollection("L", ["a", "b"]);
+    setPinnedVersions(c.id, { a: "v1" });
+    setPinnedVersions(c.id, { b: "v2" });
+    expect(getCollection(c.id)?.pinnedVersions).toEqual({ a: "v1", b: "v2" });
+  });
+
+  it("duplicate carries over the pinned loadout and exact versions", () => {
+    const c = createCollection("Base", ["a", "b"]);
+    setLoadout(c.id, "forge", "1.20.1");
+    setPinnedVersions(c.id, { a: "v1", b: "v2" });
+    const dup = duplicateCollection(c.id);
+    expect(dup).toMatchObject({ loader: "forge", gameVersion: "1.20.1", pinnedVersions: { a: "v1", b: "v2" } });
   });
 
   it("removes a mod and deletes a collection", () => {

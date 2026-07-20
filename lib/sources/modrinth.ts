@@ -337,13 +337,26 @@ function projectToMod(p: MrProject & { description?: string }): Mod {
  * Best-effort: returns whatever resolves (slugs are accepted as ids).
  */
 export async function fetchModsBySlugs(slugs: string[]): Promise<Mod[]> {
+  return (await fetchModsBySlugsIndexed(slugs)).mods;
+}
+
+/**
+ * Same as fetchModsBySlugs, but also returns the raw Modrinth project id -> slug
+ * mapping. A .mrpack's CDN urls embed the raw project id (e.g. "LNytGWDc"),
+ * while Mod.id is always the slug ("create") - callers that need to re-key
+ * something keyed by the raw id (e.g. pinned version ids from an imported pack)
+ * onto Mod.id need this bridge.
+ */
+export async function fetchModsBySlugsIndexed(slugs: string[]): Promise<{ mods: Mod[]; slugByRawId: Record<string, string> }> {
   const ids = [...new Set(slugs)].filter(Boolean);
-  if (ids.length === 0) return [];
+  if (ids.length === 0) return { mods: [], slugByRawId: {} };
   try {
     const projects = await mrFetch<(MrProject & { description?: string })[]>(`/projects?ids=${idsParam(ids)}`);
-    return projects.map(projectToMod);
+    const slugByRawId: Record<string, string> = {};
+    for (const p of projects) slugByRawId[p.id] = p.slug;
+    return { mods: projects.map(projectToMod), slugByRawId };
   } catch {
-    return [];
+    return { mods: [], slugByRawId: {} };
   }
 }
 
