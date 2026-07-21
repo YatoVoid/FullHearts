@@ -80,6 +80,10 @@ export default function Collections() {
   const [upTarget, setUpTarget] = useState<string | null>(null);
   const [mig, setMig] = useState<MigrateState | null>(null);
   const [importing, setImporting] = useState(false);
+  // Raw overrides/ bytes from an imported pack, keyed by collection id -
+  // session-only (React state, not localStorage): see the file-level comment
+  // in lib/modpack/import.ts for why these can't live in a Collection.
+  const [overridesByCollection, setOverridesByCollection] = useState<Record<string, Record<string, Uint8Array>>>({});
   const [dragOver, setDragOver] = useState(false);
   const dragDepth = useRef(0); // counts nested enter/leave so a child element inside the dropzone can't flicker the highlight off
   const fileRef = useRef<HTMLInputElement>(null);
@@ -113,14 +117,24 @@ export default function Collections() {
         pinnedVersions[slugByRawId[rawId] ?? rawId] = versionId;
       }
       if (Object.keys(pinnedVersions).length > 0) setPinnedVersions(created.id, pinnedVersions);
+      if (Object.keys(pack.overrides).length > 0) {
+        setOverridesByCollection((prev) => ({ ...prev, [created.id]: pack.overrides }));
+      }
       refresh();
       const extras: string[] = [];
       const unresolved = pack.projectIds.length - mods.length;
       if (unresolved > 0) extras.push(`${unresolved} mod${unresolved === 1 ? "" : "s"} no longer on Modrinth`);
       if (pack.externalCount > 0) extras.push(`${pack.externalCount} non-Modrinth mod${pack.externalCount === 1 ? "" : "s"}`);
-      if (pack.hasOverrides) extras.push("config overrides");
       const tail = extras.length ? ` Keep your original file for: ${extras.join(", ")}.` : "";
-      flash(`Imported ${mods.length} mod${mods.length === 1 ? "" : "s"} into “${pack.name}”.${tail}`, tail ? 15000 : 6000);
+      const overrideCount = Object.keys(pack.overrides).length;
+      const overridesNote =
+        overrideCount > 0
+          ? ` Carried over ${overrideCount} override file${overrideCount === 1 ? "" : "s"} (configs, resource packs, guide books, etc.) - they'll be included when you re-export from here, but only in this browser tab for now; if you reload the page first, keep your original file for those instead.`
+          : "";
+      flash(
+        `Imported ${mods.length} mod${mods.length === 1 ? "" : "s"} into "${pack.name}".${tail}${overridesNote}`,
+        (tail || overridesNote) ? 15000 : 6000
+      );
     } catch (e) {
       flash(e instanceof MrpackImportError ? e.message : "Couldn't read that .mrpack.", 9000);
     } finally {
@@ -354,6 +368,12 @@ export default function Collections() {
     });
     if (ok) {
       deleteCollection(c.id);
+      setOverridesByCollection((prev) => {
+        if (!(c.id in prev)) return prev;
+        const next = { ...prev };
+        delete next[c.id];
+        return next;
+      });
       refresh();
     }
   }
@@ -429,7 +449,13 @@ export default function Collections() {
                 <h3>{c.name}</h3>
                 <div className="col-actions">
                   <button type="button" className="chip-btn" onClick={() => handleRename(c)}>Rename</button>
-                  <button type="button" className="chip-btn" onClick={() => { duplicateCollection(c.id); refresh(); }}>Duplicate</button>
+                  <button type="button" className="chip-btn" onClick={() => {
+                    const dup = duplicateCollection(c.id);
+                    if (dup && overridesByCollection[c.id]) {
+                      setOverridesByCollection((prev) => ({ ...prev, [dup.id]: overridesByCollection[c.id] }));
+                    }
+                    refresh();
+                  }}>Duplicate</button>
                   <button type="button" className="chip-btn danger" onClick={() => handleDelete(c)}>Delete</button>
                 </div>
               </div>
@@ -455,7 +481,7 @@ export default function Collections() {
                       {resolved.length >= 2 && (
                         <div className="compat compat-ok"><Icon name="check" size={15} /> Should launch together · {label}</div>
                       )}
-                      <DownloadPack name={c.name} mods={resolved} loader={loader} mcVersion={mcVersion} disabled={false} pinnedVersions={c.pinnedVersions} />
+                      <DownloadPack name={c.name} mods={resolved} loader={loader} mcVersion={mcVersion} disabled={false} pinnedVersions={c.pinnedVersions} overrides={overridesByCollection[c.id]} />
                     </>
                   );
                 }
@@ -483,6 +509,7 @@ export default function Collections() {
                       loader={loader ?? "fabric"}
                       mcVersion={mcVersion ?? "1.21.1"}
                       pinnedVersions={c.pinnedVersions}
+                      overrides={overridesByCollection[c.id]}
                       disabled={!canPack}
                       hint={report.ok ? "Loader/version unknown yet for these mods." : "Fix the conflict above to export a modpack."}
                     />

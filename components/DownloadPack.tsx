@@ -17,6 +17,7 @@ export default function DownloadPack({
   loader,
   mcVersion,
   pinnedVersions,
+  overrides,
   disabled,
   hint
 }: {
@@ -27,6 +28,10 @@ export default function DownloadPack({
   /** modId -> Modrinth version id pinned from an imported .mrpack, so the
    *  re-export reuses the exact same tested build combination. */
   pinnedVersions?: Record<string, string>;
+  /** Raw overrides/ bytes from an imported pack (session-only; see
+   *  ImportedPack.overrides in lib/modpack/import.ts and overridesByCollection
+   *  in app/collections/page.tsx). */
+  overrides?: Record<string, Uint8Array>;
   disabled?: boolean;
   hint?: string;
 }) {
@@ -55,12 +60,13 @@ export default function DownloadPack({
     setMsg("");
     setDone(false);
     try {
-      const { blob, included, skipped, depCount, removedConflicts } = await buildMrpack({
+      const { blob, included, skipped, depCount, removedConflicts, overridesIncluded } = await buildMrpack({
         name,
         mods,
         loader,
         mcVersion,
         pinnedVersions,
+        overrides,
         onProgress: (p, l) => {
           floor.current = p;
           setPct((cur) => Math.max(cur, p));
@@ -83,7 +89,11 @@ export default function DownloadPack({
         removedConflicts.length > 0
           ? ` Removed ${removedConflicts.length} conflicting mod(s) so it'll launch: ${removedConflicts.map((c) => `${c.name} (${c.reason})`).join("; ")}.`
           : "";
-      setMsg(`Packed ${included.length} mods${deps}. Import the file into Modrinth App, Prism, or ATLauncher.${left}${conflicts}`);
+      const overridesNote =
+        overridesIncluded > 0
+          ? ` Included ${overridesIncluded} override file${overridesIncluded === 1 ? "" : "s"} from the imported pack.`
+          : "";
+      setMsg(`Packed ${included.length} mods${deps}. Import the file into Modrinth App, Prism, or ATLauncher.${left}${conflicts}${overridesNote}`);
       setDone(true);
     } catch (e) {
       setMsg(e instanceof MrpackError ? e.message : "Couldn't build the modpack. Please try again.");

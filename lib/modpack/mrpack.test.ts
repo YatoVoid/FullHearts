@@ -2,7 +2,7 @@
 // Pure logic + stubbed fetch only (no DOM). Node's Blob round-trips the zipped
 // bytes faithfully; jsdom's Blob corrupts a Uint8Array, breaking the unzip check.
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { unzipSync, strFromU8 } from "fflate";
+import { unzipSync, strFromU8, strToU8 } from "fflate";
 import { fileEntryFromVersion, buildIndex, buildMrpack, resolveBuildable, jarFilenameMcMismatch, pickEraVersion, __resetCaches } from "@/lib/modpack/mrpack";
 import type { Mod } from "@/lib/sources/types";
 
@@ -576,5 +576,58 @@ describe("buildMrpack dependency closure", () => {
 
     expect(included.map((m) => m.id)).toEqual(["good"]);
     expect(skipped.map((m) => m.id)).toEqual(["bad"]);
+  });
+});
+
+describe("buildMrpack overrides round-trip", () => {
+  function stubGoodFetch() {
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("meta.fabricmc.net")) return jsonRes([{ loader: { version: "0.16.0" } }]);
+      if (url.includes("/project/good/version")) return jsonRes([{ id: "vg", project_id: "G", version_type: "release", files: [file("good.jar")], dependencies: [] }]);
+      return jsonRes([]);
+    }));
+  }
+
+  it("re-zips provided overrides/ bytes into the output archive unchanged", async () => {
+    stubGoodFetch();
+    const { blob, overridesIncluded } = await buildMrpack({
+      name: "t", mods: [modStub("good")], loader: "fabric", mcVersion: "1.21.1",
+      overrides: { "overrides/config/foo.toml": strToU8("a=1") }
+    });
+    expect(overridesIncluded).toBe(1);
+    const entries = unzipSync(new Uint8Array(await blob.arrayBuffer()));
+    expect(strFromU8(entries["overrides/config/foo.toml"])).toBe("a=1");
+    expect(JSON.parse(strFromU8(entries["modrinth.index.json"])).name).toBe("t");
+  });
+
+  it("ships no overrides/ entries and overridesIncluded is 0 when none were provided", async () => {
+    stubGoodFetch();
+    const { blob, overridesIncluded } = await buildMrpack({
+      name: "t", mods: [modStub("good")], loader: "fabric", mcVersion: "1.21.1"
+    });
+    expect(overridesIncluded).toBe(0);
+    const entries = unzipSync(new Uint8Array(await blob.arrayBuffer()));
+    expect(Object.keys(entries).some((k) => k.startsWith("overrides/"))).toBe(false);
+  });
+
+  // Regresses a cache-staleness bug: two builds with the same name/mods/loader/
+  // version/pins but DIFFERENT overrides (e.g. re-importing an updated pack
+  // into a new, same-named collection) must not silently share a cached
+  // result - that would ship the FIRST build's overrides under the SECOND
+  // build's export.
+  it("does not serve a stale cached build when overrides differ", async () => {
+    stubGoodFetch();
+    const first = await buildMrpack({
+      name: "t", mods: [modStub("good")], loader: "fabric", mcVersion: "1.21.1",
+      overrides: { "overrides/guide/book.json": strToU8("v1") }
+    });
+    const second = await buildMrpack({
+      name: "t", mods: [modStub("good")], loader: "fabric", mcVersion: "1.21.1",
+      overrides: { "overrides/guide/book.json": strToU8("v2") }
+    });
+    const e1 = unzipSync(new Uint8Array(await first.blob.arrayBuffer()));
+    const e2 = unzipSync(new Uint8Array(await second.blob.arrayBuffer()));
+    expect(strFromU8(e1["overrides/guide/book.json"])).toBe("v1");
+    expect(strFromU8(e2["overrides/guide/book.json"])).toBe("v2"); // must NOT be "v1" from cache
   });
 });

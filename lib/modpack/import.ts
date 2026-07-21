@@ -9,10 +9,16 @@ import type { Loader } from "@/lib/sources/types";
  * `cdn.modrinth.com/data/<PROJECT_ID>/versions/...`, so the project id is right
  * in the URL — that's all we need to resolve the mod back to a card.
  *
- * We deliberately DON'T try to round-trip everything: `overrides/` are binary
- * config files we can't hold in a localStorage collection, so we surface a
- * count for those instead of silently dropping them - the user keeps their
- * original for that. But the MOD VERSIONS themselves are pinned (see
+ * `overrides/` bytes ARE surfaced (see `ImportedPack.overrides`), but only for
+ * the current browser tab: the Collections page holds them in React state,
+ * keyed by the new collection's id, and threads them into `buildMrpack` on
+ * export. They are deliberately NOT written into the persisted `Collection`
+ * (see `lib/storage/collections.ts`) - that's a single combined localStorage
+ * JSON blob with no real size limit on overrides (a bundled resource/shaderpack
+ * could be tens of MB), so base64-ing arbitrary override bytes into it risks
+ * corrupting every saved collection for that user. Reloading the page loses
+ * them, same as before this feature existed - the Collections import toast
+ * says so. The MOD VERSIONS themselves are pinned (see
  * `projectVersions` below): a re-export reuses the exact build every file was
  * on, instead of re-resolving each project to "newest for this loader/version"
  * - which can silently swap in a different, untested pairing (e.g. a newer
@@ -37,6 +43,11 @@ export interface ImportedPack {
   externalCount: number;
   /** Whether the pack bundles an overrides/ folder (configs, resource packs, …). */
   hasOverrides: boolean;
+  /** Raw overrides/ file bytes, keyed by their full zip path (e.g.
+   *  "overrides/config/foo.toml"), ready to spread directly into buildMrpack's
+   *  `overrides` option and re-zip unchanged. Directory placeholder entries are
+   *  excluded - only real files. Empty object when the pack has no overrides/. */
+  overrides: Record<string, Uint8Array>;
 }
 
 // Reverse of mrpack.ts LOADER_KEY: the index's dependency key -> our Loader.
@@ -120,7 +131,13 @@ export function parseMrpack(bytes: Uint8Array): ImportedPack {
     }
   }
 
-  const hasOverrides = Object.keys(entries).some((p) => p.startsWith("overrides/") && p !== "overrides/");
+  const overrides: Record<string, Uint8Array> = {};
+  for (const [path, bytes] of Object.entries(entries)) {
+    if (path.startsWith("overrides/") && path !== "overrides/" && !path.endsWith("/")) {
+      overrides[path] = bytes;
+    }
+  }
+  const hasOverrides = Object.keys(overrides).length > 0;
 
   return {
     name: index.name?.trim() || "Imported pack",
@@ -129,6 +146,7 @@ export function parseMrpack(bytes: Uint8Array): ImportedPack {
     projectIds,
     projectVersions,
     externalCount,
-    hasOverrides
+    hasOverrides,
+    overrides
   };
 }

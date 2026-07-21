@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { zipSync, strToU8 } from "fflate";
+import { zipSync, strToU8, strFromU8 } from "fflate";
 import { parseMrpack, modrinthProjectId, modrinthVersionId, MrpackImportError } from "@/lib/modpack/import";
 
 function pack(index: unknown, extra: Record<string, Uint8Array> = {}): Uint8Array {
@@ -39,6 +39,7 @@ describe("parseMrpack", () => {
     expect(p.projectIds).toEqual(["proj-a", "proj-b"]);
     expect(p.externalCount).toBe(0);
     expect(p.hasOverrides).toBe(false);
+    expect(p.overrides).toEqual({});
   });
 
   it("pins each project to the exact version id from its CDN url", () => {
@@ -67,6 +68,21 @@ describe("parseMrpack", () => {
     expect(p.loader).toBe("forge");
     expect(p.projectIds).toEqual(["proj-a"]);
     expect(p.externalCount).toBe(1);
+    expect(p.hasOverrides).toBe(true);
+    expect(Object.keys(p.overrides)).toEqual(["overrides/config/foo.toml"]);
+    expect(strFromU8(p.overrides["overrides/config/foo.toml"])).toBe("a=1");
+  });
+
+  it("excludes overrides/ directory placeholder entries, keeping only real files", () => {
+    const p = parseMrpack(pack(
+      { dependencies: { minecraft: "1.20.1", forge: "47.4.0" }, files: [] },
+      {
+        "overrides/": new Uint8Array(0),
+        "overrides/config/": new Uint8Array(0),
+        "overrides/config/real.json": strToU8("{}")
+      }
+    ));
+    expect(Object.keys(p.overrides)).toEqual(["overrides/config/real.json"]);
     expect(p.hasOverrides).toBe(true);
   });
 

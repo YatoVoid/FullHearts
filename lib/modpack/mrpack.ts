@@ -510,6 +510,8 @@ export interface MrpackResult {
   depCount: number;
   /** Mods dropped because they declared an incompatibility with another included mod. */
   removedConflicts: { name: string; reason: string }[];
+  /** How many overrides/ files (from opts.overrides) were re-zipped into the pack. */
+  overridesIncluded: number;
 }
 
 /** Pick which side of an incompatible pair to drop. Keeps load-bearing
@@ -552,6 +554,14 @@ export async function buildMrpack(opts: {
    *  paired with an addon whose mixin was built against the older one). Falls
    *  back to normal resolution if the pinned version is no longer available. */
   pinnedVersions?: Record<string, string>;
+  /** Raw overrides/ files carried over from an imported pack (path -> bytes, e.g.
+   *  "overrides/config/foo.toml" - see ImportedPack.overrides in import.ts),
+   *  re-zipped into the output archive unchanged. Never inspected by
+   *  resolution/dependency logic - purely additive at the final zip-assembly
+   *  step. When present, the per-build result cache is skipped (see cacheKey
+   *  below) so two builds with the same mod loadout but different overrides
+   *  (e.g. a re-imported pack with an updated guide book) never collide. */
+  overrides?: Record<string, Uint8Array>;
   /** Override the jar-manifest reader (defaults to the /api/manifest-deps route). */
   inspectJars?: JarInspector;
   /** Coarse progress for the UI: pct 0–100 + a human label for the current phase. */
@@ -563,11 +573,17 @@ export async function buildMrpack(opts: {
   // (name + loader + version + the set of mods + their pins). Re-downloading an
   // unchanged collection is then instant; changing a mod or a pin yields a new
   // key and rebuilds. Skip caching when a custom jar inspector is supplied
-  // (tests/overrides).
+  // (tests) or overrides are provided: the key has no way to distinguish two
+  // builds with the same name/mods/loader/version/pins but DIFFERENT override
+  // bytes (e.g. two imported collections named the same, or a re-imported pack
+  // with an updated guide book) - caching by content hash would work too, but
+  // that's new complexity for what's already a minority code path, so we just
+  // skip the result cache outright when overrides are present. The per-URL
+  // response cache above still avoids redundant network calls either way.
   const pinsKey = opts.pinnedVersions
     ? Object.entries(opts.pinnedVersions).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${k}=${v}`).join(",")
     : "";
-  const cacheKey = opts.inspectJars
+  const cacheKey = opts.inspectJars || opts.overrides
     ? ""
     : `${opts.name}|${opts.loader}|${opts.mcVersion}|${opts.mods.map((m) => m.modrinthSlug ?? m.id).slice().sort().join(",")}|${pinsKey}`;
   if (cacheKey && buildResultCache.has(cacheKey)) {
@@ -1017,10 +1033,17 @@ export async function buildMrpack(opts: {
   });
 
   report(96, "Packaging .mrpack…");
-  const zipped = zipSync({ "modrinth.index.json": strToU8(JSON.stringify(index, null, 2)) });
+  const zipInput: Record<string, Uint8Array> = {
+    "modrinth.index.json": strToU8(JSON.stringify(index, null, 2))
+  };
+  if (opts.overrides) {
+    for (const [path, bytes] of Object.entries(opts.overrides)) zipInput[path] = bytes;
+  }
+  const zipped = zipSync(zipInput);
   const blob = new Blob([zipped], { type: "application/x-modrinth-modpack+zip" });
   const depCount = Math.max(0, files.length - included.length);
-  const result = { blob, included, skipped, depCount, removedConflicts };
+  const overridesIncluded = Object.keys(opts.overrides ?? {}).length;
+  const result = { blob, included, skipped, depCount, removedConflicts, overridesIncluded };
   if (cacheKey) buildResultCache.set(cacheKey, result);
   return result;
 }
