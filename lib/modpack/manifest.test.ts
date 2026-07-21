@@ -43,6 +43,26 @@ version="\${file.jarVersion}"
     // forge dropped (platform), jei dropped (optional) -> only create remains
     expect(info.requires).toEqual([{ id: "create", range: "[0.5.1,6.0.0)" }]);
   });
+
+  it("drops a mandatory 'ponder' dependency (Create's real mods.toml, verbatim shape)", () => {
+    // Create's mods.toml really does declare this - its own bundled Ponder has
+    // no standalone Modrinth listing, but the project actually AT slug "ponder"
+    // is a different, unrelated addon ("Ponder for KubeJS"). Resolving "ponder"
+    // as an external dependency pulls that in and crashes at launch.
+    const toml = `
+[[mods]]
+modId="create"
+version="\${file.jarVersion}"
+[[dependencies.create]]
+    modId="ponder"
+    mandatory=true
+    versionRange="[0.8,)"
+    ordering="AFTER"
+    side="BOTH"
+`;
+    const info = parseForge(toml);
+    expect(info.requires).toEqual([]);
+  });
 });
 
 describe("extractManifestDeps (real jar bytes)", () => {

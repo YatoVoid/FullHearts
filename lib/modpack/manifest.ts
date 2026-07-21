@@ -37,9 +37,19 @@ function mcFromDepends(depends: Record<string, unknown>): string | undefined {
 }
 
 // Not mods — ignore as dependencies (they're the runtime, not something to ship).
+// Also covers known jar-in-jar sub-components that a parent mod's manifest
+// still lists as a formal mandatory dependency (for load-ordering) even though
+// they have no meaningful standalone existence — resolving those externally
+// does real harm when the bare modid happens to collide with an unrelated
+// Modrinth project. Create's own bundled Ponder declares `modId = "ponder"`,
+// but the Modrinth project actually AT slug "ponder" is a different, unrelated
+// addon ("Ponder for KubeJS" / PonderJS) - pulling that in crashes at launch
+// (its mixins target Ponder internals that don't match what Create bundles).
+// Treat it exactly like a platform dependency: never resolve it, never ship it.
 const NON_MOD = new Set([
   "minecraft", "java", "forge", "neoforge",
-  "fabricloader", "fabric_loader", "quilt_loader", "quiltloader", "mixinextras"
+  "fabricloader", "fabric_loader", "quilt_loader", "quiltloader", "mixinextras",
+  "ponder"
 ]);
 
 const norm = (s: unknown) => String(s ?? "").toLowerCase().trim();
