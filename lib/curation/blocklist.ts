@@ -50,7 +50,19 @@ const BLOCKED: Record<string, BlockRule> = {
   // current Meadow (1.3.25+) changed internals and the addon crashes against it.
   // Downgrading the shared Meadow to match would break every other mod that wants
   // it current, and there's no newer Photographers to update to. Block the addon.
-  "lets-do-photographers": { loaders: ["fabric", "quilt"] }
+  "lets-do-photographers": { loaders: ["fabric", "quilt"] },
+  // Modrinth project slug "ponder" (id 5A34Stj8) is "Ponder for KubeJS" - a
+  // completely different addon from Create's own bundled Ponder, which has no
+  // standalone Modrinth listing at all (see manifest.ts's NON_MOD set, which
+  // stops Create's declared "ponder" dependency from resolving to this project
+  // in the first place). This entry is the second line of defense: it also
+  // catches the mod if it ends up EXPLICITLY in a mod list some other way (a
+  // manual pick, or importing/re-uploading a .mrpack that already has it baked
+  // in) - unlike the manifest.ts fix, isBlocked applies no matter how the mod
+  // got selected. Its mixins target Ponder internals that don't match what
+  // Create actually bundles, crashing at launch (InvalidAccessorException on
+  // PonderIndex.plugins) - not version-specific, blocked on every loader.
+  "ponder": { loaders: ["forge", "neoforge", "fabric", "quilt"] }
 };
 
 /**
@@ -83,7 +95,13 @@ const BLOCKED_DEPS: Record<string, BlockRule> = {
   // Factory API 2.2.8 — its bundled MixinExtras jar-in-jar makes Forge's
   // JarInJarDependencyLocator throw an NPE on 1.21.1, crashing at launch. Pulled
   // in by Better Furnaces Reforged and others.
-  nkTZHOLD: { loaders: ["forge", "neoforge"], versions: ["1.21.1"] }
+  nkTZHOLD: { loaders: ["forge", "neoforge"], versions: ["1.21.1"] },
+  // "Ponder for KubeJS", project id 5A34Stj8, Modrinth slug "ponder" - see the
+  // matching BLOCKED entry above for the full story. Nothing SHOULD ever create
+  // a required-dependency edge onto this project now that manifest.ts stops
+  // Create's own "ponder" declaration from resolving here, but this is the
+  // third line of defense in case some other path ever does.
+  "5A34Stj8": { loaders: ["forge", "neoforge", "fabric", "quilt"] }
 };
 
 function matches(rule: BlockRule | undefined, loader: Loader, version?: string): boolean {
