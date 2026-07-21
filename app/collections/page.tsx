@@ -24,7 +24,7 @@ import {
   setPinnedVersions,
   type Collection
 } from "@/lib/storage/collections";
-import { encodeCollection, decodeCollection } from "@/lib/storage/share";
+import { encodeCollection, decodeCollection, overridesFitShareLink } from "@/lib/storage/share";
 import { toJSON, toText } from "@/lib/storage/export";
 import { hasLocalStorage } from "@/lib/storage/safe";
 import { markVisited } from "@/lib/storage/user";
@@ -269,7 +269,12 @@ export default function Collections() {
         const created = createCollection(payload.name || "Shared collection", payload.modIds);
         // Carry the sharer's loader + version so the pack stays version-locked.
         if (payload.loader && payload.version) setLoadout(created.id, payload.loader, payload.version);
-        setNote("Imported a shared collection.");
+        if (payload.overrides && Object.keys(payload.overrides).length > 0) {
+          setOverridesByCollection((prev) => ({ ...prev, [created.id]: payload.overrides! }));
+          setNote("Imported a shared collection, including its overrides (configs, resource packs, guide books, etc.).");
+        } else {
+          setNote("Imported a shared collection.");
+        }
       }
       history.replaceState(null, "", window.location.pathname);
     }
@@ -379,8 +384,28 @@ export default function Collections() {
   }
 
   function shareUrl(c: Collection): string {
-    const encoded = encodeCollection({ name: c.name, modIds: c.modIds, loader: c.loader, version: c.gameVersion });
+    const overrides = overridesByCollection[c.id];
+    const includeOverrides = overridesFitShareLink(overrides);
+    const encoded = encodeCollection({
+      name: c.name,
+      modIds: c.modIds,
+      loader: c.loader,
+      version: c.gameVersion,
+      overrides: includeOverrides ? overrides : undefined
+    });
     return `${window.location.origin}/collections#share=${encoded}`;
+  }
+
+  /** Message for the "Copy share link" toast: says plainly whether this
+   *  collection's overrides came along, since a link that silently drops
+   *  them (too big - see MAX_OVERRIDES_ZIPPED_BYTES) would be misleading
+   *  otherwise. */
+  function shareLinkMessage(c: Collection): string {
+    const overrides = overridesByCollection[c.id];
+    if (!overrides || Object.keys(overrides).length === 0) return "Copied share link to clipboard.";
+    return overridesFitShareLink(overrides)
+      ? "Copied share link, including its overrides (configs, resource packs, guide books, etc.)."
+      : "Copied share link to clipboard. Its overrides were too big to fit in a link - share the .mrpack file instead for those.";
   }
 
   return (
@@ -555,7 +580,7 @@ export default function Collections() {
                 )}
                 <button type="button" className="chip-btn" onClick={() => download(`${c.name}.json`, toJSON(c), "application/json")}>Backup (JSON file)</button>
                 <button type="button" className="chip-btn" onClick={() => copy(toText(c, names), "Copied mod list to clipboard.")}>Copy mod list</button>
-                <button type="button" className="chip-btn" onClick={() => copy(shareUrl(c), "Copied share link to clipboard.")}>Copy share link</button>
+                <button type="button" className="chip-btn" onClick={() => copy(shareUrl(c), shareLinkMessage(c))}>Copy share link</button>
               </div>
             </section>
           ))
