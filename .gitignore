@@ -34,3 +34,6 @@ tsconfig.tsbuildinfo
 # Playwright audit artifacts
 .playwright-mcp/
 *.jpeg
+
+# Impeccable design-review hook local cache
+.impeccable/hook.cache.json

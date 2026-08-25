@@ -43,6 +43,7 @@ export default function Home() {
           <nav className="links">
             <Link href="/explore">Explore</Link>
             <Link href="/collections">Collections</Link>
+            <Link href="/server">Our server</Link>
           </nav>
           <Link className="nav-cta" href="/explore">Build a pack</Link>
         </div>
@@ -126,6 +127,18 @@ export default function Home() {
           <p style={{ textAlign: "center", marginTop: 30, color: "var(--muted, #b9b3d6)" }}>
             Not sure what to pick? A short <Link href="/quiz">quiz</Link> suggests a starter pack based on how you like to play. Your answers stay in your browser.
           </p>
+        </section>
+
+        <section className="wrap" style={{ padding: "10px 0 70px" }}>
+          <aside className="server-cta">
+            <div className="server-cta-body">
+              <strong>Running EduCraft, our own Minecraft server</strong>
+              <span>A private, kid-safe modded server for education and adventure, built and run by Full Hearts.</span>
+            </div>
+            <div className="server-cta-actions">
+              <Link className="btn-primary" href="/server">See the server</Link>
+            </div>
+          </aside>
         </section>
       </main>
 

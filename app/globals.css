@@ -536,6 +536,9 @@ footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
 .prose h2{font-size:17px;color:var(--gold);margin:28px 0 8px;}
 .prose p{font-size:15px;color:#c5bfd6;line-height:1.6;margin-bottom:12px;}
 .prose a{color:var(--grass);}
+/* .nav-cta already sets its own text color for contrast against its green fill;
+   .prose a above is more specific enough to win otherwise, making the text unreadable. */
+.prose a.nav-cta{color:var(--void);}
 
 /* ---------- NO-RESULTS / REQUEST ---------- */
 .no-results{text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;padding:30px 0;}
@@ -554,7 +557,7 @@ footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
 }
 /* Phones: single-column grids, full-width tap targets, tighter gutters. */
 @media (max-width:560px){
-  .wrap,.results,.explore,.collections,.install,.prose{padding-left:16px;padding-right:16px;}
+  .wrap,.results,.explore,.collections,.install,.prose,.server-page{padding-left:16px;padding-right:16px;}
   .quiz{padding-left:16px;padding-right:16px;}
   .nav-inner{padding:14px 16px;}
   .grid{grid-template-columns:1fr;gap:16px;}
@@ -578,3 +581,24 @@ footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
 
 .quiz-tag { margin-left: auto; font-size: 0.72rem; font-weight: 700; color: #2e7d32; }
 .quiz-note { margin-left: 0.5rem; font-size: 0.78rem; opacity: 0.7; }
+
+/* ---------- SERVER PAGE (mods table / checklist / FAQ) ---------- */
+.server-page{max-width:960px;margin:0 auto;padding:48px 24px 90px;}
+.server-table-wrap{overflow-x:auto;margin:20px 0 10px;border:2px solid #2a2046;}
+.server-table{width:100%;border-collapse:collapse;font-size:13.5px;}
+.server-table caption{caption-side:bottom;text-align:left;font-size:11.5px;color:var(--mute);padding:10px 12px;background:var(--slot);}
+.server-table th{font-family:var(--pixel);font-size:9px;letter-spacing:.5px;color:var(--gold);text-align:left;padding:10px 12px;background:#0d0917;border-bottom:2px solid #2a2046;}
+.server-table td{padding:9px 12px;border-bottom:1px solid #221a3c;color:#c5bfd6;}
+.server-table tr.group td{font-family:var(--pixel);font-size:8px;color:var(--aqua);letter-spacing:.5px;background:rgba(85,255,255,.05);padding:10px 12px;}
+.server-table td.ver{color:var(--gold);font-family:var(--pixel);font-size:8px;white-space:nowrap;}
+.server-table tr:last-child td{border-bottom:none;}
+
+.check-list{list-style:none;display:flex;flex-direction:column;gap:14px;margin:20px 0;}
+.check-list li{display:flex;gap:12px;align-items:flex-start;font-size:14.5px;color:#c5bfd6;line-height:1.55;}
+.check-list li svg{flex:none;margin-top:2px;color:var(--grass);}
+.check-list strong{color:var(--ink);}
+
+.faq-list details{background:var(--slot);border:2px solid #2a2046;padding:16px 18px;margin-bottom:10px;}
+.faq-list summary{font-weight:700;color:var(--ink);cursor:pointer;font-size:15px;}
+.faq-list summary::marker{color:var(--grass);}
+.faq-list p{font-size:14px;color:#c5bfd6;line-height:1.6;margin-top:10px;}

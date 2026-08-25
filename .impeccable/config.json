@@ -1,0 +1,20 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "layout-transition",
+        "value": "app/globals.css:261",
+        "createdAt": "2026-08-25T13:44:05.157Z",
+        "reason": "pre-existing quiz progress bar, unrelated to this task; animates width intentionally for a determinate progress fill, not touched in this session"
+      },
+      {
+        "rule": "codex-grid-background",
+        "value": "app/globals.css:34",
+        "createdAt": "2026-08-25T13:44:05.255Z",
+        "reason": "pre-existing site-wide body background predating this task; deliberate Minecraft inventory-slot grid motif for this specific game-themed site, domain-appropriate"
+      }
+    ]
+  }
+}
