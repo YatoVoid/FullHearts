@@ -29,32 +29,95 @@ export function getDb(): DatabaseSync {
   if (target !== ":memory:") mkdirSync(path.dirname(target), { recursive: true });
   instance = new DatabaseSync(target);
   instance.exec(`
-    CREATE TABLE IF NOT EXISTS registrations (
+    CREATE TABLE IF NOT EXISTS parents (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      phone TEXT NOT NULL UNIQUE,
+      email TEXT,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS realms (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      address TEXT NOT NULL,
+      capacity INTEGER NOT NULL,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS children (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      parent_id INTEGER NOT NULL REFERENCES parents(id),
+      realm_id INTEGER REFERENCES realms(id),
       created_at TEXT NOT NULL,
       status TEXT NOT NULL,
-      child_nickname TEXT NOT NULL,
-      child_age INTEGER NOT NULL,
-      child_mc_username TEXT NOT NULL,
-      parent_name TEXT NOT NULL,
-      parent_phone TEXT NOT NULL,
-      parent_email TEXT,
+      nickname TEXT NOT NULL,
+      age INTEGER NOT NULL,
+      mc_username TEXT NOT NULL,
       price_cents INTEGER NOT NULL DEFAULT 0,
       paid INTEGER NOT NULL DEFAULT 0,
       notes TEXT
-    )
+    );
   `);
-  migrate(instance);
+  migrateOldRegistrations(instance);
   return instance;
 }
 
-// SQLite has no "ADD COLUMN IF NOT EXISTS", and CREATE TABLE IF NOT EXISTS
-// above is a no-op against a table that already existed before a column was
-// added here. Check pragma table_info and backfill by hand instead.
-function migrate(db: DatabaseSync): void {
+// The original schema (single "registrations" table: one row = one child
+// with a full copy of the parent's contact info) predates parents/children/
+// realms as separate tables. Split any leftover rows from that shape into
+// the new tables, deduping parents by phone, then rename the old table
+// instead of dropping it. Guarded by the old table's existence, so this
+// only ever runs once per database.
+function migrateOldRegistrations(db: DatabaseSync): void {
+  const oldTable = db
+    .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'registrations'")
+    .get();
+  if (!oldTable) return;
+
   const columns = db.prepare("PRAGMA table_info(registrations)").all() as { name: string }[];
-  const names = new Set(columns.map((c) => c.name));
-  if (!names.has("paid")) {
-    db.exec("ALTER TABLE registrations ADD COLUMN paid INTEGER NOT NULL DEFAULT 0");
+  if (!columns.some((c) => c.name === "parent_name")) return;
+
+  type OldRow = {
+    created_at: string;
+    status: string;
+    child_nickname: string;
+    child_age: number;
+    child_mc_username: string;
+    parent_name: string;
+    parent_phone: string;
+    parent_email: string | null;
+    price_cents: number;
+    paid: number;
+    notes: string | null;
+  };
+  const rows = db.prepare("SELECT * FROM registrations").all() as OldRow[];
+
+  const insertParent = db.prepare(
+    "INSERT OR IGNORE INTO parents (name, phone, email, created_at) VALUES (?, ?, ?, ?)"
+  );
+  const findParent = db.prepare("SELECT id FROM parents WHERE phone = ?");
+  const insertChild = db.prepare(`
+    INSERT INTO children
+      (parent_id, created_at, status, nickname, age, mc_username, price_cents, paid, notes)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  for (const row of rows) {
+    insertParent.run(row.parent_name, row.parent_phone, row.parent_email, row.created_at);
+    const parent = findParent.get(row.parent_phone) as { id: number };
+    insertChild.run(
+      parent.id,
+      row.created_at,
+      row.status,
+      row.child_nickname,
+      row.child_age,
+      row.child_mc_username,
+      row.price_cents,
+      row.paid,
+      row.notes
+    );
   }
+
+  db.exec("ALTER TABLE registrations RENAME TO registrations_migrated_backup");
 }

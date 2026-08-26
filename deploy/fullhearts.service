@@ -1,0 +1,21 @@
+[Unit]
+Description=FullHearts (Next.js, dynamic mode)
+After=network.target
+
+[Service]
+Type=simple
+User=wali
+WorkingDirectory=/home/wali/fullhearts-app
+Environment=NODE_ENV=production
+Environment=NEXT_NODE_SERVER=1
+Environment=FULLHEARTS_DB_PATH=/var/lib/fullhearts/fullhearts.db
+# Real secrets (ADMIN_PASSWORD_HASH, ADMIN_SESSION_SECRET, TELNYX_*, the real
+# NEXT_PUBLIC_SITE_URL) go in this file, root-only, never in the repo:
+#   sudo install -m 600 -o root -g root /dev/null /etc/fullhearts.env
+EnvironmentFile=-/etc/fullhearts.env
+ExecStart=/usr/bin/npm run start -- -p 3000
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
