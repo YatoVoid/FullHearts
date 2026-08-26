@@ -212,7 +212,7 @@ export default function ServerPage() {
                   </p>
                   <div className="install-cta" style={{ justifyContent: "flex-start", margin: "16px 0 0" }}>
                     <a className="btn-primary" href={PACK_URL} download>
-                      <Icon name="download" size={15} /> EduCraftClient.mrpack &middot; v1.2.0
+                      <Icon name="download" size={15} /> EduCraftClient.mrpack &middot; v1.2.1
                     </a>
                   </div>
                 </div>
@@ -261,7 +261,7 @@ export default function ServerPage() {
           </div>
           <div className="server-table-wrap">
             <table className="server-table">
-              <caption>EduCraftClient v1.2.0 &middot; Minecraft 1.20.1 &middot; Forge 47.4.20. Server-side tooling (chat filter, block logging, permissions, worldgen packs) is not part of the client pack.</caption>
+              <caption>EduCraftClient v1.2.1 &middot; Minecraft 1.20.1 &middot; Forge 47.4.20. Server-side tooling (chat filter, block logging, permissions, worldgen packs) is not part of the client pack.</caption>
               <thead>
                 <tr><th scope="col">Mod</th><th scope="col">Version</th><th scope="col">What it does here</th></tr>
               </thead>
@@ -280,7 +280,7 @@ export default function ServerPage() {
                 <tr><td>Comforts</td><td className="ver">6.4.0</td><td>Sleeping bags and hammocks for expeditions</td></tr>
                 <tr><td>Patchouli</td><td className="ver">85</td><td>Powers the illustrated EduCraft guide book</td></tr>
                 <tr><td>Just Enough Items</td><td className="ver">15.20.0.133</td><td>Searchable recipes for every item in the pack</td></tr>
-                <tr><td>SecurityCraft</td><td className="ver">1.10.2.1</td><td>Locks, cameras and traps to keep a base safe from the inside</td></tr>
+                <tr><td>Open Parties and Claims</td><td className="ver">0.30.3</td><td>Claim your base against griefing, land shows up right on the map</td></tr>
                 <tr className="group"><td colSpan={3}>Space travel</td></tr>
                 <tr><td>Ad Astra</td><td className="ver">1.15.20</td><td>Build a rocket and fly to the Moon, Mars, Venus, Mercury and Glacio</td></tr>
                 <tr className="group"><td colSpan={3}>Client-side maps</td></tr>
