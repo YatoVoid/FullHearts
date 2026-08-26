@@ -7,14 +7,22 @@ server's droplet stays up to date (pull-based, systemd-managed).
 
 ## Requirements
 
-- Node **22.5+** with `node:sqlite` available. It's unflagged (no
-  `--experimental-sqlite` needed) from Node 24 on. Check first:
+- Node **22.5+** with `node:sqlite` available (unflagged from Node 24 on).
+  Check first: `node -v`.
+- If this droplet runs anything else on Node (check before assuming it
+  doesn't), do **not** replace the system-wide Node to satisfy this
+  requirement. Install Node 24 scoped to this user via `nvm` instead, so
+  every other service's Node install is untouched:
   ```
-  node -v
-  node -e "require('node:sqlite')"
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+  nvm install 24
+  node -e "require('node:sqlite'); console.log('node:sqlite OK')"
   ```
-  If that throws `ERR_UNKNOWN_BUILTIN_MODULE`, upgrade Node before anything
-  else here, since nothing below will work otherwise.
+  `deploy/fullhearts.service` and `deploy/redeploy.sh` are already written to
+  use this nvm-managed Node (via `deploy/run-node24.sh`) rather than
+  `/usr/bin/node`. Nothing else to configure for that part.
 
 ## One-time setup
 

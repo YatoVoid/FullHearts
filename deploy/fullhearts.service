@@ -13,7 +13,10 @@ Environment=FULLHEARTS_DB_PATH=/var/lib/fullhearts/fullhearts.db
 # NEXT_PUBLIC_SITE_URL) go in this file, root-only, never in the repo:
 #   sudo install -m 600 -o root -g root /dev/null /etc/fullhearts.env
 EnvironmentFile=-/etc/fullhearts.env
-ExecStart=/usr/bin/npm run start -- -p 3000
+# Node 24 via nvm, scoped to this user only (see deploy/run-node24.sh) so the
+# droplet's system-wide node/npm, which other services here may depend on,
+# is never touched.
+ExecStart=/bin/bash /home/wali/fullhearts-app/deploy/run-node24.sh
 Restart=on-failure
 RestartSec=5
 
