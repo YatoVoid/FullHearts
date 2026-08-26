@@ -4,7 +4,7 @@
 # out/ anymore, this builds and restarts a long-running Node process instead.
 set -euo pipefail
 
-REPO_DIR=/home/wali/fullhearts-app
+REPO_DIR=/home/whaletale/fullhearts-app
 REPO_URL=https://github.com/YatoVoid/FullHearts.git
 BRANCH=main
 SERVICE=fullhearts

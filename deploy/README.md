@@ -30,7 +30,7 @@ server's droplet stays up to date (pull-based, systemd-managed).
    repo so a redeploy never touches it:
    ```
    sudo mkdir -p /var/lib/fullhearts
-   sudo chown wali:wali /var/lib/fullhearts
+   sudo chown whaletale:whaletale /var/lib/fullhearts
    ```
 
 2. **Secrets file**, root-only, never committed:
@@ -62,7 +62,7 @@ server's droplet stays up to date (pull-based, systemd-managed).
 5. **Passwordless restart for the deploy script** (or run `redeploy.sh` as
    root instead):
    ```
-   echo "wali ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart fullhearts" | sudo tee /etc/sudoers.d/fullhearts-deploy
+   echo "whaletale ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart fullhearts" | sudo tee /etc/sudoers.d/fullhearts-deploy
    ```
 
 6. First deploy:
