@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=wali
-WorkingDirectory=/home/wali/fullhearts-app
+User=whaletale
+WorkingDirectory=/home/whaletale/fullhearts-app
 Environment=NODE_ENV=production
 Environment=NEXT_NODE_SERVER=1
 Environment=FULLHEARTS_DB_PATH=/var/lib/fullhearts/fullhearts.db
@@ -16,7 +16,7 @@ EnvironmentFile=-/etc/fullhearts.env
 # Node 24 via nvm, scoped to this user only (see deploy/run-node24.sh) so the
 # droplet's system-wide node/npm, which other services here may depend on,
 # is never touched.
-ExecStart=/bin/bash /home/wali/fullhearts-app/deploy/run-node24.sh
+ExecStart=/bin/bash /home/whaletale/fullhearts-app/deploy/run-node24.sh
 Restart=on-failure
 RestartSec=5
 
