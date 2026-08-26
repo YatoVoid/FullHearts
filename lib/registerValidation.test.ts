@@ -1,11 +1,16 @@
 import { describe, it, expect } from "vitest";
-import { validateRegistration, sameName, type RegistrationInput } from "@/lib/registerValidation";
+import {
+  validateParent,
+  validateChild,
+  validateSubmission,
+  sameName,
+  type ParentInput,
+  type ChildInput,
+  type RegistrationSubmission
+} from "@/lib/registerValidation";
 
-function validInput(overrides: Partial<RegistrationInput> = {}): RegistrationInput {
+function validParent(overrides: Partial<ParentInput> = {}): ParentInput {
   return {
-    childNickname: "Robin",
-    childAge: 10,
-    childMcUsername: "RobinCrafts",
     parentName: "Jamie Doe",
     parentPhone: "+1 555 010 1234",
     parentEmail: "jamie@example.com",
@@ -14,44 +19,88 @@ function validInput(overrides: Partial<RegistrationInput> = {}): RegistrationInp
   };
 }
 
-describe("validateRegistration", () => {
-  it("accepts a fully valid submission", () => {
-    expect(validateRegistration(validInput())).toBeNull();
+function validChild(overrides: Partial<ChildInput> = {}): ChildInput {
+  return {
+    childNickname: "Robin",
+    childAge: 10,
+    childMcUsername: "RobinCrafts",
+    ...overrides
+  };
+}
+
+describe("validateParent", () => {
+  it("accepts valid parent input", () => {
+    expect(validateParent(validParent())).toBeNull();
   });
 
-  it("requires a child nickname", () => {
-    expect(validateRegistration(validInput({ childNickname: "" }))).toMatch(/nickname is required/);
+  it("requires a name", () => {
+    expect(validateParent(validParent({ parentName: "" }))).toMatch(/name is required/);
   });
 
-  it("requires age between 4 and 17", () => {
-    expect(validateRegistration(validInput({ childAge: 3 }))).toMatch(/between 4 and 17/);
-    expect(validateRegistration(validInput({ childAge: 18 }))).toMatch(/between 4 and 17/);
-  });
-
-  it("requires a valid Minecraft username", () => {
-    expect(validateRegistration(validInput({ childMcUsername: "a" }))).toMatch(/valid Minecraft/);
-    expect(validateRegistration(validInput({ childMcUsername: "bad name!" }))).toMatch(/valid Minecraft/);
-  });
-
-  it("rejects the parent name matching the child's nickname", () => {
-    expect(validateRegistration(validInput({ parentName: "Robin" }))).toMatch(/can't be the same/);
-  });
-
-  it("rejects the parent name matching the child's Minecraft username, case-insensitively", () => {
-    expect(validateRegistration(validInput({ parentName: "robincrafts" }))).toMatch(/can't be the same/);
-  });
-
-  it("requires a valid phone number", () => {
-    expect(validateRegistration(validInput({ parentPhone: "abc" }))).toMatch(/valid phone/);
+  it("requires a valid phone", () => {
+    expect(validateParent(validParent({ parentPhone: "abc" }))).toMatch(/valid phone/);
   });
 
   it("allows a blank email but rejects a malformed one", () => {
-    expect(validateRegistration(validInput({ parentEmail: "" }))).toBeNull();
-    expect(validateRegistration(validInput({ parentEmail: "not-an-email" }))).toMatch(/valid email/);
+    expect(validateParent(validParent({ parentEmail: "" }))).toBeNull();
+    expect(validateParent(validParent({ parentEmail: "not-an-email" }))).toMatch(/valid email/);
   });
 
   it("requires consent", () => {
-    expect(validateRegistration(validInput({ consent: false }))).toMatch(/consent is required/);
+    expect(validateParent(validParent({ consent: false }))).toMatch(/consent is required/);
+  });
+});
+
+describe("validateChild", () => {
+  it("accepts a valid child against a parent name", () => {
+    expect(validateChild(validChild(), "Jamie Doe")).toBeNull();
+  });
+
+  it("requires age between 4 and 17", () => {
+    expect(validateChild(validChild({ childAge: 3 }), "Jamie Doe")).toMatch(/between 4 and 17/);
+  });
+
+  it("requires a valid Minecraft username", () => {
+    expect(validateChild(validChild({ childMcUsername: "a" }), "Jamie Doe")).toMatch(/valid Minecraft/);
+  });
+
+  it("rejects the parent name matching the child's nickname or username", () => {
+    expect(validateChild(validChild(), "Robin")).toMatch(/can't be the same/);
+    expect(validateChild(validChild(), "robincrafts")).toMatch(/can't be the same/);
+  });
+});
+
+describe("validateSubmission", () => {
+  function validSubmission(overrides: Partial<RegistrationSubmission> = {}): RegistrationSubmission {
+    return { parent: validParent(), children: [validChild()], ...overrides };
+  }
+
+  it("accepts one child", () => {
+    expect(validateSubmission(validSubmission())).toBeNull();
+  });
+
+  it("accepts multiple children under one parent", () => {
+    const submission = validSubmission({
+      children: [validChild({ childMcUsername: "KidOne" }), validChild({ childMcUsername: "KidTwo" })]
+    });
+    expect(validateSubmission(submission)).toBeNull();
+  });
+
+  it("requires at least one child", () => {
+    expect(validateSubmission(validSubmission({ children: [] }))).toMatch(/at least one child/);
+  });
+
+  it("rejects duplicate Minecraft usernames within the same submission", () => {
+    const submission = validSubmission({
+      children: [validChild({ childMcUsername: "SameName" }), validChild({ childMcUsername: "SameName" })]
+    });
+    expect(validateSubmission(submission)).toMatch(/different Minecraft username/);
+  });
+
+  it("fails fast on an invalid parent before looking at children", () => {
+    expect(validateSubmission(validSubmission({ parent: validParent({ parentName: "" }) }))).toMatch(
+      /name is required/
+    );
   });
 });
 

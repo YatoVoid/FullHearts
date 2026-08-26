@@ -1,8 +1,9 @@
 import { rateLimited, clientIp } from "@/lib/rate-limit";
-import { createRegistration, hasRecentSubmission } from "@/lib/registrations";
-import { validateRegistration, type RegistrationInput } from "@/lib/registerValidation";
+import { createChild, hasRecentSubmission } from "@/lib/children";
+import { findOrCreateParent } from "@/lib/parents";
+import { validateSubmission, type RegistrationSubmission } from "@/lib/registerValidation";
 
-type Body = RegistrationInput & {
+type Body = RegistrationSubmission & {
   // Honeypot: real users never see or fill this field. Any value here means
   // a bot filled every input on the page, so we pretend to succeed instead
   // of telling it what tripped the check.
@@ -31,30 +32,39 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   if (body.company) {
-    return Response.json({ ok: true, id: 0 }, { status: 201 });
+    return Response.json({ ok: true, childIds: [] }, { status: 201 });
   }
 
-  const error = validateRegistration(body);
+  const error = validateSubmission(body);
   if (error) return Response.json({ error }, { status: 400 });
 
-  const parentPhone = body.parentPhone!.trim();
-  const childMcUsername = body.childMcUsername!.trim();
+  const parentPhone = body.parent.parentPhone!.trim();
 
-  if (hasRecentSubmission(parentPhone, childMcUsername)) {
-    return Response.json(
-      { error: "This phone number already has a pending or active registration for a different Minecraft username. Contact us if that's a mistake." },
-      { status: 409 }
-    );
+  for (const child of body.children) {
+    if (hasRecentSubmission(parentPhone, child.childMcUsername!.trim())) {
+      return Response.json(
+        {
+          error: `A request for Minecraft username "${child.childMcUsername}" was already submitted recently. Contact us if that's a mistake.`
+        },
+        { status: 409 }
+      );
+    }
   }
 
-  const registration = createRegistration({
-    childNickname: body.childNickname!.trim(),
-    childAge: body.childAge!,
-    childMcUsername,
-    parentName: body.parentName!.trim(),
+  const parent = findOrCreateParent(
+    body.parent.parentName!.trim(),
     parentPhone,
-    parentEmail: body.parentEmail?.trim() || null
-  });
+    body.parent.parentEmail?.trim() || null
+  );
 
-  return Response.json({ ok: true, id: registration.id }, { status: 201 });
+  const childIds = body.children.map(
+    (child) =>
+      createChild(parent.id, {
+        nickname: child.childNickname!.trim(),
+        age: child.childAge!,
+        mcUsername: child.childMcUsername!.trim()
+      }).id
+  );
+
+  return Response.json({ ok: true, childIds }, { status: 201 });
 }

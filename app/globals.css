@@ -621,11 +621,14 @@ footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
 .form-note{background:var(--slot);border:2px solid #2a2046;color:var(--gold);font-size:12.5px;padding:10px 12px;margin-bottom:20px;}
 .form-success{background:rgba(116,192,67,.12);border:2px solid var(--grass);color:var(--ink);padding:16px 18px;font-size:14.5px;line-height:1.6;}
 .form-submit{width:100%;text-align:center;border:none;cursor:pointer;}
+.child-block{border:2px solid #2a2046;background:var(--void);padding:16px 16px 4px;margin-bottom:18px;}
+.child-block-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.child-block-label{font-family:var(--pixel);font-size:9px;color:var(--gold);letter-spacing:.5px;}
+.child-remove{background:none;border:none;color:var(--mute);font-size:12.5px;text-decoration:underline;cursor:pointer;padding:0;}
+.child-remove:hover{color:#ff9fb1;}
 
 /* ---------- ADMIN DASHBOARD ---------- */
 .admin-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap;}
-.admin-server-ip{background:var(--slot);border:2px solid var(--border-a);padding:10px 14px;font-size:13px;color:var(--gold);}
-.admin-server-ip code{color:var(--aqua);}
 .status-badge{font-family:var(--pixel);font-size:8px;letter-spacing:.5px;padding:4px 8px;display:inline-block;}
 .status-badge.pending{background:rgba(252,252,84,.12);color:var(--gold);}
 .status-badge.whitelisted{background:rgba(116,192,67,.14);color:var(--grass);}
@@ -638,6 +641,31 @@ footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
 .admin-actions button:hover{border-color:var(--grass);}
 .admin-actions button:disabled{opacity:.4;cursor:not-allowed;}
 .admin-empty{color:var(--mute);font-size:14px;padding:30px 0;text-align:center;}
+
+.analytics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:10px;}
+.analytics-tile{background:var(--slot);border:2px solid #2a2046;padding:16px 18px;text-align:center;}
+.analytics-num{font-family:var(--pixel);font-size:20px;color:var(--grass);text-shadow:0 2px 0 #000;margin-bottom:8px;}
+.analytics-lab{font-size:11.5px;color:var(--mute);line-height:1.4;}
+
+.realms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:10px;}
+.realm-card{background:var(--slot);border:2px solid #2a2046;padding:14px 16px;}
+.realm-card-name{font-family:var(--pixel);font-size:10px;color:var(--ink);margin-bottom:6px;}
+.realm-card-fill{font-size:12.5px;color:var(--grass);margin-top:8px;}
+.realm-card-fill.full{color:#ff9fb1;}
+.realm-form{display:flex;flex-direction:column;gap:8px;background:var(--void);border:2px dashed #2a2046;padding:14px 16px;}
+.realm-form .form-input{padding:8px 10px;font-size:13px;}
+
+.parent-card{background:var(--panel);border:2px solid #2a2046;padding:18px;margin-bottom:20px;}
+.parent-card-head{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;margin-bottom:14px;color:var(--ink);}
+
+.realm-select{
+  font-family:var(--body);font-size:12.5px;color:var(--ink);
+  background:var(--slot);border:2px solid #2a2046;padding:7px 8px;width:100%;
+}
+.price-input{
+  font-family:var(--body);font-size:12.5px;color:var(--ink);
+  background:var(--slot);border:2px solid #2a2046;padding:6px 8px;width:80px;margin-top:6px;
+}
 .paid-toggle{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--mute);white-space:nowrap;cursor:pointer;}
 .paid-toggle input{width:15px;height:15px;flex:none;accent-color:var(--grass);}
 .paid-toggle:has(input:checked){color:var(--grass);}

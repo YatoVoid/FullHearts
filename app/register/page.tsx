@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Footer from "@/components/Footer";
 import { HEART_SRC } from "@/lib/asset";
 import { sameName } from "@/lib/registerValidation";
@@ -17,10 +17,14 @@ const HEART = (
 
 const FORMSPREE_FORM_ID = process.env.NEXT_PUBLIC_FORMSPREE_FORM_ID;
 
+type ChildForm = {
+  key: number;
+  nickname: string;
+  age: string;
+  mcUsername: string;
+};
+
 type FormState = {
-  childNickname: string;
-  childAge: string;
-  childMcUsername: string;
   parentName: string;
   parentPhone: string;
   parentEmail: string;
@@ -28,17 +32,20 @@ type FormState = {
   // Honeypot: stays empty for real visitors. A bot that fills every field
   // on the page trips this, so the API accepts the request but drops it.
   company: string;
+  children: ChildForm[];
 };
 
+function emptyChild(key: number): ChildForm {
+  return { key, nickname: "", age: "", mcUsername: "" };
+}
+
 const EMPTY: FormState = {
-  childNickname: "",
-  childAge: "",
-  childMcUsername: "",
   parentName: "",
   parentPhone: "",
   parentEmail: "",
   consent: false,
-  company: ""
+  company: "",
+  children: [emptyChild(0)]
 };
 
 export default function RegisterPage() {
@@ -46,9 +53,25 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const nextKey = useRef(1);
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  function setChild<K extends keyof ChildForm>(childKey: number, field: K, value: ChildForm[K]) {
+    setForm((f) => ({
+      ...f,
+      children: f.children.map((c) => (c.key === childKey ? { ...c, [field]: value } : c))
+    }));
+  }
+
+  function addChild() {
+    setForm((f) => ({ ...f, children: [...f.children, emptyChild(nextKey.current++)] }));
+  }
+
+  function removeChild(childKey: number) {
+    setForm((f) => (f.children.length > 1 ? { ...f, children: f.children.filter((c) => c.key !== childKey) } : f));
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -56,26 +79,31 @@ export default function RegisterPage() {
     if (submitting) return;
     setError(null);
 
-    if (sameName(form.childNickname, form.parentName) || sameName(form.childMcUsername, form.parentName)) {
-      setError("Parent name can't be the same as the child's nickname or Minecraft username.");
-      return;
+    for (const child of form.children) {
+      if (sameName(child.nickname, form.parentName) || sameName(child.mcUsername, form.parentName)) {
+        setError("Parent name can't be the same as a child's nickname or Minecraft username.");
+        return;
+      }
     }
+
+    const parent = {
+      parentName: form.parentName,
+      parentPhone: form.parentPhone,
+      parentEmail: form.parentEmail || undefined,
+      consent: form.consent
+    };
+    const children = form.children.map((c) => ({
+      childNickname: c.nickname,
+      childAge: Number(c.age),
+      childMcUsername: c.mcUsername
+    }));
 
     setSubmitting(true);
     try {
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          childNickname: form.childNickname,
-          childAge: Number(form.childAge),
-          childMcUsername: form.childMcUsername,
-          parentName: form.parentName,
-          parentPhone: form.parentPhone,
-          parentEmail: form.parentEmail || undefined,
-          consent: form.consent,
-          company: form.company
-        })
+        body: JSON.stringify({ parent, children, company: form.company })
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
@@ -89,18 +117,11 @@ export default function RegisterPage() {
         fetch(`https://formspree.io/f/${FORMSPREE_FORM_ID}`, {
           method: "POST",
           headers: { Accept: "application/json", "Content-Type": "application/json" },
-          body: JSON.stringify({
-            childNickname: form.childNickname,
-            childAge: form.childAge,
-            childMcUsername: form.childMcUsername,
-            parentName: form.parentName,
-            parentPhone: form.parentPhone,
-            parentEmail: form.parentEmail
-          })
+          body: JSON.stringify({ parent, children })
         }).catch(() => {});
       }
 
-      // Billing goes here once it exists: this request only ever records a
+      // Billing goes here once it exists: every child only ever records a
       // $0 pending registration, so a payment step slots in between the
       // /api/register call above and setDone(true) below without touching
       // anything else in this handler.
@@ -129,8 +150,9 @@ export default function RegisterPage() {
       <main className="prose">
         <h1>Request EduCraft access</h1>
         <p>
-          This form is for a parent or guardian to request whitelist access for their child. There is no instant
-          activation, every request is reviewed by hand before an account goes live. See{" "}
+          This form is for a parent or guardian to request whitelist access for their children. Add every child
+          you&apos;re registering below, one parent covers all of them. There is no instant activation, every
+          request is reviewed by hand before an account goes live. See{" "}
           <Link href="/server">how EduCraft works</Link> first if you haven&apos;t already.
         </p>
 
@@ -155,46 +177,6 @@ export default function RegisterPage() {
             <div className="form-note">EduCraft is $0/month during our founding beta. Pricing may apply later.</div>
 
             {error && <div className="form-error">{error}</div>}
-
-            <div className="form-field">
-              <label htmlFor="childNickname">Child&apos;s nickname</label>
-              <input
-                id="childNickname"
-                className="form-input"
-                value={form.childNickname}
-                onChange={(e) => set("childNickname", e.target.value)}
-                maxLength={40}
-                required
-              />
-              <span className="hint">Just a first name or nickname, never their full legal name.</span>
-            </div>
-
-            <div className="form-field">
-              <label htmlFor="childAge">Child&apos;s age</label>
-              <input
-                id="childAge"
-                type="number"
-                min={4}
-                max={17}
-                className="form-input"
-                value={form.childAge}
-                onChange={(e) => set("childAge", e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-field">
-              <label htmlFor="childMcUsername">Child&apos;s Minecraft Java username</label>
-              <input
-                id="childMcUsername"
-                className="form-input"
-                value={form.childMcUsername}
-                onChange={(e) => set("childMcUsername", e.target.value)}
-                maxLength={16}
-                required
-              />
-              <span className="hint">The exact Java Edition username, since that&apos;s what gets whitelisted.</span>
-            </div>
 
             <div className="form-field">
               <label htmlFor="parentName">Your name (parent/guardian)</label>
@@ -232,6 +214,63 @@ export default function RegisterPage() {
               />
             </div>
 
+            {form.children.map((child, i) => (
+              <div className="child-block" key={child.key}>
+                <div className="child-block-head">
+                  <span className="child-block-label">Child {i + 1}</span>
+                  {form.children.length > 1 && (
+                    <button type="button" className="child-remove" onClick={() => removeChild(child.key)}>
+                      Remove
+                    </button>
+                  )}
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor={`nickname-${child.key}`}>Nickname</label>
+                  <input
+                    id={`nickname-${child.key}`}
+                    className="form-input"
+                    value={child.nickname}
+                    onChange={(e) => setChild(child.key, "nickname", e.target.value)}
+                    maxLength={40}
+                    required
+                  />
+                  <span className="hint">Just a first name or nickname, never their full legal name.</span>
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor={`age-${child.key}`}>Age</label>
+                  <input
+                    id={`age-${child.key}`}
+                    type="number"
+                    min={4}
+                    max={17}
+                    className="form-input"
+                    value={child.age}
+                    onChange={(e) => setChild(child.key, "age", e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor={`mcUsername-${child.key}`}>Minecraft Java username</label>
+                  <input
+                    id={`mcUsername-${child.key}`}
+                    className="form-input"
+                    value={child.mcUsername}
+                    onChange={(e) => setChild(child.key, "mcUsername", e.target.value)}
+                    maxLength={16}
+                    required
+                  />
+                  <span className="hint">The exact Java Edition username, since that&apos;s what gets whitelisted.</span>
+                </div>
+              </div>
+            ))}
+
+            <button type="button" className="btn-ghost" style={{ width: "100%", marginBottom: 20 }} onClick={addChild}>
+              + Add another child
+            </button>
+
             <label className="form-checkbox">
               <input
                 type="checkbox"
@@ -240,8 +279,8 @@ export default function RegisterPage() {
                 required
               />
               <span>
-                I am this child&apos;s parent or legal guardian, and I&apos;m requesting access on their behalf. I&apos;ve
-                read the <Link href="/privacy">Privacy</Link> page.
+                I am each of these children&apos;s parent or legal guardian, and I&apos;m requesting access on their
+                behalf. I&apos;ve read the <Link href="/privacy">Privacy</Link> page.
               </span>
             </label>
 
