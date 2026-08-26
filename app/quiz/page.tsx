@@ -253,7 +253,7 @@ export default function Quiz() {
           </div>
         )}
 
-        <div className="quiz-progress" aria-hidden="true"><i style={{ width: `${progress}%` }} /></div>
+        <div className="quiz-progress" aria-hidden="true"><i style={{ transform: `scaleX(${progress / 100})` }} /></div>
         <div className="quiz-step">QUESTION {step + 1} / {total}</div>
 
         <h2>{question.prompt}</h2>
