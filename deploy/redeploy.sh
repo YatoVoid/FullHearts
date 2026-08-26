@@ -17,6 +17,13 @@ cd "$REPO_DIR"
 git fetch origin "$BRANCH"
 git reset --hard "origin/$BRANCH"
 
+# Node 24 via nvm, scoped to this user (see deploy/run-node24.sh). The
+# system-wide node/npm other services on this box may depend on is untouched.
+export NVM_DIR="$HOME/.nvm"
+# shellcheck disable=SC1091
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+nvm use 24 > /dev/null
+
 npm ci
 NEXT_NODE_SERVER=1 npm run build
 
