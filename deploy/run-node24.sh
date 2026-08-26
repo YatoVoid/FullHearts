@@ -9,4 +9,4 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 nvm use 24 > /dev/null
 
-exec npm run start -- -p 3000
+exec npm run start -- -p 3001

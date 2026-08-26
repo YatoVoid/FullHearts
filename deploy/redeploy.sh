@@ -32,7 +32,7 @@ sudo systemctl restart "$SERVICE"
 # Confirm it actually came back before calling this a success. A build that
 # succeeds but a service that fails to start should fail loudly, not silently.
 for _ in $(seq 1 10); do
-  if curl -fsS http://127.0.0.1:3000/ > /dev/null; then
+  if curl -fsS http://127.0.0.1:3001/ > /dev/null; then
     echo "fullhearts is up"
     exit 0
   fi

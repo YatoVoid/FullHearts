@@ -79,7 +79,7 @@ bash deploy/redeploy.sh
 Clones once, then `git reset --hard` on top for every run after (pull-based,
 same idea as the old rsync command, just against a live process instead of
 static files). It builds first and only restarts the service if the build
-succeeds, then confirms the process actually answers on port 3000 before
+succeeds, then confirms the process actually answers on port 3001 before
 declaring success. A build that succeeds but a broken service won't be
 silently reported as a working deploy.
 
