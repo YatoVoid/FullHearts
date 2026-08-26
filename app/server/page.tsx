@@ -224,12 +224,12 @@ export default function ServerPage() {
                 <div>
                   <h3>Ask us for access</h3>
                   <p>
-                    EduCraft is invite-only and stays that way. There is no signup form and no instant access: send us
-                    the player&rsquo;s exact Minecraft username through our <Link href="/contact">contact page</Link>,
-                    and we add it by hand. Send the username only, never a child&rsquo;s real name.
+                    EduCraft is invite-only and stays that way. There is no instant access: a parent or guardian fills
+                    out our <Link href="/register">request form</Link> with the player&rsquo;s exact Minecraft
+                    username, and we review it by hand. Never a child&rsquo;s real name, just a nickname.
                   </p>
                   <div className="install-cta" style={{ justifyContent: "flex-start", margin: "16px 0 0" }}>
-                    <Link className="btn-primary" href="/contact">Contact us for access</Link>
+                    <Link className="btn-primary" href="/register">Request access</Link>
                   </div>
                 </div>
               </div>

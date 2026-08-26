@@ -32,12 +32,23 @@ export default function Privacy() {
 
       <main className="prose">
         <h1>Privacy</h1>
-        <p>Full Hearts is built to need as little of your data as possible. There are no accounts and no login.</p>
+        <p>Full Hearts is built to need as little of your data as possible.</p>
 
         <h2>What we store</h2>
         <p>
           Your quiz answers and saved collections live only in your own browser (localStorage and sessionStorage).
           They never leave your device and we cannot see them. Clearing your browser data removes them.
+        </p>
+
+        <h2>EduCraft access requests</h2>
+        <p>
+          If a parent or guardian submits our <Link href="/register">EduCraft request form</Link>, we store: the
+          child&rsquo;s nickname, age, and Minecraft Java username, and the parent&rsquo;s name, phone number, and
+          (optionally) email. We never ask the child for contact information directly &mdash; the parent submits
+          everything, and every request is reviewed by hand before any account is active. This data is stored on our
+          own server, used only to review and manage whitelist access, and is not sold or shared, other than
+          optionally routing a copy of the submission through <a href="https://formspree.io" target="_blank" rel="noopener noreferrer">Formspree</a> so
+          we get a notification. If you want a request or its data removed, email us using the address below.
         </p>
 
         <h2>Mod data</h2>

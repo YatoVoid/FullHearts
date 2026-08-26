@@ -258,7 +258,7 @@ nav.links a:hover{color:var(--ink);}
 .resume-banner span{color:var(--mute);font-size:14px;margin-left:8px;}
 .resume-actions{display:flex;gap:10px;}
 .quiz-progress{height:14px;background:#1a1330;border:2px solid #050308;position:relative;overflow:hidden;margin-bottom:10px;}
-.quiz-progress i{position:absolute;inset:0;background:linear-gradient(var(--grass),var(--grass-dk));box-shadow:inset 0 -3px 0 rgba(0,0,0,.25);transition:width .35s cubic-bezier(.2,.8,.2,1);}
+.quiz-progress i{position:absolute;inset:0;transform-origin:left;background:linear-gradient(var(--grass),var(--grass-dk));box-shadow:inset 0 -3px 0 rgba(0,0,0,.25);transition:transform .35s cubic-bezier(.2,.8,.2,1);}
 .quiz-step{font-family:var(--pixel);font-size:8px;color:var(--gold);letter-spacing:1px;margin-bottom:34px;}
 .quiz h2{font-family:var(--pixel);font-size:clamp(15px,3vw,22px);line-height:1.5;text-shadow:0 3px 0 #000;margin-bottom:12px;}
 .quiz .help{color:var(--mute);font-size:15px;margin-bottom:28px;}
@@ -602,3 +602,48 @@ footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
 .faq-list summary{font-weight:700;color:var(--ink);cursor:pointer;font-size:15px;}
 .faq-list summary::marker{color:var(--grass);}
 .faq-list p{font-size:14px;color:#c5bfd6;line-height:1.6;margin-top:10px;}
+
+/* ---------- FORMS (registration, admin login) ---------- */
+.form-card{max-width:520px;margin:0 auto;background:var(--panel);border:2px solid var(--border-a);padding:28px 26px;}
+.form-field{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;}
+.form-field label{font-size:12.5px;color:var(--mute);letter-spacing:.2px;}
+.form-field .hint{font-size:11.5px;color:var(--mute);}
+.form-input,.form-textarea{
+  font-family:var(--body);font-size:14.5px;color:var(--ink);
+  background:var(--slot);border:2px solid #2a2046;padding:11px 12px;
+  outline:none;transition:border-color .12s;
+}
+.form-input:focus,.form-textarea:focus{border-color:var(--grass);}
+.form-textarea{resize:vertical;min-height:70px;}
+.form-checkbox{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:#c5bfd6;line-height:1.5;margin-bottom:20px;}
+.form-checkbox input{margin-top:3px;flex:none;width:16px;height:16px;}
+.form-error{background:rgba(192,49,75,.14);border:2px solid #c0314b;color:#ff9fb1;padding:10px 12px;font-size:13.5px;margin-bottom:18px;}
+.form-note{background:var(--slot);border:2px solid #2a2046;color:var(--gold);font-size:12.5px;padding:10px 12px;margin-bottom:20px;}
+.form-success{background:rgba(116,192,67,.12);border:2px solid var(--grass);color:var(--ink);padding:16px 18px;font-size:14.5px;line-height:1.6;}
+.form-submit{width:100%;text-align:center;border:none;cursor:pointer;}
+
+/* ---------- ADMIN DASHBOARD ---------- */
+.admin-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap;}
+.admin-server-ip{background:var(--slot);border:2px solid var(--border-a);padding:10px 14px;font-size:13px;color:var(--gold);}
+.admin-server-ip code{color:var(--aqua);}
+.status-badge{font-family:var(--pixel);font-size:8px;letter-spacing:.5px;padding:4px 8px;display:inline-block;}
+.status-badge.pending{background:rgba(252,252,84,.12);color:var(--gold);}
+.status-badge.whitelisted{background:rgba(116,192,67,.14);color:var(--grass);}
+.status-badge.rejected{background:rgba(192,49,75,.14);color:#ff9fb1;}
+.admin-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.admin-actions button{
+  font-family:var(--pixel);font-size:8px;letter-spacing:.3px;color:var(--ink);
+  background:var(--slot);border:2px solid #2a2046;padding:8px 10px;cursor:pointer;
+}
+.admin-actions button:hover{border-color:var(--grass);}
+.admin-actions button:disabled{opacity:.4;cursor:not-allowed;}
+.admin-empty{color:var(--mute);font-size:14px;padding:30px 0;text-align:center;}
+.paid-toggle{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--mute);white-space:nowrap;cursor:pointer;}
+.paid-toggle input{width:15px;height:15px;flex:none;accent-color:var(--grass);}
+.paid-toggle:has(input:checked){color:var(--grass);}
+.admin-notes{
+  display:block;width:100%;min-width:160px;min-height:44px;resize:vertical;
+  font-family:var(--body);font-size:12.5px;color:var(--ink);
+  background:var(--slot);border:2px solid #2a2046;padding:8px 9px;margin-bottom:6px;
+}
+.admin-notes:focus{border-color:var(--grass);outline:none;}

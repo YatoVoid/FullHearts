@@ -14,6 +14,15 @@
         "value": "app/globals.css:34",
         "createdAt": "2026-08-25T13:44:05.255Z",
         "reason": "pre-existing site-wide body background predating this task; deliberate Minecraft inventory-slot grid motif for this specific game-themed site, domain-appropriate"
+      },
+      {
+        "rule": "codex-grid-background",
+        "value": "*",
+        "files": [
+          "app/globals.css"
+        ],
+        "createdAt": "2026-08-26T17:19:42.449Z",
+        "reason": "pre-existing (not part of this session's diff): body background is a deliberate Minecraft inventory-slot grid motif, explicitly commented as such, fitting for a Minecraft mod site's theme"
       }
     ]
   }
