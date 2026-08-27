@@ -2,6 +2,7 @@ import { rateLimited, clientIp } from "@/lib/rate-limit";
 import { createChild, hasRecentSubmission } from "@/lib/children";
 import { findOrCreateParent } from "@/lib/parents";
 import { validateSubmission, type RegistrationSubmission } from "@/lib/registerValidation";
+import { logSecurityEvent } from "@/lib/security-log";
 
 type Body = RegistrationSubmission & {
   // Honeypot: real users never see or fill this field. Any value here means
@@ -20,7 +21,9 @@ export async function POST(req: Request): Promise<Response> {
 
   // A real family submits this form once, maybe twice on a typo. Kept tight
   // on purpose so a scripted flood can't fill the table.
-  if (rateLimited(clientIp(req), 5).blocked) {
+  const ip = clientIp(req);
+  if (rateLimited(`register:${ip}`, 5).blocked) {
+    logSecurityEvent("register_rate_limited", { ip });
     return Response.json({ error: "Too many requests. Try again later." }, { status: 429 });
   }
 
@@ -32,6 +35,7 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   if (body.company) {
+    logSecurityEvent("register_honeypot_triggered", { ip });
     return Response.json({ ok: true, childIds: [] }, { status: 201 });
   }
 
@@ -39,6 +43,14 @@ export async function POST(req: Request): Promise<Response> {
   if (error) return Response.json({ error }, { status: 400 });
 
   const parentPhone = body.parent.parentPhone!.trim();
+
+  // Caps submissions per phone number too, not just per IP, so the same
+  // target phone can't be hit repeatedly from rotating IPs. This will also
+  // be the guard that stops SMS/email verification (once built) from being
+  // used to bomb one number or address with codes.
+  if (rateLimited(`register-phone:${parentPhone}`, 3).blocked) {
+    return Response.json({ error: "Too many requests. Try again later." }, { status: 429 });
+  }
 
   for (const child of body.children) {
     if (hasRecentSubmission(parentPhone, child.childMcUsername!.trim())) {

@@ -76,3 +76,33 @@ export async function requireAdminRequest(req: Request): Promise<boolean> {
   if (!verifySession(jar.get("admin_session")?.value)) return false;
   return verifyCsrf(jar.get("admin_csrf")?.value, req.headers.get("x-csrf-token"));
 }
+
+// A scripted client that POSTs straight to the login endpoint never holds one
+// of these, since it's only handed out by a separate GET the real form calls
+// on mount. The age window also rejects a token replayed instantly (no human
+// reads a form that fast) or one stashed and reused long after.
+const CHALLENGE_MIN_AGE_MS = 800;
+const CHALLENGE_MAX_AGE_MS = 10 * 60 * 1000;
+
+export function newLoginChallenge(): string {
+  const payload = Buffer.from(JSON.stringify({ iat: Date.now() })).toString("base64url");
+  const sig = createHmac("sha256", sessionSecret()).update(payload).digest("base64url");
+  return `${payload}.${sig}`;
+}
+
+export function verifyLoginChallenge(token: string | undefined | null): boolean {
+  if (!token) return false;
+  const [payload, sig] = token.split(".");
+  if (!payload || !sig) return false;
+  const expected = createHmac("sha256", sessionSecret()).update(payload).digest("base64url");
+  const a = Buffer.from(sig);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length || !timingSafeEqual(a, b)) return false;
+  try {
+    const { iat } = JSON.parse(Buffer.from(payload, "base64url").toString()) as { iat: number };
+    const age = Date.now() - iat;
+    return age >= CHALLENGE_MIN_AGE_MS && age <= CHALLENGE_MAX_AGE_MS;
+  } catch {
+    return false;
+  }
+}

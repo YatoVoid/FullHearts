@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { HEART_SRC } from "@/lib/asset";
@@ -17,8 +17,17 @@ const HEART = (
 export default function AdminLoginPage() {
   const router = useRouter();
   const [password, setPassword] = useState("");
+  const [website, setWebsite] = useState("");
+  const [challenge, setChallenge] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/admin/login/challenge", { method: "POST" })
+      .then((res) => res.json())
+      .then((data: { token?: string }) => setChallenge(data.token ?? ""))
+      .catch(() => {});
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,7 +37,7 @@ export default function AdminLoginPage() {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password })
+        body: JSON.stringify({ password, challenge, website })
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
@@ -58,6 +67,16 @@ export default function AdminLoginPage() {
       <main className="prose">
         <h1>Admin login</h1>
         <form className="form-card" onSubmit={onSubmit} noValidate>
+          <input
+            type="text"
+            name="website"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            style={{ position: "absolute", left: -9999, width: 1, height: 1, opacity: 0 }}
+          />
           {error && <div className="form-error">{error}</div>}
           <div className="form-field">
             <label htmlFor="password">Password</label>

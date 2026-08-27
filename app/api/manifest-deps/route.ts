@@ -37,7 +37,7 @@ async function inspect(url: string, loader?: Loader): Promise<ManifestInfo | nul
 }
 
 export async function POST(req: Request): Promise<Response> {
-  const limit = rateLimited(clientIp(req), LIMIT);
+  const limit = rateLimited(`manifest-deps:${clientIp(req)}`, LIMIT);
   if (limit.blocked) {
     return Response.json(
       { error: "rate limited" },

@@ -1,5 +1,14 @@
-import { describe, it, expect, beforeAll } from "vitest";
-import { hashPassword, verifyPassword, signSession, verifySession, newCsrfToken, verifyCsrf } from "@/lib/auth";
+import { describe, it, expect, beforeAll, vi } from "vitest";
+import {
+  hashPassword,
+  verifyPassword,
+  signSession,
+  verifySession,
+  newCsrfToken,
+  verifyCsrf,
+  newLoginChallenge,
+  verifyLoginChallenge
+} from "@/lib/auth";
 
 beforeAll(() => {
   process.env.ADMIN_SESSION_SECRET = "test-secret-do-not-use-in-prod";
@@ -57,5 +66,46 @@ describe("csrf", () => {
   it("rejects when either side is missing", () => {
     expect(verifyCsrf(undefined, "x")).toBe(false);
     expect(verifyCsrf("x", null)).toBe(false);
+  });
+});
+
+describe("login challenge", () => {
+  it("rejects a missing or malformed token", () => {
+    expect(verifyLoginChallenge(undefined)).toBe(false);
+    expect(verifyLoginChallenge(null)).toBe(false);
+    expect(verifyLoginChallenge("not-a-real-token")).toBe(false);
+  });
+
+  it("rejects a token used instantly, before a human could have submitted the form", () => {
+    const token = newLoginChallenge();
+    expect(verifyLoginChallenge(token)).toBe(false);
+  });
+
+  it("accepts a token once enough time has passed", () => {
+    vi.useFakeTimers();
+    try {
+      const token = newLoginChallenge();
+      vi.advanceTimersByTime(1000);
+      expect(verifyLoginChallenge(token)).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("rejects a stale token replayed long after issuance", () => {
+    vi.useFakeTimers();
+    try {
+      const token = newLoginChallenge();
+      vi.advanceTimersByTime(11 * 60 * 1000);
+      expect(verifyLoginChallenge(token)).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("rejects a tampered token", () => {
+    const token = newLoginChallenge();
+    const [payload] = token.split(".");
+    expect(verifyLoginChallenge(`${payload}.tampered`)).toBe(false);
   });
 });

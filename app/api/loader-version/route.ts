@@ -54,7 +54,7 @@ async function resolveNeoforge(mc: string): Promise<string | null> {
 // POST (not GET) so Next's static export skips prerendering it, same as the
 // manifest-deps route — the params come in the body.
 export async function POST(req: Request): Promise<Response> {
-  if (rateLimited(clientIp(req), 200).blocked) {
+  if (rateLimited(`loader-version:${clientIp(req)}`, 200).blocked) {
     return Response.json({ error: "rate limited" }, { status: 429 });
   }
   let loader = "";
