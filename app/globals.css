@@ -631,8 +631,11 @@ footer .note{font-size:11px;color:#5f5874;margin-top:18px;}
 .admin-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap;}
 .status-badge{font-family:var(--pixel);font-size:8px;letter-spacing:.5px;padding:4px 8px;display:inline-block;}
 .status-badge.pending{background:rgba(252,252,84,.12);color:var(--gold);}
-.status-badge.whitelisted{background:rgba(116,192,67,.14);color:var(--grass);}
-.status-badge.rejected{background:rgba(192,49,75,.14);color:#ff9fb1;}
+.status-badge.whitelisted,.status-badge.approved,.status-badge.active{background:rgba(116,192,67,.14);color:var(--grass);}
+.status-badge.external{background:rgba(85,255,255,.1);color:#9ff;}
+.status-badge.rejected,.status-badge.ended{background:rgba(192,49,75,.14);color:#ff9fb1;}
+.admin-delete{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.admin-delete input{background:var(--slot);border:2px solid #2a2046;color:var(--ink);padding:4px 6px;font-size:12px;width:140px;}
 .admin-actions{display:flex;gap:8px;flex-wrap:wrap;}
 .admin-actions button{
   font-family:var(--pixel);font-size:8px;letter-spacing:.3px;color:var(--ink);

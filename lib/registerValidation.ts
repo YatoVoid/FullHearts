@@ -4,11 +4,14 @@
 export const MC_USERNAME_RE = /^[A-Za-z0-9_]{3,16}$/;
 export const PHONE_RE = /^[0-9+()\-.\s]{7,20}$/;
 
+// Email isn't here: it's the address the parent just proved they own by
+// signing in, so the server takes it from the session, never from the form.
 export type ParentInput = {
   parentName?: string;
   parentPhone?: string;
-  parentEmail?: string;
-  consent?: boolean;
+  consentGuardian?: boolean;
+  consentBilling?: boolean;
+  consentTerms?: boolean;
 };
 
 export type ChildInput = {
@@ -29,12 +32,12 @@ export function sameName(a: string, b: string): boolean {
 export function validateParent(input: ParentInput): string | null {
   if (!input.parentName?.trim()) return "Parent name is required.";
   if (input.parentName.trim().length > 80) return "Parent name is too long.";
-  if (!input.parentPhone || !PHONE_RE.test(input.parentPhone)) return "Enter a valid phone number.";
-  if (input.parentEmail && input.parentEmail.length > 254) return "Email is too long.";
-  if (input.parentEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.parentEmail)) {
-    return "Enter a valid email, or leave it blank.";
+  if (input.parentPhone?.trim() && !PHONE_RE.test(input.parentPhone.trim())) {
+    return "Enter a valid phone number, or leave it blank.";
   }
-  if (!input.consent) return "Parent/guardian consent is required.";
+  if (!input.consentGuardian) return "Confirm you're the parent or legal guardian.";
+  if (!input.consentBilling) return "Agree to the monthly price and renewal terms.";
+  if (!input.consentTerms) return "Agree to the EduCraft terms and the Minecraft EULA.";
   return null;
 }
 

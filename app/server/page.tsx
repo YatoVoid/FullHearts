@@ -1,22 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 import Icon from "@/components/Icon";
+import { EduFooter } from "@/components/server/EduChrome";
+import { PACK_URL, PACK_VERSION } from "@/lib/educraft";
 import { HEART_SRC, asset } from "@/lib/asset";
-import "./server.css";
 
-const fraunces = localFont({
-  src: "./fonts/Fraunces.var.woff2",
-  weight: "100 900",
-  variable: "--font-fraunces",
-  display: "swap"
-});
-const nunito = localFont({
-  src: "./fonts/NunitoSans.var.woff2",
-  weight: "200 900",
-  variable: "--font-nunito",
-  display: "swap"
-});
 
 export const metadata: Metadata = {
   title: "EduCraft: our Minecraft server | Full Hearts",
@@ -24,9 +12,6 @@ export const metadata: Metadata = {
     "EduCraft is our own private, kid-safe Minecraft Java server: coding, engineering, farming and trading, then exploring a shared survival world. Request access through Full Hearts."
 };
 
-const PACK_URL =
-  "https://raw.githubusercontent.com/OpenSource-For-Freedom/minecraft/main/data/EduCraftClient.mrpack";
-const PACK_VERSION = "1.2.1";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://fullhearts.app";
 
 const LEARN = [
@@ -181,7 +166,7 @@ const CHECK = (
 
 export default function ServerPage() {
   return (
-    <div className={`edu ${fraunces.variable} ${nunito.variable}`}>
+    <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
 
       <header className="topbar">
@@ -231,7 +216,7 @@ export default function ServerPage() {
                 <dt>Minecraft</dt><dd>Java 1.20.1</dd>
                 <dt>Mod loader</dt><dd>Forge 47.4.20</dd>
                 <dt>Players</dt><dd>20 at a time</dd>
-                <dt>Access</dt><dd><Link href="/register">Request access</Link></dd>
+                <dt>Access</dt><dd><Link href="/server/register/">Request access</Link></dd>
               </dl>
               <p className="glance__note">
                 The server address is not published. We send it privately to each family when their request is
@@ -308,10 +293,10 @@ export default function ServerPage() {
               <li className="stepper__item">
                 <h3>Ask us for access</h3>
                 <p>
-                  EduCraft is invite-only. A parent or guardian fills out the <Link href="/register">request form</Link>{" "}
+                  EduCraft is invite-only. A parent or guardian fills out the <Link href="/server/register/">request form</Link>{" "}
                   with the player&rsquo;s exact Minecraft username, and we review it by hand. Access is never instant.
                 </p>
-                <a className="btn btn--primary" href="/register">Request access</a>
+                <a className="btn btn--primary" href="/server/register/">Request access</a>
                 <p className="step-note">Use a nickname, never a child&rsquo;s real name. Spell the username exactly, capitals included.</p>
               </li>
               <li className="stepper__item">
@@ -394,30 +379,8 @@ export default function ServerPage() {
         </section>
       </main>
 
-      <footer className="footer">
-        <div className="wrap">
-          <div className="footer__row">
-            <div>
-              <Link className="wordmark" href="/">
-                <img src={HEART_SRC} alt="" aria-hidden="true" />
-                Full<span>Hearts</span>
-              </Link>
-              <p>Minecraft mod tools and a private server for kids. Always download mods from official sources such as Modrinth or CurseForge.</p>
-            </div>
-            <nav aria-label="Site">
-              <Link href="/explore">Explore mods</Link>
-              <Link href="/about">About</Link>
-              <Link href="/contact">Contact</Link>
-              <Link href="/privacy">Privacy</Link>
-              <Link href="/terms">Terms</Link>
-            </nav>
-          </div>
-          <div className="footer__legal">
-            <p>Not affiliated with or endorsed by Mojang or Microsoft. Minecraft is a trademark of Mojang AB.</p>
-          </div>
-        </div>
-      </footer>
-    </div>
+      <EduFooter />
+    </>
   );
 }
 

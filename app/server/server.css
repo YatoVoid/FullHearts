@@ -300,3 +300,85 @@
   .edu .hero__art { animation: none; }
   .edu .btn { transition: none; }
 }
+
+/* ---------- family pages: sign-in, account, register ---------- */
+.edu .page { padding: var(--s-7) 0 var(--s-8); }
+.edu .page__head { max-width: 640px; margin-bottom: var(--s-6); }
+.edu .page__head .lede { margin-bottom: 0; }
+.edu .narrow { max-width: 520px; }
+.edu .panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--s-6);
+}
+.edu .panel + .panel { margin-top: var(--s-5); }
+.edu .panel h2 { font-size: 22px; margin-bottom: var(--s-2); }
+.edu .field { display: grid; gap: 6px; margin-bottom: var(--s-4); }
+.edu .field label { font-weight: 700; font-size: 15px; }
+.edu .field .hint { font-size: 13.5px; color: var(--muted); }
+.edu .input {
+  font: 16px var(--font-body);
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  width: 100%;
+}
+.edu .input:focus { outline: none; border-color: var(--grass); box-shadow: 0 0 0 3px rgba(116, 192, 67, 0.25); }
+.edu .input[aria-invalid="true"] { border-color: var(--heart); }
+.edu .input--code { font: 600 28px ui-monospace, "Cascadia Code", Consolas, monospace; letter-spacing: 0.3em; text-align: center; }
+.edu .field-status { font-size: 13.5px; min-height: 1.4em; }
+.edu .field-status.ok { color: var(--grass-hi); }
+.edu .field-status.bad { color: #ff9fa4; }
+.edu .alert {
+  border-radius: var(--r-md);
+  padding: var(--s-3) var(--s-4);
+  margin-bottom: var(--s-4);
+  font-size: 15px;
+  border: 1px solid;
+}
+.edu .alert--error { background: rgba(224, 53, 60, 0.12); border-color: rgba(224, 53, 60, 0.5); color: #ffc9cb; }
+.edu .alert--ok { background: rgba(116, 192, 67, 0.12); border-color: rgba(116, 192, 67, 0.45); color: var(--text); }
+.edu .alert--info { background: rgba(85, 255, 255, 0.06); border-color: rgba(85, 255, 255, 0.3); color: var(--text); }
+.edu .btn--block { width: 100%; justify-content: center; }
+.edu .btn[disabled] { opacity: 0.55; cursor: not-allowed; }
+.edu .linkish {
+  background: none; border: 0; padding: 0; color: var(--grass-hi); font: inherit; cursor: pointer;
+  text-decoration: underline; text-decoration-color: var(--grass-dk); text-underline-offset: 3px;
+}
+.edu .row-between { display: flex; justify-content: space-between; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
+
+.edu .kid { border-top: 1px solid var(--border); padding: var(--s-5) 0; display: grid; gap: var(--s-3); }
+.edu .kid:first-of-type { border-top: 0; padding-top: 0; }
+.edu .kid__head { display: flex; align-items: baseline; gap: var(--s-3); flex-wrap: wrap; }
+.edu .kid__head h3 { margin: 0; }
+.edu .kid__user { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 14px; color: var(--muted); }
+.edu .state {
+  font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 999px; border: 1px solid currentColor;
+}
+.edu .state--wait { color: var(--gold); }
+.edu .state--go { color: var(--grass-hi); }
+.edu .state--stop { color: #ff9fa4; }
+.edu .state--info { color: var(--aqua); }
+.edu .kid p { margin: 0; color: var(--text-2); font-size: 15px; }
+.edu .join { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--text-2); font-size: 15px; }
+.edu .join code { word-break: break-all; }
+
+.edu .checkline { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: var(--s-3); align-items: start; margin-bottom: var(--s-3); font-size: 15px; color: var(--text-2); }
+.edu .checkline input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--grass); }
+.edu .price-box {
+  display: flex; align-items: baseline; gap: var(--s-3); flex-wrap: wrap;
+  border: 1px solid var(--border-strong); border-radius: var(--r-md); padding: var(--s-4); margin-bottom: var(--s-5);
+  background: var(--surface-alt);
+}
+.edu .price-box strong { font-family: var(--font-display); font-size: 30px; color: var(--text); }
+.edu .price-box span { color: var(--muted); font-size: 15px; }
+.edu .child-fieldset { border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--s-4); margin: 0 0 var(--s-4); }
+.edu .child-fieldset legend { font-weight: 800; padding: 0 6px; }
+.edu .legal { max-width: 70ch; }
+.edu .legal h2 { font-size: 22px; margin-top: var(--s-6); }
+.edu .legal p, .edu .legal li { color: var(--text-2); }
+.edu .legal ul { padding-left: 20px; }

@@ -1,9 +1,8 @@
 # Dynamic deploy (droplet)
 
-Static export (the default `npm run build`) can't serve `/register` or
-`/admin` (no server, no SQLite). This is the one-time setup for running
-FullHearts as a real Node process instead, matching how the minecraft
-server's droplet stays up to date (pull-based, systemd-managed).
+FullHearts runs as a Node process: `/server` sign-in, registration, billing
+and `/admin` need a server and SQLite. This is the one-time setup on the
+droplet (pull-based, systemd-managed, like the minecraft server).
 
 ## Requirements
 
@@ -40,10 +39,22 @@ server's droplet stays up to date (pull-based, systemd-managed).
    ADMIN_PASSWORD_HASH=<from: node scripts/hash-admin-password.mjs "yourpassword">
    ADMIN_SESSION_SECRET=<from: openssl rand -hex 32>
    NEXT_PUBLIC_SITE_URL=https://fullhearts.app
-   TELNYX_API_KEY=
-   TELNYX_FROM_NUMBER=
+   LOGIN_CODE_PEPPER=<from: openssl rand -hex 32>
+   PAY_LINK_SECRET=<from: openssl rand -hex 32>
+   RESEND_API_KEY=
+   MAIL_FROM=EduCraft <hello@send.fullhearts.app>
+   MAIL_REPLY_TO=
+   EDUCRAFT_CONTACT_EMAIL=
+   ADMIN_ALERT_EMAILS=
+   BILLING_ENABLED=0
+   STRIPE_SECRET_KEY=
+   STRIPE_PRICE_ID=
+   STRIPE_WEBHOOK_SECRET=
    EOF
    ```
+   `.env.example` says what each one is for. Changing `LOGIN_CODE_PEPPER`
+   only cancels codes already sent; changing `PAY_LINK_SECRET` breaks pay
+   links already emailed (admins can resend).
 
 3. **systemd service**:
    ```
@@ -65,7 +76,15 @@ server's droplet stays up to date (pull-based, systemd-managed).
    echo "whaletale ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart fullhearts" | sudo tee /etc/sudoers.d/fullhearts-deploy
    ```
 
-6. First deploy:
+6. **Nightly database backup**, as `whaletale`:
+   ```
+   (crontab -l 2>/dev/null; echo "15 3 * * * /home/whaletale/fullhearts-app/deploy/backup-db.sh") | crontab -
+   ```
+   It keeps 14 copies in `/var/lib/fullhearts/backups/`, on the same disk.
+   Copy them off the droplet too. Every migration also saves a
+   `pre-migrate-*.db` copy there before it changes anything.
+
+7. First deploy:
    ```
    bash deploy/redeploy.sh
    ```
@@ -83,12 +102,13 @@ succeeds, then confirms the process actually answers on port 3001 before
 declaring success. A build that succeeds but a broken service won't be
 silently reported as a working deploy.
 
-## What's different from the static setup
+## Notes
 
-- No `out/` directory, nothing gets rsynced. `next start` serves everything
-  directly from `$REPO_DIR/.next`.
-- `/register` and `/admin` work now. They did not exist as functioning routes
-  under static export regardless of what the build did.
+- `next start` serves everything from `$REPO_DIR/.next`. Nothing is rsynced.
+- Database migrations run on the first request after a deploy, each in its
+  own transaction, after copying the database to `backups/pre-migrate-*.db`.
+  To undo a bad one: stop the service, copy that file back over
+  `fullhearts.db`, deploy the previous commit.
 - The SQLite file at `/var/lib/fullhearts/fullhearts.db` is the one and only
   copy of every registration. Back it up like you would any real database.
   It is not disposable the way a static build output is.
