@@ -42,13 +42,12 @@ export default function Privacy() {
 
         <h2>EduCraft access requests</h2>
         <p>
-          If a parent or guardian submits our <Link href="/register">EduCraft request form</Link>, we store: the
+          If a parent or guardian submits our <Link href="/server/register/">EduCraft request form</Link>, we store: the
           child&rsquo;s nickname, age, and Minecraft Java username, and the parent&rsquo;s name, phone number, and
           (optionally) email. We never ask the child for contact information directly &mdash; the parent submits
           everything, and every request is reviewed by hand before any account is active. This data is stored on our
-          own server, used only to review and manage whitelist access, and is not sold or shared, other than
-          optionally routing a copy of the submission through <a href="https://formspree.io" target="_blank" rel="noopener noreferrer">Formspree</a> so
-          we get a notification. If you want a request or its data removed, email us using the address below.
+          own server, used only to review and manage whitelist access, and is not sold or shared. The full details are in the{" "}
+          <Link href="/server/privacy/">EduCraft privacy notice</Link>. If you want a request or its data removed, email us using the address below.
         </p>
 
         <h2>Mod data</h2>

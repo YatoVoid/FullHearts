@@ -2,46 +2,49 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { ChildWithContext, ChildStatus } from "@/lib/children";
+import type { ChildWithContext } from "@/lib/children";
 import type { Realm } from "@/lib/realms";
-import type { NoticeResult } from "@/lib/notify";
+import { readCookie } from "@/lib/cookies";
+import type { SubscriptionRow } from "@/lib/entitlement";
 
-function readCookie(name: string): string {
-  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
-  return match ? decodeURIComponent(match[1]) : "";
-}
+type Patch = {
+  action?: "approve" | "reject" | "reopen" | "delete" | "verify" | "suspend" | "restore" | "cancel_subscription" | "resend_approval"; notes?: string; realmId?: number; confirm?: string };
 
-function noticeLabel(result: NoticeResult): string {
-  return result.sent ? "sent" : `not sent (${result.reason})`;
-}
-
-export default function AdminChildRow({ child, realms }: { child: ChildWithContext; realms: Realm[] }) {
+export default function AdminChildRow({
+  child,
+  realms,
+  sub,
+  entitled
+}: {
+  child: ChildWithContext;
+  realms: Realm[];
+  sub: SubscriptionRow | null;
+  entitled: boolean;
+}) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [notes, setNotes] = useState(child.notes ?? "");
   const [notesDirty, setNotesDirty] = useState(false);
-  const [notifyResult, setNotifyResult] = useState<{ sms: NoticeResult; email: NoticeResult } | null>(null);
+  const [confirming, setConfirming] = useState<null | "delete" | "cancel_subscription">(null);
+  const [confirmText, setConfirmText] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const external = child.access_source === "external";
 
-  async function patch(body: { status?: ChildStatus; paid?: boolean; priceCents?: number; notes?: string; realmId?: number }) {
+  async function patch(body: Patch) {
     setPending(true);
-    setNotifyResult(null);
     setError(null);
     try {
       const res = await fetch(`/api/admin/children/${child.id}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-csrf-token": readCookie("admin_csrf")
-        },
+        headers: { "Content-Type": "application/json", "x-csrf-token": readCookie("admin_csrf") },
         body: JSON.stringify(body)
       });
-      const data = (await res.json()) as { error?: string; notify?: { sms: NoticeResult; email: NoticeResult } };
+      const data = (await res.json()) as { error?: string; warning?: string };
       if (!res.ok) {
         setError(data.error || "Something went wrong.");
         return;
       }
-      if (data.notify) setNotifyResult(data.notify);
+      if (data.warning) setError(data.warning);
       router.refresh();
     } finally {
       setPending(false);
@@ -54,50 +57,60 @@ export default function AdminChildRow({ child, realms }: { child: ChildWithConte
         {child.nickname} <span className="hint">({child.age})</span>
         <br />
         <span className="hint">{child.mc_username}</span>
+        <br />
+        <span className="hint">{child.mc_uuid ? "Mojang verified" : "Username not verified"}</span>
       </td>
       <td>
-        <span className={`status-badge ${child.status}`}>{child.status}</span>
+        {external ? (
+          <span className="status-badge external" title="Added to the server by hand. The website never bills or removes them.">
+            manual
+          </span>
+        ) : (
+          <span className={`status-badge ${child.review_status}`}>{child.review_status}</span>
+        )}
       </td>
       <td>
-        <select
-          className="realm-select"
-          value={child.realm_id ?? ""}
-          disabled={pending}
-          onChange={(e) => e.target.value && patch({ realmId: Number(e.target.value) })}
-        >
-          <option value="" disabled>
-            Choose a realm
-          </option>
-          {realms.map((r) => (
-            <option key={r.id} value={r.id} disabled={r.id !== child.realm_id && r.assignedCount >= r.capacity}>
-              {r.name} ({r.assignedCount}/{r.capacity})
+        {external ? (
+          <span className="hint">{child.realm_name ?? "None"}</span>
+        ) : (
+          <select
+            className="realm-select"
+            aria-label={`Realm for ${child.nickname}`}
+            value={child.realm_id ?? ""}
+            disabled={pending}
+            onChange={(e) => e.target.value && patch({ realmId: Number(e.target.value) })}
+          >
+            <option value="" disabled>
+              Choose a realm
             </option>
-          ))}
-        </select>
+            {realms.map((r) => (
+              <option key={r.id} value={r.id} disabled={r.id !== child.realm_id && r.assignedCount >= r.capacity}>
+                {r.name} ({r.assignedCount}/{r.capacity})
+              </option>
+            ))}
+          </select>
+        )}
         {child.realm_name && <div className="hint">{child.realm_address}</div>}
       </td>
       <td>
-        <label className="paid-toggle">
-          <input
-            type="checkbox"
-            checked={child.paid}
-            disabled={pending}
-            onChange={(e) => patch({ paid: e.target.checked })}
-          />
-          {child.paid ? "Paid" : "Unpaid"}
-        </label>
-        <input
-          type="number"
-          className="price-input"
-          min={0}
-          defaultValue={child.price_cents / 100}
-          disabled={pending}
-          onBlur={(e) => patch({ priceCents: Math.round(Number(e.target.value) * 100) })}
-        />
+        {external ? (
+          <span className="hint">Not billed</span>
+        ) : sub ? (
+          <>
+            <span className={`status-badge ${sub.status === "active" ? "active" : sub.status === "canceled" ? "ended" : "pending"}`}>{sub.status}</span>
+            {child.grace_until && <div className="hint">grace until {new Date(child.grace_until).toLocaleString()}</div>}
+            {sub.refunded_cents ? <div className="hint">refunded ${(sub.refunded_cents / 100).toFixed(2)}</div> : null}
+          </>
+        ) : (
+          <span className="hint">No subscription</span>
+        )}
+        <div className="hint">{entitled ? "Should be on the server" : "Should be off the server"}</div>
+        {child.suspended_at && <div className="hint" style={{ color: "#ff9fb1" }}>Suspended</div>}
       </td>
       <td>
         <textarea
           className="admin-notes"
+          aria-label={`Notes for ${child.nickname}`}
           value={notes}
           disabled={pending}
           onChange={(e) => {
@@ -119,33 +132,87 @@ export default function AdminChildRow({ child, realms }: { child: ChildWithConte
         )}
       </td>
       <td>
-        <div className="admin-actions">
-          {child.status !== "whitelisted" && (
-            <button onClick={() => patch({ status: "whitelisted" })} disabled={pending}>
-              Whitelist &amp; notify
+        {!external && (
+          <div className="admin-actions">
+            {!child.mc_uuid && (
+              <button onClick={() => patch({ action: "verify" })} disabled={pending}>
+                Check username
+              </button>
+            )}
+            {child.review_status !== "approved" && (
+              <button
+                onClick={() => patch({ action: "approve" })}
+                disabled={pending || !child.realm_id || !child.mc_uuid}
+                title={!child.realm_id ? "Pick a realm first" : !child.mc_uuid ? "Check the username first" : undefined}
+              >
+                Approve
+              </button>
+            )}
+            {child.review_status !== "rejected" && (
+              <button onClick={() => patch({ action: "reject" })} disabled={pending}>
+                Reject
+              </button>
+            )}
+            {child.review_status !== "pending" && (
+              <button onClick={() => patch({ action: "reopen" })} disabled={pending}>
+                Back to pending
+              </button>
+            )}
+          </div>
+        )}
+        {!external && child.review_status === "approved" && (
+          <div className="admin-actions" style={{ marginTop: 8 }}>
+            {child.suspended_at ? (
+              <button onClick={() => patch({ action: "restore" })} disabled={pending}>
+                Restore
+              </button>
+            ) : (
+              <button onClick={() => patch({ action: "suspend" })} disabled={pending} title="Takes them off the server. Billing keeps running.">
+                Suspend
+              </button>
+            )}
+            {!sub && (
+              <button onClick={() => patch({ action: "resend_approval" })} disabled={pending} title="Sends the join steps and pay link again">
+                Resend approval email
+              </button>
+            )}
+            {sub && ["active", "trialing", "past_due", "unpaid"].includes(sub.status) && (
+              <button onClick={() => setConfirming("cancel_subscription")} disabled={pending}>
+                Cancel + refund
+              </button>
+            )}
+          </div>
+        )}
+        {confirming ? (
+          <div className="admin-delete">
+            <input
+              aria-label="Type the Minecraft username to confirm"
+              placeholder={child.mc_username}
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+            />
+            <button
+              disabled={pending || confirmText.trim().toLowerCase() !== child.mc_username.toLowerCase()}
+              onClick={() => {
+                patch({ action: confirming, confirm: confirmText });
+                setConfirming(null);
+                setConfirmText("");
+              }}
+            >
+              {confirming === "delete" ? "Delete for good" : "Cancel and refund"}
             </button>
-          )}
-          {child.status !== "rejected" && (
-            <button onClick={() => patch({ status: "rejected" })} disabled={pending}>
-              Reject
+            <button onClick={() => setConfirming(null)}>Never mind</button>
+          </div>
+        ) : (
+          <div className="admin-actions" style={{ marginTop: 8 }}>
+            <button onClick={() => setConfirming("delete")} disabled={pending}>
+              Delete
             </button>
-          )}
-          {child.status !== "pending" && (
-            <button onClick={() => patch({ status: "pending" })} disabled={pending}>
-              Set pending
-            </button>
-          )}
-        </div>
+          </div>
+        )}
         {error && (
           <div className="hint" style={{ marginTop: 6, color: "#ff9fb1" }}>
             {error}
-          </div>
-        )}
-        {notifyResult && (
-          <div className="hint" style={{ marginTop: 6 }}>
-            SMS: {noticeLabel(notifyResult.sms)}
-            <br />
-            Email: {noticeLabel(notifyResult.email)}
           </div>
         )}
       </td>

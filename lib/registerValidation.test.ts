@@ -13,8 +13,9 @@ function validParent(overrides: Partial<ParentInput> = {}): ParentInput {
   return {
     parentName: "Jamie Doe",
     parentPhone: "+1 555 010 1234",
-    parentEmail: "jamie@example.com",
-    consent: true,
+    consentGuardian: true,
+    consentBilling: true,
+    consentTerms: true,
     ...overrides
   };
 }
@@ -37,17 +38,16 @@ describe("validateParent", () => {
     expect(validateParent(validParent({ parentName: "" }))).toMatch(/name is required/);
   });
 
-  it("requires a valid phone", () => {
+  it("allows a blank phone but rejects a malformed one", () => {
+    expect(validateParent(validParent({ parentPhone: "" }))).toBeNull();
+    expect(validateParent(validParent({ parentPhone: undefined }))).toBeNull();
     expect(validateParent(validParent({ parentPhone: "abc" }))).toMatch(/valid phone/);
   });
 
-  it("allows a blank email but rejects a malformed one", () => {
-    expect(validateParent(validParent({ parentEmail: "" }))).toBeNull();
-    expect(validateParent(validParent({ parentEmail: "not-an-email" }))).toMatch(/valid email/);
-  });
-
-  it("requires consent", () => {
-    expect(validateParent(validParent({ consent: false }))).toMatch(/consent is required/);
+  it("requires all three agreements", () => {
+    expect(validateParent(validParent({ consentGuardian: false }))).toMatch(/guardian/);
+    expect(validateParent(validParent({ consentBilling: false }))).toMatch(/monthly price/);
+    expect(validateParent(validParent({ consentTerms: false }))).toMatch(/EULA/);
   });
 });
 
