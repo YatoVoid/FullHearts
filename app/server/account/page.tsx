@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EduHeader, EduFooter } from "@/components/server/EduChrome";
-import SignOutButton from "@/components/server/SignOutButton";
 import KidCard from "@/components/server/KidCard";
 import { requireParent } from "@/lib/parent-session";
 import { listChildrenForParent } from "@/lib/children";
@@ -25,9 +24,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
 
   return (
     <>
-      <EduHeader>
-        <SignOutButton />
-      </EduHeader>
+      <EduHeader current="account" />
       <main className="page">
         <div className="wrap">
           <div className="page__head">

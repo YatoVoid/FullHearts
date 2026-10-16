@@ -21,7 +21,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <div className="wrap narrow">
           <div className="page__head">
             <h1>Sign in</h1>
-            <p className="lede">For parents and guardians. We email you a 6-digit code. No password to remember.</p>
+            <p className="lede">For parents and guardians. We email you a 6-digit code, no password to remember. You stay signed in on this device for 30 days, until you sign out.</p>
           </div>
           <div className="panel">
             <LoginForm next={next} />

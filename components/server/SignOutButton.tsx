@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function SignOutButton() {
+export default function SignOutButton({ className = "btn btn--ghost" }: { className?: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   return (
     <button
-      className="btn btn--ghost"
+      className={className}
       disabled={busy}
       onClick={async () => {
         setBusy(true);

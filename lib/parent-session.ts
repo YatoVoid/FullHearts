@@ -32,6 +32,7 @@ export async function requireParent(next = "/server/account/"): Promise<Parent> 
   return parent;
 }
 
+// A bare delete() drops Secure, and the browser ignores a __Host- cookie without it.
 export async function clearParentCookie(): Promise<void> {
-  (await cookies()).delete(PARENT_COOKIE);
+  (await cookies()).set(PARENT_COOKIE, "", { httpOnly: true, secure: isProd, sameSite: "lax", path: "/", maxAge: 0 });
 }

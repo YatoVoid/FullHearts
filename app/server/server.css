@@ -109,11 +109,12 @@
 .edu .wordmark img { width: 26px; height: 26px; image-rendering: pixelated; display: block; }
 .edu .wordmark span { color: var(--grass); }
 .edu .topbar nav { margin-left: auto; display: flex; gap: var(--s-2); align-items: center; }
-.edu .topbar nav a:not(.btn) {
+.edu .topbar nav a:not(.btn), .edu .topbar nav .navlink {
+  font: inherit; background: none; border: 0; cursor: pointer;
   font-size: 15px; font-weight: 600; color: var(--text-2);
   text-decoration: none; padding: 6px 10px; border-radius: var(--r-sm);
 }
-.edu .topbar nav a:not(.btn):hover { color: var(--text); background: var(--surface); }
+.edu .topbar nav a:not(.btn):hover, .edu .topbar nav .navlink:hover { color: var(--text); background: var(--surface); }
 .edu .topbar .btn { padding: 7px 16px; font-size: 15px; margin-left: var(--s-2); }
 
 /* hero */
@@ -279,7 +280,7 @@
   .edu .hero__grid { grid-template-columns: minmax(0, 1fr); gap: var(--s-6); padding-bottom: calc(var(--s-6) + 250px); }
   .edu .hero__art { height: 300px; }
   .edu .ledger, .edu .deep-grid, .edu .parents-grid { grid-template-columns: minmax(0, 1fr); }
-  .edu .topbar nav a:not(.btn) { display: none; }
+  .edu .topbar nav a:not(.btn), .edu .topbar nav .navlink { display: none; }
   .edu .footer nav { margin-left: 0; }
 }
 @media (max-width: 640px) {

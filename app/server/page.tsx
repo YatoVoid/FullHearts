@@ -2,9 +2,12 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import Icon from "@/components/Icon";
 import { EduFooter } from "@/components/server/EduChrome";
+import AccountNav from "@/components/server/AccountNav";
 import { PACK_URL, PACK_VERSION } from "@/lib/educraft";
 import { HEART_SRC, asset } from "@/lib/asset";
 
+// The header shows Sign in or Your account, which depends on the visitor's cookie.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "EduCraft: our Minecraft server | Full Hearts",
@@ -181,7 +184,7 @@ export default function ServerPage() {
             <a href="#join">How to join</a>
             <a href="#mods">Mods</a>
             <a href="#parents">Parents</a>
-            <Link className="btn btn--ghost" href="/server/account/">Your account</Link>
+            <AccountNav />
             <a className="btn btn--primary topbar__pack" href={PACK_URL} download>Get the pack</a>
           </nav>
         </div>
