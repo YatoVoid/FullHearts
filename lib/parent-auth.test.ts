@@ -82,6 +82,22 @@ describe("parent sign-in codes", () => {
     expect(requestLoginCode(email, "2.2.2.9")).toBe("throttled");
   });
 
+  it("stops sending codes to anyone after 60 in a day, so approvals and receipts still go out", () => {
+    const db = getDb();
+    const at = new Date(Date.now() + 365 * 24 * 60 * 60_000);
+    const insert = db.prepare(
+      "INSERT INTO login_codes (email, code_hash, created_at, expires_at, ip) VALUES (?, 'x', ?, ?, ?)"
+    );
+    for (let i = 0; i < 60; i++) {
+      insert.run(`flood${i}@example.com`, new Date(at.getTime() - (i + 1) * 20 * 60_000).toISOString(), at.toISOString(), `3.3.${i}.1`);
+    }
+    try {
+      expect(requestLoginCode(freshEmail(), "4.4.4.4", at)).toBe("throttled");
+    } finally {
+      db.prepare("DELETE FROM login_codes WHERE email LIKE 'flood%@example.com'").run();
+    }
+  });
+
   it("ends sessions at expiry and on sign-out", () => {
     const email = freshEmail();
     requestLoginCode(email, "1.1.1.7");

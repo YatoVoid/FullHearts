@@ -6,7 +6,7 @@ beforeAll(() => {
 });
 
 const { enqueueEmail, processOutbox, outboxSummary, retryEmail, MAX_ATTEMPTS } = await import("@/lib/outbox");
-const { MailNotConfiguredError } = await import("@/lib/mail");
+const { MailNotConfiguredError, MailRateLimitedError } = await import("@/lib/mail");
 const { getDb } = await import("@/lib/db");
 
 function row(key: string) {
@@ -55,5 +55,19 @@ describe("email outbox", () => {
     await processOutbox(new Date(Date.now() + 1000), send);
     expect(row("k-unconfigured").status).toBe("queued");
     expect(row("k-unconfigured").attempts).toBe(0);
+  });
+
+  it("waits out the provider's daily quota without using up attempts or sending the rest", async () => {
+    enqueueEmail("k-quota-1", "d@example.com", "Hi", "Body");
+    enqueueEmail("k-quota-2", "e@example.com", "Hi", "Body");
+    const now = new Date(Date.now() + 2000);
+    const send = vi.fn().mockRejectedValue(new MailRateLimitedError("daily_quota_exceeded", true));
+    await processOutbox(now, send);
+    expect(send).toHaveBeenCalledTimes(1);
+    const first = row("k-quota-1");
+    expect(first.status).toBe("queued");
+    expect(first.attempts).toBe(0);
+    expect(new Date(first.next_attempt_at).getTime()).toBe(now.getTime() + 60 * 60_000);
+    expect(row("k-quota-2").attempts).toBe(0);
   });
 });

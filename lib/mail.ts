@@ -7,6 +7,11 @@ export type Mail = {
 
 export class MailError extends Error {}
 export class MailNotConfiguredError extends MailError {}
+export class MailRateLimitedError extends MailError {
+  constructor(message: string, readonly daily: boolean) {
+    super(message);
+  }
+}
 
 const RESEND_URL = "https://api.resend.com/emails";
 const TIMEOUT_MS = 20_000;
@@ -47,6 +52,9 @@ export async function sendMail(mail: Mail): Promise<void> {
   }
   if (!res.ok) {
     const body = await res.text().catch(() => "");
+    if (res.status === 429) {
+      throw new MailRateLimitedError(`mail provider rate limit: ${body.slice(0, 300)}`, body.includes("daily_quota"));
+    }
     throw new MailError(`mail provider returned ${res.status}: ${body.slice(0, 300)}`);
   }
 }
