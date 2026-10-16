@@ -181,7 +181,8 @@ export default function ServerPage() {
             <a href="#join">How to join</a>
             <a href="#mods">Mods</a>
             <a href="#parents">Parents</a>
-            <a className="btn btn--primary" href={PACK_URL} download>Get the pack</a>
+            <Link className="btn btn--ghost" href="/server/account/">Your account</Link>
+            <a className="btn btn--primary topbar__pack" href={PACK_URL} download>Get the pack</a>
           </nav>
         </div>
       </header>
@@ -217,6 +218,7 @@ export default function ServerPage() {
                 <dt>Mod loader</dt><dd>Forge 47.4.20</dd>
                 <dt>Players</dt><dd>20 at a time</dd>
                 <dt>Access</dt><dd><Link href="/server/register/">Request access</Link></dd>
+                <dt>Families</dt><dd><Link href="/server/account/">Your account</Link></dd>
               </dl>
               <p className="glance__note">
                 The server address is not published. We send it privately to each family when their request is
@@ -297,6 +299,10 @@ export default function ServerPage() {
                   with the player&rsquo;s exact Minecraft username, and we review it by hand. Access is never instant.
                 </p>
                 <a className="btn btn--primary" href="/server/register/">Request access</a>
+                <p className="step-note">
+                  Already registered? <Link href="/server/account/">Sign in to your account</Link> to check status,
+                  pay or add another child.
+                </p>
                 <p className="step-note">Use a nickname, never a child&rsquo;s real name. Spell the username exactly, capitals included.</p>
               </li>
               <li className="stepper__item">

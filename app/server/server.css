@@ -284,6 +284,7 @@
 }
 @media (max-width: 640px) {
   .edu .wrap { padding-left: var(--s-5); padding-right: var(--s-5); }
+  .edu .topbar__pack { display: none; }
   .edu .section { padding: var(--s-7) 0; }
   .edu .stepper__item { padding-left: 60px; }
   .edu .stepper__item::before { width: 40px; height: 40px; font-size: 19px; }
