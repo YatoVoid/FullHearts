@@ -64,8 +64,9 @@ droplet (pull-based, systemd-managed, like the minecraft server).
    ```
 
 4. **nginx**: open the existing server block for fullhearts.app (the one
-   with your TLS cert config already in it) and replace the static `root` /
-   `try_files` directive with the contents of `nginx-fullhearts.conf`, then:
+   with your TLS cert config already in it) and replace its `location`
+   blocks with the ones in `nginx-fullhearts.conf`. Create the rate-limit
+   zone and proxy snippet files listed at the top of that file, then:
    ```
    sudo nginx -t && sudo systemctl reload nginx
    ```
