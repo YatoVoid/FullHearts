@@ -1,5 +1,5 @@
 import { getDb } from "@/lib/db";
-import { sendMail, MailNotConfiguredError, type Mail } from "@/lib/mail";
+import { sendMail, MailNotConfiguredError, MailRateLimitedError, type Mail } from "@/lib/mail";
 
 export type OutboxStatus = "queued" | "sent" | "failed";
 
@@ -75,6 +75,17 @@ export async function processOutbox(
           row.id
         );
         continue;
+      }
+      // Over Resend's per-second or daily quota. Every later send would fail
+      // the same way, so stop the batch and try again once it has reset,
+      // without using up attempts on receipts and approvals.
+      if (err instanceof MailRateLimitedError) {
+        db.prepare("UPDATE email_outbox SET last_error = ?, next_attempt_at = ? WHERE id = ?").run(
+          message,
+          new Date(now.getTime() + (err.daily ? 60 : 1) * 60_000).toISOString(),
+          row.id
+        );
+        break;
       }
       if (attempts >= MAX_ATTEMPTS) {
         db.prepare("UPDATE email_outbox SET status = 'failed', attempts = ?, last_error = ? WHERE id = ?").run(

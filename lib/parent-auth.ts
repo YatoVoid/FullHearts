@@ -11,7 +11,10 @@ export const MAX_CODE_ATTEMPTS = 5;
 const PER_EMAIL_HOUR = 5;
 const PER_EMAIL_DAY = 10;
 const PER_IP_HOUR = 20;
-const GLOBAL_HOUR = 200;
+// Resend's free plan sends 100 a day. Sign-in codes may use at most 60 of
+// them, so a flood of code requests can't crowd out approvals and receipts.
+const GLOBAL_HOUR = 30;
+const GLOBAL_DAY = 60;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -52,7 +55,8 @@ export function requestLoginCode(rawEmail: string, ip: string, now: Date = new D
     count("SELECT COUNT(*) AS n FROM login_codes WHERE email = ? AND created_at > ?", email, hourAgo) >= PER_EMAIL_HOUR ||
     count("SELECT COUNT(*) AS n FROM login_codes WHERE email = ? AND created_at > ?", email, dayAgo) >= PER_EMAIL_DAY ||
     count("SELECT COUNT(*) AS n FROM login_codes WHERE ip = ? AND created_at > ?", ip, hourAgo) >= PER_IP_HOUR ||
-    count("SELECT COUNT(*) AS n FROM login_codes WHERE created_at > ?", hourAgo) >= GLOBAL_HOUR
+    count("SELECT COUNT(*) AS n FROM login_codes WHERE created_at > ?", hourAgo) >= GLOBAL_HOUR ||
+    count("SELECT COUNT(*) AS n FROM login_codes WHERE created_at > ?", dayAgo) >= GLOBAL_DAY
   ) {
     return "throttled";
   }
