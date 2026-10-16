@@ -1,7 +1,8 @@
 import Link from "next/link";
+import AccountNav from "@/components/server/AccountNav";
 import { HEART_SRC } from "@/lib/asset";
 
-export function EduHeader({ children }: { children?: React.ReactNode }) {
+export function EduHeader({ current }: { current?: "account" }) {
   return (
     <header className="topbar">
       <div className="wrap topbar__row">
@@ -10,12 +11,8 @@ export function EduHeader({ children }: { children?: React.ReactNode }) {
           Full<span>Hearts</span>
         </Link>
         <nav aria-label="EduCraft">
-          {children ?? (
-            <>
-              <Link href="/server/">About EduCraft</Link>
-              <Link className="btn btn--ghost" href="/server/account/">Your account</Link>
-            </>
-          )}
+          <Link href="/server/">About EduCraft</Link>
+          <AccountNav current={current} />
         </nav>
       </div>
     </header>
