@@ -5,6 +5,7 @@ import { recordConsents } from "@/lib/consents";
 import { lookupProfile, type ProfileLookup } from "@/lib/minecraft";
 import { validateSubmission, type RegistrationSubmission } from "@/lib/registerValidation";
 import { alertNewRequest } from "@/lib/alerts";
+import { registrationPaused } from "@/lib/educraft";
 
 export type RegistrationResult =
   | { ok: true; childIds: number[]; unverified: string[] }
@@ -19,6 +20,7 @@ export async function registerChildren(
   ctx: { ip: string; userAgent: string | null },
   lookup: Lookup = lookupProfile
 ): Promise<RegistrationResult> {
+  if (registrationPaused()) return { ok: false, status: 503, error: "Registration isn't open yet." };
   const error = validateSubmission(input);
   if (error) return { ok: false, status: 400, error };
 

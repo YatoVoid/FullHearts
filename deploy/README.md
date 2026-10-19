@@ -47,6 +47,7 @@ droplet (pull-based, systemd-managed, like the minecraft server).
    EDUCRAFT_CONTACT_EMAIL=
    ADMIN_ALERT_EMAILS=
    BILLING_ENABLED=0
+   REGISTRATION_PAUSED=0
    STRIPE_SECRET_KEY=
    STRIPE_PRICE_ID=
    STRIPE_WEBHOOK_SECRET=

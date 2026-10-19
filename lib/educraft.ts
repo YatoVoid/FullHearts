@@ -13,6 +13,10 @@ export function siteUrl(): string {
   return (process.env.NEXT_PUBLIC_SITE_URL || "https://fullhearts.app").replace(/\/$/, "");
 }
 
+export function registrationPaused(): boolean {
+  return process.env.REGISTRATION_PAUSED === "1";
+}
+
 export function contactEmail(): string {
   return process.env.EDUCRAFT_CONTACT_EMAIL || process.env.MAIL_REPLY_TO || "";
 }

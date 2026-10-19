@@ -3,7 +3,7 @@ import Link from "next/link";
 import { EduHeader, EduFooter } from "@/components/server/EduChrome";
 import RegisterForm from "@/components/server/RegisterForm";
 import { requireParent } from "@/lib/parent-session";
-import { PRICE_LABEL } from "@/lib/educraft";
+import { PRICE_LABEL, contactEmail, registrationPaused } from "@/lib/educraft";
 
 export const metadata: Metadata = {
   title: "Request access | EduCraft",
@@ -13,7 +13,36 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
+function UnderConstruction() {
+  const email = contactEmail();
+  return (
+    <>
+      <EduHeader />
+      <main className="page">
+        <div className="wrap" style={{ maxWidth: 720 }}>
+          <div className="page__head">
+            <h1>Under construction</h1>
+            <p className="lede">
+              EduCraft is still being built, so registration isn&rsquo;t open yet.
+              {email ? (
+                <>
+                  {" "}Questions in the meantime? Email us at <a href={`mailto:${email}`}>{email}</a>.
+                </>
+              ) : null}
+            </p>
+            <p style={{ marginTop: "var(--s-4)" }}>
+              <Link href="/server/">Read how EduCraft works</Link>
+            </p>
+          </div>
+        </div>
+      </main>
+      <EduFooter />
+    </>
+  );
+}
+
 export default async function RegisterPage() {
+  if (registrationPaused()) return <UnderConstruction />;
   const parent = await requireParent("/server/register/");
 
   return (
