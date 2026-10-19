@@ -80,3 +80,17 @@ describe("registerChildren", () => {
     expect(bodies.some((b) => b.body.includes("AlertKid") || b.body.includes("Luigi"))).toBe(false);
   });
 });
+
+describe("registerChildren while registration is paused", () => {
+  it("refuses with 503 and saves nothing", async () => {
+    process.env.REGISTRATION_PAUSED = "1";
+    try {
+      const p = parent();
+      const result = await registerChildren(p, submission("PausedKid"), ctx, found("PausedKid"));
+      expect(result).toMatchObject({ ok: false, status: 503 });
+      expect(listChildrenForParent(p.id)).toHaveLength(0);
+    } finally {
+      delete process.env.REGISTRATION_PAUSED;
+    }
+  });
+});
