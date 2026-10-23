@@ -140,7 +140,13 @@ const KNOWN_CONFLICTS: ConflictRule[] = [
   // pulls Reclaimed in for Canteen.
   { keep: "GV0PyXSv", drop: "iUheEnjm", loaders: ["forge", "neoforge"] },
   // Reclaimed and Taken both ship modid "thirst": Forge refuses duplicate mods.
-  { keep: "B9HAFlgU", drop: "iUheEnjm", loaders: ["forge", "neoforge"] }
+  { keep: "B9HAFlgU", drop: "iUheEnjm", loaders: ["forge", "neoforge"] },
+  // Distraction Free Recipes 1.2.1 (Jan 2025, its newest) shadows JEI's
+  // IngredientListOverlay.contents as IngredientGridWithNavigation. JEI changed
+  // that field from 15.32.0.173 (1.20.1) and 19.x (1.21.1), so the mixin fails
+  // the first time the JEI overlay opens, crashing in-world. Pinning JEI that old
+  // would break mods that need a current JEI, so DFR goes.
+  { keep: "u6dRKJwZ", drop: "gbJLUhZP", loaders: ["forge", "neoforge", "fabric", "quilt"] }
 ];
 
 /** Known crashing pairs that apply on this loader + (optional) version. */

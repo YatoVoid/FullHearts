@@ -52,11 +52,12 @@ describe("knownConflicts", () => {
   it("drops Thirst Was Taken next to Thirst Canteen or Thirst Was Reclaimed on Forge", () => {
     expect(knownConflicts("forge", "1.20.1")).toEqual([
       { keep: "GV0PyXSv", drop: "iUheEnjm" },
-      { keep: "B9HAFlgU", drop: "iUheEnjm" }
+      { keep: "B9HAFlgU", drop: "iUheEnjm" },
+      { keep: "u6dRKJwZ", drop: "gbJLUhZP" }
     ]);
   });
 
-  it("has nothing for Fabric", () => {
-    expect(knownConflicts("fabric", "1.20.1")).toEqual([]);
+  it("drops Distraction Free Recipes next to JEI on every loader", () => {
+    expect(knownConflicts("fabric", "1.21.1")).toEqual([{ keep: "u6dRKJwZ", drop: "gbJLUhZP" }]);
   });
 });

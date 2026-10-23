@@ -219,6 +219,21 @@ describe("buildMrpack dependency closure", () => {
     expect(removedConflicts).toEqual([{ name: "thirst-was-taken", reason: "crashes with thirst-canteen" }]);
   });
 
+  it("drops Distraction Free Recipes when JEI is in the pack", async () => {
+    const jei = { id: "vJ", project_id: "u6dRKJwZ", version_type: "release", files: [file("jei-1.20.1-forge-15.56.0.205.jar")], dependencies: [] };
+    const dfr = { id: "vD", project_id: "gbJLUhZP", version_type: "release", files: [file("distraction_free_recipes-forge-1.2.1-1.20.1.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("/project/jei/version")) return jsonRes([jei]);
+      if (url.includes("/project/distraction-free-recipes/version")) return jsonRes([dfr]);
+      return jsonRes([]);
+    }));
+    const { included, removedConflicts } = await buildMrpack({
+      name: "t", mods: [modStub("distraction-free-recipes"), modStub("jei")], loader: "forge", mcVersion: "1.20.1", inspectJars: (async () => ({})) as never
+    });
+    expect(included.map((m) => m.id)).toEqual(["jei"]);
+    expect(removedConflicts).toEqual([{ name: "distraction-free-recipes", reason: "crashes with jei" }]);
+  });
+
   it("leaves Thirst Was Taken alone without Thirst Canteen", async () => {
     const taken = { id: "vT", project_id: "iUheEnjm", version_type: "release", files: [file("ThirstWasTaken-1.20.1-1.4.0.jar")], dependencies: [] };
     vi.stubGlobal("fetch", vi.fn(async (url: string) => {
