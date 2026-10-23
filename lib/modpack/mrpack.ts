@@ -3,7 +3,7 @@ import type { Loader, Mod } from "@/lib/sources/types";
 import { extractManifestDeps, type ManifestInfo } from "@/lib/modpack/manifest";
 import { satisfies } from "@/lib/modpack/range";
 import { searchModrinthQuery } from "@/lib/sources/modrinth";
-import { isBlocked, isBlockedDep } from "@/lib/curation/blocklist";
+import { isBlocked, isBlockedDep, knownConflicts } from "@/lib/curation/blocklist";
 import { preferModern, isModernVersion, isModernRange } from "@/lib/modpack/create-era";
 
 /** Reads jar manifests (keyed by immutable jar URL) for a given loader. */
@@ -269,7 +269,10 @@ const FORCE_DEPS: Record<string, string[]> = {
   // it. Without cloth-config the pack crashes at launch (NoClassDefFoundError
   // ConfigData). Other satisfy/Let's Do mods that open a config screen are the
   // same family; add them here as they surface.
-  "lets-do-meadow": ["cloth-config"]
+  "lets-do-meadow": ["cloth-config"],
+  // Newest Thirst Canteen builds need Thirst Was Reclaimed, not Thirst Was Taken
+  // (see KNOWN_CONFLICTS in blocklist.ts, which drops Taken when both appear).
+  "thirst-canteen": ["thirst-was-reclaimed"]
 };
 
 // A manifest modid whose Modrinth slug differs (so slug-guessing can't find it).
@@ -996,6 +999,12 @@ export async function buildMrpack(opts: {
     const other = victim === a ? b : a;
     dropped.add(victim);
     removedConflicts.push({ name: nameOf(victim), reason: `conflicts with ${nameOf(other)}` });
+  }
+  for (const { keep, drop } of knownConflicts(opts.loader, opts.mcVersion)) {
+    if (!resolvedByProject.has(keep) || !resolvedByProject.has(drop)) continue;
+    if (dropped.has(keep) || dropped.has(drop)) continue;
+    dropped.add(drop);
+    removedConflicts.push({ name: nameOf(drop), reason: `crashes with ${nameOf(keep)}` });
   }
 
   // One pack, both sides. Mark a selected client-only mod (Modrinth server_side

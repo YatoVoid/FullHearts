@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isBlocked, isBlockedDep, isAutoExcluded } from "@/lib/curation/blocklist";
+import { isBlocked, isBlockedDep, isAutoExcluded, knownConflicts } from "@/lib/curation/blocklist";
 import type { Mod } from "@/lib/sources/types";
 
 function modStub(id: string, modrinthSlug?: string): Mod {
@@ -45,5 +45,18 @@ describe("isAutoExcluded", () => {
   it("excludes item-obliterator from auto-recommendation without blocking it outright", () => {
     expect(isAutoExcluded(modStub("x", "item-obliterator"))).toBe(true);
     expect(isBlocked(modStub("x", "item-obliterator"), "forge")).toBe(false);
+  });
+});
+
+describe("knownConflicts", () => {
+  it("drops Thirst Was Taken next to Thirst Canteen or Thirst Was Reclaimed on Forge", () => {
+    expect(knownConflicts("forge", "1.20.1")).toEqual([
+      { keep: "GV0PyXSv", drop: "iUheEnjm" },
+      { keep: "B9HAFlgU", drop: "iUheEnjm" }
+    ]);
+  });
+
+  it("has nothing for Fabric", () => {
+    expect(knownConflicts("fabric", "1.20.1")).toEqual([]);
   });
 });

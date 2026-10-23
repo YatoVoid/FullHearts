@@ -188,6 +188,50 @@ describe("buildMrpack dependency closure", () => {
     expect(included.length).toBe(1); // one side dropped
   });
 
+  it("swaps Thirst Was Taken for Thirst Was Reclaimed when Thirst Canteen is in the pack", async () => {
+    const canteen = { id: "vC", project_id: "GV0PyXSv", version_type: "release", files: [file("ThirstCanteen-1.20.1-3.6.jar")], dependencies: [] };
+    const taken = { id: "vT", project_id: "iUheEnjm", version_type: "release", files: [file("ThirstWasTaken-1.20.1-1.4.0.jar")], dependencies: [] };
+    const reclaimed = { id: "vR", project_id: "B9HAFlgU", version_type: "release", files: [file("ThirstWasReclaimed-1.20.1-3.0.5.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("/project/thirst-canteen/version")) return jsonRes([canteen]);
+      if (url.includes("/project/thirst-was-taken/version")) return jsonRes([taken]);
+      if (url.includes("/project/thirst-was-reclaimed/version")) return jsonRes([reclaimed]);
+      return jsonRes([]);
+    }));
+    const manifests: Record<string, unknown> = {
+      GV0PyXSv: { version: "1.20.1-3.6", provides: ["thirstcanteen"], requires: [] },
+      iUheEnjm: { version: "1.20.1-1.4.0", provides: ["thirst"], requires: [] },
+      B9HAFlgU: { version: "1.20.1-3.0.5", provides: ["thirst"], requires: [] }
+    };
+    const inspectJars = async (jobs: { key: string; url: string }[]) =>
+      Object.fromEntries(jobs.map((j) => [j.key, manifests[j.key] ?? null]));
+
+    const { blob, included, removedConflicts } = await buildMrpack({
+      name: "t", mods: [modStub("thirst-canteen"), modStub("thirst-was-taken")], loader: "forge", mcVersion: "1.20.1", inspectJars: inspectJars as never
+    });
+
+    const idx = JSON.parse(strFromU8(unzipSync(new Uint8Array(await blob.arrayBuffer()))["modrinth.index.json"]));
+    const paths = idx.files.map((f: { path: string }) => f.path);
+    expect(paths).toContain("mods/ThirstCanteen-1.20.1-3.6.jar");
+    expect(paths).toContain("mods/ThirstWasReclaimed-1.20.1-3.0.5.jar");
+    expect(paths).not.toContain("mods/ThirstWasTaken-1.20.1-1.4.0.jar");
+    expect(included.map((m) => m.id)).toEqual(["thirst-canteen"]);
+    expect(removedConflicts).toEqual([{ name: "thirst-was-taken", reason: "crashes with thirst-canteen" }]);
+  });
+
+  it("leaves Thirst Was Taken alone without Thirst Canteen", async () => {
+    const taken = { id: "vT", project_id: "iUheEnjm", version_type: "release", files: [file("ThirstWasTaken-1.20.1-1.4.0.jar")], dependencies: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.includes("/project/thirst-was-taken/version")) return jsonRes([taken]);
+      return jsonRes([]);
+    }));
+    const { included, removedConflicts } = await buildMrpack({
+      name: "t", mods: [modStub("thirst-was-taken")], loader: "forge", mcVersion: "1.20.1", inspectJars: (async () => ({})) as never
+    });
+    expect(included.map((m) => m.id)).toEqual(["thirst-was-taken"]);
+    expect(removedConflicts).toEqual([]);
+  });
+
   it("prefers a stable release over a newer beta", async () => {
     const beta = { id: "b", project_id: "P", version_type: "beta", files: [file("beta.jar")], dependencies: [] };
     const release = { id: "r", project_id: "P", version_type: "release", files: [file("release.jar")], dependencies: [] };

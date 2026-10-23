@@ -120,3 +120,30 @@ export function isBlocked(mod: Mod, loader: Loader, version?: string): boolean {
 export function isBlockedDep(projectId: string, loader: Loader, version?: string): boolean {
   return matches(BLOCKED_DEPS[projectId], loader, version);
 }
+
+/**
+ * Mod pairs that crash together even though neither declares the other
+ * incompatible, keyed by Modrinth PROJECT ID like BLOCKED_DEPS. When both end up
+ * in a pack, `drop` is removed and `keep` stays.
+ */
+interface ConflictRule extends BlockRule {
+  keep: string;
+  drop: string;
+}
+
+const KNOWN_CONFLICTS: ConflictRule[] = [
+  // Thirst Canteen's newest builds (1.20.1-3.6, 1.21.1-3.7, 1.19.2-2.0) are
+  // compiled against Thirst Was Reclaimed (cn.mlus.thirst.foundation), but their
+  // mods.toml still accepts the old Thirst Was Taken under the same "thirst"
+  // modid. With Taken installed, Forge fails constructing thirstcanteen
+  // (NoClassDefFoundError RegisterThirstValueEvent). FORCE_DEPS in mrpack.ts
+  // pulls Reclaimed in for Canteen.
+  { keep: "GV0PyXSv", drop: "iUheEnjm", loaders: ["forge", "neoforge"] },
+  // Reclaimed and Taken both ship modid "thirst": Forge refuses duplicate mods.
+  { keep: "B9HAFlgU", drop: "iUheEnjm", loaders: ["forge", "neoforge"] }
+];
+
+/** Known crashing pairs that apply on this loader + (optional) version. */
+export function knownConflicts(loader: Loader, version?: string): { keep: string; drop: string }[] {
+  return KNOWN_CONFLICTS.filter((r) => matches(r, loader, version)).map(({ keep, drop }) => ({ keep, drop }));
+}
